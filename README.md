@@ -1,50 +1,56 @@
 ﻿# Matriz
 
-Aplicação de organização pessoal de projetos e tarefas, desenvolvida no curso AI-Powered Software Engineering.
-
-## Problema e objetivos
-
-A Matriz pretende substituir uma gestão desorganizada do trabalho por um fluxo que permita registar tarefas, agrupá-las em projetos, definir prazos e prioridades e acompanhar a execução. Destina-se a utilização individual, em contextos pessoais e profissionais, com colaboração reservada a uma evolução futura.
+Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso AI-Powered Software Engineering.
 
 ## Estado atual
 
-Especificação funcional e backlog aprovados pelo utilizador. Documentação do Exercício 4 consolidada em 18/11/2026. A aplicação ainda não está implementada; tecnologias, arquitetura, instalação e comandos de execução serão definidos nas fases seguintes.
+Base documental revista para o âmbito integral da ficha 03, autorizado em COL-01. Monólito modular mantido; autenticação, autorização, colaboradores, responsáveis e comentários incluídos. **Não existe aplicação implementada nem comandos de arranque/testes definidos.** Exercício 1 da ficha 03 concluído em análise/planeamento; stack e tecnologias de persistência aprovadas em TEC-01. O contrato e os layouts expandidos são propostas técnicas para revisão.
 
-## Funcionalidades previstas para o MVP
+## Tecnologias aprovadas
 
-- Criar, consultar e editar projetos e tarefas.
-- Manter tarefas independentes ou associadas a projetos e reorganizar associações.
-- Estados Por Fazer, Em Curso, Em Revisão e Concluída, com reabertura.
-- Descrição, prazo e prioridade opcionais nas tarefas.
-- Lista, Kanban e calendário por prazo.
-- Progresso por percentagem de tarefas concluídas do projeto.
-- Arquivar/restaurar projetos e eliminar tarefas com confirmação.
-- Pesquisa pelo título e filtros por projeto, estado e prioridade.
-- Conservar os dados entre utilizações e permitir execução noutro computador, sem sincronização obrigatória.
+Java 21, Spring Boot, Maven, Spring Security (sessão/cookie), PostgreSQL, Spring Data JPA e Flyway. Frontend React/TypeScript/Vite com CSS simples. JUnit, Spring Boot Test/MockMvc, Testcontainers/PostgreSQL, Playwright/TypeScript e ESLint. Docker/Compose e GitHub Actions para execução e verificações.
 
-O MVP não inclui login, equipas, eliminação de projetos, estados próprios dos projetos, subtarefas, comentários, notificações, modelos, recorrência ou estimativas. É destinado a um computador de confiança; não oferece isolamento de dados entre pessoas que acedam ao mesmo ambiente.
+Entrega prevista: React compilado servido pelo Spring Boot, com PostgreSQL num segundo serviço Compose. Versões exatas e comandos reais serão fixados/verificados na implementação.
 
-## Documentação
+## Funcionalidades do MVP
+
+- Sessão no servidor com cookie, consulta do utilizador autenticado e logout.
+- Projetos com proprietário/colaboradores, pesquisa por nome, arquivo/restauro e eliminação confirmada em cascata.
+- Tarefas de projetos autorizados e tarefas pessoais independentes privadas do criador.
+- Estados Por Fazer, Em Curso, Em Revisão e Concluída; prioridades/prazos opcionais.
+- Lista, Kanban e calendário; pesquisa/filtros; progresso por projeto e painel com contagens autorizadas.
+- Vários responsáveis elegíveis por tarefa, sem duplicação, e comentários com autor/data definidos no backend.
+- Privacidade verificada no backend; remoção de acesso/transferência remove atribuições inelegíveis na mesma operação.
+- Persistência real após recarregar/reiniciar; seed de demonstração não destrutivo e execução reproduzível noutro computador.
+
+Sem gestão global de organizações/equipas, convites, registo público, recuperação de palavra-passe, notificações, subtarefas, modelos, recorrência ou estimativas.
+
+## Documentação ativa
 
 | Documento | Conteúdo |
 |---|---|
-| [Requisitos](docs/requirements.md) | Visão, utilizador, âmbito, funcionalidades e regras aprovadas. |
-| [User Stories](docs/user-stories.md) | 14 histórias, 54 critérios de aceitação, 13 casos excecionais e rastreabilidade. |
-| [Restrições](docs/constraints.md) | Prazo, segurança, limites, pressupostos e decisões pendentes. |
-| [Registo da ficha 1](docs/ai-logs/ficha-01.md) | Interações com IA, análises e aprovações. |
+| [Requisitos](docs/requirements.md) | Âmbito, política de acesso e F01–F19. |
+| [User Stories](docs/user-stories.md) | 22 histórias e 88 critérios, incluindo autorização e colaboração. |
+| [Restrições](docs/constraints.md) | COL-01–06, prazo, segurança e decisões pendentes. |
+| [Reconciliação](docs/scope-reconciliation.md) | Diferenças entre fichas e decisões substituídas. |
+| [Arquitetura](docs/architecture.md) | Monólito modular e responsabilidades. |
+| [Modelo e ER](docs/database.md) | Seis entidades, relações e regras. |
+| [OpenAPI](openapi.yaml) | Proposta colaborativa de contratos, sem implementação. |
+| [Wireframes](docs/ui/wireframe-tarefas.md) | Tarefas colaborativas e início de sessão. |
+| [Revisão](docs/architecture-review.md) | Rastreabilidade e limitações da base colaborativa. |
+| [Plano](docs/implementation-plan.md) | Incrementos e verificações do Exercício 1 da ficha 03. |
+| [Verificação](docs/verification.md) | Cenários planeados, ainda não executados na aplicação. |
+| [Registo da ficha 3](docs/ai-logs/ficha-03.md) | Autorizações e trabalho documental atual. |
+| [AGENTS](AGENTS.md) | Instruções para agentes e segurança. |
 
-As instruções persistentes para agentes estão em [AGENTS.md](AGENTS.md), criado no Exercício 5. O Architecture Pack será produzido na ficha 2.
+## Histórico
 
-## Cenário de sucesso
+[Artefactos do MVP individual](docs/history/mvp-individual-v1/LEITURA.md) preservados. Os logs [ficha 1](docs/ai-logs/ficha-01.md) e [ficha 2](docs/ai-logs/ficha-02.md) mantêm as decisões históricas, superadas onde indicado por COL-01. Não usar o antigo contrato sem login como base atual.
 
-Criar um projeto, registar tarefas associadas e independentes, consultar as três visualizações, alterar estados, observar o progresso e reabrir a aplicação sem perder os dados guardados.
+## Instalação, execução e testes
 
-## Instalação e execução
+Pendentes de implementação e verificação com a stack aprovada. Não há comandos, contas reais ou resultados de testes da aplicação a anunciar. O README final incluirá dependências, configuração, migrations/seed, contas fictícias, arranque e testes verificados numa cópia limpa.
 
-Ainda não existem comandos de instalação ou execução da aplicação. Esta secção será atualizada após a definição técnica e implementação, com pré-requisitos, dependências, configuração e comandos verificados. Os critérios de aceitação documentados ainda não constituem resultados de testes executados.
+## Entrega
 
-## Entrega e demonstração
-
-Entrega final: **19/11/2026 às 17h, hora de Lisboa**. Inclui aplicação funcional, verificações, configuração reproduzível, documentação e URL do repositório GitHub acessível ao formador.
-
-Preparar apresentação até cinco minutos com 1–2 fluxos, dados de teste, tecnologias e decisões, metodologia, utilização e validação da IA e um desafio com solução e aprendizagem. Não incluir segredos nem dados pessoais desnecessários no repositório.
+19/11/2026 às 17h, hora de Lisboa. Incluir frontend/backend, testes, dependências, esquema/migrations, seed, configuração de exemplo sem segredos, documentação atualizada e URL GitHub acessível ao formador. Demonstração de 1–2 fluxos em até cinco minutos, com tecnologias, metodologia/IA, desafio e aprendizagem.

@@ -1,0 +1,1227 @@
+openapi: 3.1.0
+info:
+  title: Matriz API colaborativa
+  version: 0.2.0
+  description: 'Revisao documental para COL-01 e ficha 03; nao e uma API implementada.
+
+    Requisitos colaborativos e sessao no servidor/cookie aprovados. Naming, DTOs, nome do cookie, CSRF
+    e respostas HTTP sao proposta tecnica para revisao antes de implementar.
+
+    Sem paginacao definida; listagens devolvem o conjunto autorizado completo, sem ordem garantida. Completar
+    antes de adotar outro contrato.
+
+    Campos omitidos em PATCH mantem valor; null limpa apenas campos opcionais. Campos de identidade sao
+    do servidor.
+
+    Projeto arquivado bloqueia alteracoes a tarefas, comentarios e atribuicoes.
+
+    Confirmar eliminacoes na interface antes de enviar DELETE; cancelar nao envia pedido.
+
+    Sem exposicao publica aprovada. Configurar cookie HttpOnly, SameSite e Secure em HTTPS, invalidar/rodar
+    sessao e validar CSRF/origem com biblioteca adequada.
+
+    As duas criacoes da ficha 2 foram preservadas no historico; este e o contrato ativo colaborativo.'
+security:
+- Sessao: []
+paths:
+  /sessao/csrf:
+    get:
+      operationId: obterCsrf
+      summary: Preparar protecao CSRF
+      description: Pode criar sessao anonima para login. Obter token, enviar em X-CSRF-Token e manter
+        cookie; voltar a obter apos login/rotacao.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Csrf'
+        '500':
+          $ref: '#/components/responses/500'
+      security: []
+  /sessao:
+    post:
+      operationId: iniciarSessao
+      summary: Iniciar sessao
+      description: Credenciais de conta ficticia com hash no servidor. Validar CSRF/origem tambem no login,
+        rodar sessao ao autenticar e nunca devolver palavra-passe/hash.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilizador'
+          headers:
+            Set-Cookie:
+              description: Cookie matriz_session opaco; HttpOnly, SameSite e Secure em HTTPS. Valor gerado
+                pelo servidor.
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credenciais'
+    get:
+      operationId: consultarSessao
+      summary: Consultar utilizador autenticado
+      description: Perfil da identidade da sessao, sem hashes.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilizador'
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      operationId: terminarSessao
+      summary: Terminar sessao
+      description: Invalidar sessao no servidor e expirar cookie; token CSRF invalido tambem deve ser
+        rejeitado.
+      responses:
+        '204':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          headers:
+            Set-Cookie:
+              description: Expira cookie de sessao.
+              schema:
+                type: string
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+  /projetos:
+    get:
+      operationId: listarProjetos
+      summary: Listar e pesquisar projetos acessiveis
+      description: Apenas proprietario ou colaborador. Filtro arquivado separa ativos/arquivo. Pesquisa
+        por nome; correspondencia parcial/acentos ainda por confirmar. Nunca devolver projetos alheios.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Projeto'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Pesquisa por nome; detalhes de correspondencia pendentes.
+        schema:
+          type: string
+      - name: arquivado
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: boolean
+          default: false
+    post:
+      operationId: criarProjeto
+      summary: Criar projeto
+      description: Proprietario inferido da sessao; arquivado=false. Nao aceitar proprietarioId do cliente.
+      responses:
+        '201':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+              example:
+                id: p-demo
+                nome: Demonstracao
+                descricao: null
+                arquivado: false
+                proprietario:
+                  id: u-ana
+                  nome: Ana Demo
+                  email: ana@example.test
+                progresso:
+                  totalTarefas: 0
+                  tarefasConcluidas: 0
+                  percentagem: 0
+          headers:
+            Location:
+              description: URI do recurso criado.
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarProjeto'
+            example:
+              nome: Demonstracao
+  /projetos/{projetoId}:
+    parameters:
+    - $ref: '#/components/parameters/ProjetoId'
+    get:
+      operationId: consultarProjeto
+      summary: Consultar projeto
+      description: Acesso atual exigido; pode consultar projeto arquivado em modo de leitura. Progresso
+        calculado sobre todas as suas tarefas, sem efeito dos filtros da interface.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      operationId: atualizarProjeto
+      summary: Editar, arquivar ou restaurar projeto
+      description: So proprietario. arquivado=true arquiva, false restaura; nao apaga dependentes.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarProjeto'
+    delete:
+      operationId: eliminarProjeto
+      summary: Eliminar projeto e dependentes
+      description: So proprietario. Confirmacao explicita na UI. Remover atomicamente projeto, tarefas,
+        comentarios, atribuicoes e colaboracoes, sem eliminar utilizadores/outros projetos.
+      responses:
+        '204':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+  /projetos/{projetoId}/colaboradores:
+    parameters:
+    - $ref: '#/components/parameters/ProjetoId'
+    get:
+      operationId: listarColaboradores
+      summary: Consultar colaboradores
+      description: Exige acesso ao projeto; o proprietario esta representado no proprio projeto. Resposta
+        sem credenciais.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Utilizador'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      operationId: adicionarColaborador
+      summary: Adicionar colaborador existente
+      description: So proprietario; identificar conta existente por email, sem registo publico. Nao duplicar
+        colaboracao nem criar perfil global.
+      responses:
+        '201':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Utilizador'
+          headers:
+            Location:
+              description: URI do recurso criado.
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColaboradorRequest'
+  /projetos/{projetoId}/colaboradores/{utilizadorId}:
+    parameters:
+    - $ref: '#/components/parameters/ProjetoId'
+    - $ref: '#/components/parameters/UtilizadorId'
+    delete:
+      operationId: removerColaborador
+      summary: Remover colaborador
+      description: So proprietario. Remover colaboracao e atribuicoes agora inelegiveis na mesma operacao.
+        Nao remover proprietario por esta rota nem apagar contas ou autoria de comentarios.
+      responses:
+        '204':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+  /tarefas:
+    get:
+      operationId: listarTarefas
+      summary: Listar tarefas autorizadas
+      description: Projetos acessiveis nao arquivados e tarefas independentes do criador. Intersecao de
+        filtros; projetoId+semProjeto=true ou prioridade+semPrioridade=true invalidos. Limites de prazo
+        inclusivos excluem tarefas sem prazo; intervalo invertido=400. Lista/Kanban/calendario reutilizam
+        dados; contagens nao se limitam a pagina visivel.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarefa'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - name: q
+        in: query
+        required: false
+        description: Parte do titulo, sem distinguir maiusculas; vazio nao restringe. Acentos pendentes.
+        schema:
+          type: string
+      - name: projetoId
+        in: query
+        required: false
+        description: ''
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: semProjeto
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: boolean
+          default: false
+      - name: estado
+        in: query
+        required: false
+        description: ''
+        schema:
+          $ref: '#/components/schemas/Estado'
+      - name: prioridade
+        in: query
+        required: false
+        description: ''
+        schema:
+          $ref: '#/components/schemas/Prioridade'
+      - name: semPrioridade
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: boolean
+          default: false
+      - name: prazoDe
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+          format: date
+      - name: prazoAte
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+          format: date
+    post:
+      operationId: criarTarefa
+      summary: Criar tarefa
+      description: Criador inferido da sessao. Projeto opcional; independente e privada do criador. Projeto
+        preenchido exige acesso e nao arquivado. Estado omitido=Por Fazer. Prazo passado permitido.
+      responses:
+        '201':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+              example:
+                id: t-demo
+                titulo: Preparar dados
+                descricao: null
+                estado: Por Fazer
+                prioridade: null
+                prazo: null
+                projetoId: p-demo
+                criadorId: u-ana
+          headers:
+            Location:
+              description: URI do recurso criado.
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarTarefa'
+            examples:
+              independente:
+                value:
+                  titulo: Notas pessoais
+              associada:
+                value:
+                  titulo: Preparar dados
+                  projetoId: p-demo
+                  prioridade: Alta
+                  prazo: '2026-11-19'
+  /tarefas/{tarefaId}:
+    parameters:
+    - $ref: '#/components/parameters/TarefaId'
+    get:
+      operationId: consultarTarefa
+      summary: Consultar tarefa
+      description: Acesso atual ao projeto ou criador se independente. Leitura autorizada de arquivadas
+        e permitida.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      operationId: atualizarTarefa
+      summary: Editar tarefa, estado e associacao
+      description: Verificar acesso a origem e destino. Criador imutavel. projetoId=null torna privada
+        do criador original; ator diferente pode perder acesso apos a operacao. Remover atribuicoes inelegiveis
+        na mesma transacao. Bloquear qualquer alteracao se origem ou destino estiver arquivado. Transicoes
+        de estado livres.
+      responses:
+        '200':
+          description: Atualizacao concluida. Corpo JSON null se o ator perdeu acesso devido a desassociacao;
+            caso contrario, DTO da tarefa autorizada. Interface remove da sua lista quando null.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                - $ref: '#/components/schemas/Tarefa'
+                - type: 'null'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarTarefa'
+    delete:
+      operationId: eliminarTarefa
+      summary: Eliminar tarefa e dependentes
+      description: Proprietario/colaboradores do projeto ou criador de independente. Confirmacao na UI.
+        Arquivada bloqueia. Remover comentarios e atribuicoes atomicamente.
+      responses:
+        '204':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+  /tarefas/{tarefaId}/utilizadores-elegiveis:
+    parameters:
+    - $ref: '#/components/parameters/TarefaId'
+    get:
+      operationId: listarElegiveis
+      summary: Listar responsaveis elegiveis
+      description: Exige acesso a tarefa. Proprietario e colaboradores atuais do projeto; so o criador
+        para independente. Nunca devolver hashes.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Utilizador'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  /tarefas/{tarefaId}/responsaveis:
+    parameters:
+    - $ref: '#/components/parameters/TarefaId'
+    get:
+      operationId: listarResponsaveis
+      summary: Consultar responsaveis
+      description: Exige acesso a tarefa; nao concede acesso por mera atribuicao.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Responsavel'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      operationId: atribuirResponsavel
+      summary: Associar responsavel elegivel
+      description: Verificar utilizador, elegibilidade e par unico. Arquivo bloqueia. Duplicado=409.
+      responses:
+        '201':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Responsavel'
+          headers:
+            Location:
+              description: URI do recurso criado.
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResponsavelRequest'
+  /tarefas/{tarefaId}/responsaveis/{utilizadorId}:
+    parameters:
+    - $ref: '#/components/parameters/TarefaId'
+    - $ref: '#/components/parameters/UtilizadorId'
+    delete:
+      operationId: removerResponsavel
+      summary: Remover atribuicao
+      description: Exige acesso a tarefa e nao arquivada. Remove apenas o par, sem apagar conta/tarefa.
+      responses:
+        '204':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+  /tarefas/{tarefaId}/comentarios:
+    parameters:
+    - $ref: '#/components/parameters/TarefaId'
+    get:
+      operationId: listarComentarios
+      summary: Consultar comentarios
+      description: Exige acesso atual a tarefa, incluindo se arquivada em leitura.
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comentario'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      operationId: adicionarComentario
+      summary: Adicionar comentario
+      description: Conteudo nao vazio/somente espacos; autor e instante definidos pelo backend. Nao aceitar
+        autorId/criadoEm no pedido. Arquivo bloqueia.
+      responses:
+        '201':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comentario'
+          headers:
+            Location:
+              description: URI do recurso criado.
+              schema:
+                type: string
+                format: uri-reference
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '409':
+          $ref: '#/components/responses/409'
+        '422':
+          $ref: '#/components/responses/422'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - $ref: '#/components/parameters/Csrf'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComentarioRequest'
+  /painel:
+    get:
+      operationId: consultarPainel
+      summary: Consultar painel inicial
+      description: 'Proposta explicita: projetos acessiveis nao arquivados e contagens de tarefas desses
+        projetos; parametro incluirIndependentes escolhe incluir tarefas pessoais. Nunca inclui arquivados,
+        dados alheios ou apenas a pagina visivel. Politica de contagem para revisao.'
+      responses:
+        '200':
+          description: Operacao concluida e, se altera dados, gravacao confirmada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Painel'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+      parameters:
+      - name: incluirIndependentes
+        in: query
+        required: true
+        description: Escolha explicita do conjunto; sem valor assumido.
+        schema:
+          type: boolean
+components:
+  securitySchemes:
+    Sessao:
+      type: apiKey
+      in: cookie
+      name: matriz_session
+      description: Sessao no servidor aprovada; nome de cookie proposto. Sem token JWT.
+  parameters:
+    ProjetoId:
+      name: projetoId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    TarefaId:
+      name: tarefaId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    UtilizadorId:
+      name: utilizadorId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    Csrf:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Token obtido em GET /sessao/csrf e associado a sessao, inclusive antes do login.
+      schema:
+        type: string
+        minLength: 1
+  schemas:
+    Id:
+      type: string
+      minLength: 1
+      description: String opaca na API; tipo fisico nao imposto.
+    Texto:
+      type: string
+      minLength: 1
+      pattern: \S
+    TextoOpcional:
+      type:
+      - string
+      - 'null'
+    Estado:
+      type: string
+      enum:
+      - Por Fazer
+      - Em Curso
+      - Em Revisão
+      - Concluída
+    Prioridade:
+      type: string
+      enum:
+      - Baixa
+      - Média
+      - Alta
+      - Crítica
+    Utilizador:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        nome:
+          $ref: '#/components/schemas/Texto'
+        email:
+          type: string
+          format: email
+      required:
+      - id
+      - nome
+      - email
+    Credenciais:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+        palavraPasse:
+          type: string
+          minLength: 1
+          writeOnly: true
+      required:
+      - email
+      - palavraPasse
+    Csrf:
+      type: object
+      additionalProperties: false
+      properties:
+        token:
+          type: string
+          minLength: 1
+      required:
+      - token
+    Progresso:
+      type: object
+      additionalProperties: false
+      properties:
+        totalTarefas:
+          type: integer
+          minimum: 0
+        tarefasConcluidas:
+          type: integer
+          minimum: 0
+        percentagem:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Concluidas/total*100 arredondado a uma casa decimal; sem tarefas=0.
+      required:
+      - totalTarefas
+      - tarefasConcluidas
+      - percentagem
+    CriarProjeto:
+      type: object
+      additionalProperties: false
+      properties:
+        nome:
+          $ref: '#/components/schemas/Texto'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+      required:
+      - nome
+    AtualizarProjeto:
+      type: object
+      additionalProperties: false
+      properties:
+        nome:
+          $ref: '#/components/schemas/Texto'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        arquivado:
+          type: boolean
+      minProperties: 1
+    ColaboradorRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    ResponsavelRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        utilizadorId:
+          $ref: '#/components/schemas/Id'
+      required:
+      - utilizadorId
+    ComentarioRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        conteudo:
+          $ref: '#/components/schemas/Texto'
+      required:
+      - conteudo
+    Problema:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        codigo:
+          type: string
+        detail:
+          type: string
+        erros:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              campo:
+                type: string
+              mensagem:
+                type: string
+            required:
+            - campo
+            - mensagem
+      required:
+      - type
+      - title
+      - status
+      - codigo
+    CriarTarefa:
+      type: object
+      additionalProperties: false
+      properties:
+        titulo:
+          $ref: '#/components/schemas/Texto'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        estado:
+          $ref: '#/components/schemas/Estado'
+          default: Por Fazer
+        prioridade:
+          anyOf: &id001
+          - $ref: '#/components/schemas/Prioridade'
+          - type: 'null'
+        prazo:
+          type: &id002
+          - string
+          - 'null'
+          format: date
+        projetoId:
+          anyOf: &id003
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
+      required:
+      - titulo
+    AtualizarTarefa:
+      type: object
+      additionalProperties: false
+      properties:
+        titulo:
+          $ref: '#/components/schemas/Texto'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        estado:
+          $ref: '#/components/schemas/Estado'
+        prioridade:
+          anyOf: *id001
+        prazo:
+          type: *id002
+          format: date
+        projetoId:
+          anyOf: *id003
+      minProperties: 1
+    Projeto:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        nome:
+          $ref: '#/components/schemas/Texto'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        arquivado:
+          type: boolean
+        proprietario:
+          $ref: '#/components/schemas/Utilizador'
+        progresso:
+          $ref: '#/components/schemas/Progresso'
+      required:
+      - id
+      - nome
+      - descricao
+      - arquivado
+      - proprietario
+      - progresso
+    Tarefa:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        titulo:
+          $ref: '#/components/schemas/Texto'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        estado:
+          $ref: '#/components/schemas/Estado'
+        prioridade:
+          anyOf: *id001
+        prazo:
+          type: *id002
+          format: date
+        projetoId:
+          anyOf: *id003
+        criadorId:
+          $ref: '#/components/schemas/Id'
+      required:
+      - id
+      - titulo
+      - descricao
+      - estado
+      - prioridade
+      - prazo
+      - projetoId
+      - criadorId
+    Comentario:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        conteudo:
+          $ref: '#/components/schemas/Texto'
+        autor:
+          $ref: '#/components/schemas/Utilizador'
+        criadoEm:
+          type: string
+          format: date-time
+      required:
+      - id
+      - conteudo
+      - autor
+      - criadoEm
+    Responsavel:
+      type: object
+      additionalProperties: false
+      properties:
+        utilizador:
+          $ref: '#/components/schemas/Utilizador'
+      required:
+      - utilizador
+    ContagensEstado:
+      type: object
+      additionalProperties: false
+      properties:
+        Por Fazer:
+          type: integer
+          minimum: 0
+        Em Curso:
+          type: integer
+          minimum: 0
+        Em Revisão:
+          type: integer
+          minimum: 0
+        Concluída:
+          type: integer
+          minimum: 0
+      required:
+      - Por Fazer
+      - Em Curso
+      - Em Revisão
+      - Concluída
+    Painel:
+      type: object
+      additionalProperties: false
+      properties:
+        utilizador:
+          $ref: '#/components/schemas/Utilizador'
+        projetos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Projeto'
+        contagens:
+          $ref: '#/components/schemas/ContagensEstado'
+        incluiIndependentes:
+          type: boolean
+      required:
+      - utilizador
+      - projetos
+      - contagens
+      - incluiIndependentes
+  responses:
+    '400':
+      description: JSON malformado ou parametros invalidos.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: JSON malformado ou parametros invalidos
+            status: 400
+            codigo: PEDIDO_INVALIDO
+    '401':
+      description: Sessao ausente/invalida ou credenciais invalidas.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Sessao ausente/invalida ou credenciais invalidas
+            status: 401
+            codigo: NAO_AUTENTICADO
+    '403':
+      description: Sem permissao para o recurso ou protecao CSRF/origem invalida. Nao devolver dados alheios.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Sem permissao para o recurso ou protecao CSRF/origem invalida
+            status: 403
+            codigo: ACESSO_NEGADO
+    '404':
+      description: Recurso/referencia inexistente.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Recurso/referencia inexistente
+            status: 404
+            codigo: NAO_ENCONTRADO
+    '409':
+      description: Projeto arquivado, atribuicao duplicada ou conflito de integridade.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Projeto arquivado, atribuicao duplicada ou conflito de integridade
+            status: 409
+            codigo: CONFLITO
+    '422':
+      description: Dados do corpo invalidos; sem alteracoes parciais.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Dados do corpo invalidos; sem alteracoes parciais
+            status: 422
+            codigo: VALIDACAO
+    '500':
+      description: Falha interna/de gravacao; nao expor detalhes internos nem confirmar alteracoes parciais.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Falha interna/de gravacao; nao expor detalhes internos nem confirmar alteracoes parciais
+            status: 500
+            codigo: ERRO_INTERNO

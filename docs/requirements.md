@@ -1,124 +1,109 @@
-﻿# Matriz — Requisitos
+﻿# Matriz — Requisitos do MVP colaborativo
 
-**Data:** 18/11/2026. **Estado:** consolidação das decisões e do backlog aprovados pelo utilizador; implementação ainda não iniciada.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Não existe aplicação implementada.
 
-## Visão e problema
+## Visão e objetivos
 
-A Matriz apoia a organização pessoal de projetos e tarefas em contextos pessoais e profissionais. O problema identificado é a ausência de um método organizado para registar ações, agrupá-las em iniciativas e acompanhar a execução.
+A Matriz permite organizar projetos partilhados, gerir tarefas e acompanhar o trabalho de utilizadores autenticados em contextos pessoais e profissionais. Mantém tarefas pessoais independentes, privadas de quem as cria.
 
-O MVP adapta o enunciado inicial destinado a equipas para utilização individual. A colaboração fica para uma evolução futura. Esta adaptação foi aprovada pelo utilizador; não existe confirmação de aprovação pelo formador.
+Objetivos: organizar iniciativas e ações, colaborar com acesso controlado, atribuir responsáveis, comentar tarefas, consultar lista/Kanban/calendário, acompanhar progresso e conservar dados após recarregar ou reiniciar o backend.
 
-## Objetivos
+## Utilizadores e acesso
 
-- Organizar iniciativas em projetos e ações concretas em tarefas.
-- Permitir tarefas com ou sem projeto e reorganizar as associações.
-- Consultar o trabalho em lista, Kanban e calendário.
-- Acompanhar execução por estados e progresso calculado.
-- Retomar o trabalho após reabrir a aplicação sem perder os dados guardados.
+Não há administrador global obrigatório. Proprietário e colaborador são relações de um utilizador com cada projeto, não perfis globais. Uma pessoa pode ser proprietária num projeto e colaboradora noutro.
 
-## Utilizador
+- Qualquer utilizador autenticado pode criar projeto; o backend define o proprietário pela identidade autenticada.
+- Proprietário gere dados, arquivo/restauro, eliminação e acesso de colaboradores ao seu projeto.
+- Proprietário e colaboradores consultam o projeto e gerem as suas tarefas, incluindo criação, edição, mudança de estado, atribuições, comentários e eliminação de tarefas, respeitando arquivo.
+- Ser responsável por uma tarefa não concede acesso a um projeto por si só: o utilizador tem de ser elegível antes da atribuição.
+- Sem relação de acesso, o utilizador não pode consultar nem alterar o projeto ou os recursos dependentes, mesmo por pedido direto à API.
+- Uma tarefa independente só é acessível ao criador autenticado. O criador é definido pelo backend e imutável.
+- Atribuições de tarefa independente só podem apontar para o seu criador, por ser o único utilizador com acesso.
+- Registo público e recuperação de palavra-passe não são exigidos; preparar contas fictícias por seed reproduzível, sem apagar dados em cada arranque.
 
-Um único tipo: utilizador individual que gere os seus próprios dados num computador de confiança. Não existem contas, login, perfis de administrador ou equipas no MVP. A utilização por outra pessoa noutro computador não exige dados partilhados.
+## Funcionalidades e rastreabilidade
 
-## Âmbito funcional do MVP
+| ID | Requisito | Prioridade | User Stories |
+|---|---|---|---|
+| F01 | Criar, consultar e editar projetos autorizados. | P1 | US-01, US-02 |
+| F02 | Criar, consultar e editar tarefas em projetos acessíveis ou tarefas pessoais independentes. | P1 | US-03, US-04 |
+| F03 | Alterar estados e reabrir tarefas autorizadas. | P1 | US-05 |
+| F04 | Conservar dados após recarregar a interface e reiniciar o backend. | P1 | US-11 |
+| F05 | Consultar tarefas autorizadas em lista, Kanban e calendário. | P1 | US-06, US-07, US-08 |
+| F06 | Prazo e prioridade opcionais nas tarefas. | P1 | US-03, US-04 |
+| F07 | Percentagem de conclusão por projeto acessível. | P1 | US-09 |
+| F08 | Associar, transferir e desassociar tarefas, verificando acesso de origem/destino. | P1 | US-10 |
+| F09 | Arquivar e restaurar projetos pelo proprietário, conservando dependentes. | P2 | US-12 |
+| F10 | Eliminar tarefas autorizadas com confirmação. | P1 | US-13 |
+| F11 | Pesquisar tarefas pelo título e filtrar projeto, estado e prioridade. | P1 | US-14 |
+| F12 | Iniciar sessão, consultar perfil autenticado e terminar sessão. | P1 | US-15 |
+| F13 | Autorizar no backend todos os pedidos e impedir acessos cruzados indevidos. | P1 | US-16 |
+| F14 | Proprietário gerir colaboradores e listar utilizadores elegíveis. | P1 | US-17 |
+| F15 | Associar vários responsáveis elegíveis e remover atribuições sem duplicação. | P1 | US-18 |
+| F16 | Adicionar/listar comentários, com autor e data definidos no backend. | P1 | US-19 |
+| F17 | Proprietário eliminar projeto e dependentes mediante confirmação explícita. | P1 | US-20 |
+| F18 | Pesquisar projetos acessíveis pelo nome. | P1 | US-21 |
+| F19 | Painel com utilizador autenticado, projetos acessíveis e contagens por estado. | P1 | US-22 |
 
-P1 e P2 indicam a sequência recomendada de implementação. Ambas integram a entrega aprovada.
-
-| ID | Requisito | Prioridade | Justificação | User Stories |
-|---|---|---|---|---|
-| F01 | Criar, consultar e editar projetos. | P1 | Organizar iniciativas e manter a informação atualizada. | US-01, US-02 |
-| F02 | Criar, consultar e editar tarefas associadas ou independentes. | P1 | Registar ações concretas. | US-03, US-04 |
-| F03 | Alterar estados e reabrir tarefas concluídas. | P1 | Acompanhar execução. | US-05 |
-| F04 | Conservar os dados guardados após fechar e reabrir no mesmo ambiente. | P1 | Permitir utilização continuada. | US-11 |
-| F05 | Consultar tarefas em lista, Kanban e calendário. | P1 | Oferecer as três visualizações aprovadas. | US-06, US-07, US-08 |
-| F06 | Definir e remover prazo e prioridade opcionais nas tarefas. | P1 | Apoiar planeamento e calendário. | US-03, US-04 |
-| F07 | Mostrar a percentagem de conclusão por projeto. | P1 | Tornar o progresso observável. | US-09 |
-| F08 | Associar, transferir e desassociar tarefas de projetos. | P1 | Reorganizar sem recriar tarefas. | US-10 |
-| F09 | Arquivar e restaurar projetos, conservando tarefas. | P2 | Retirar trabalho das vistas principais sem o perder. | US-12 |
-| F10 | Eliminar tarefas mediante confirmação. | P2 | Remover registos desnecessários. | US-13 |
-| F11 | Pesquisar pelo título e filtrar por projeto, estado e prioridade. | P2 | Encontrar trabalho relevante. | US-14 |
+Prioridades indicam ordem de implementação, não exclusão de requisitos. Alterações de prioridade refletem as dependências do âmbito integral da ficha 03.
 
 ## Dados e regras de negócio
 
 ### Projetos
 
-- Nome obrigatório; um nome vazio ou composto apenas por espaços impede a gravação.
-- Descrição opcional.
-- Podem existir projetos sem tarefas.
-- Não existem estados próprios de projeto no MVP; o progresso é calculado pelas tarefas.
-- É possível arquivar e restaurar, mas não eliminar projetos.
+Nome obrigatório e não apenas espaços; descrição opcional. Criados com arquivado=false e proprietário inferido da autenticação. Podem existir sem tarefas. Não têm estados próprios. Só o proprietário altera dados/arquivo/colaboradores ou elimina o projeto.
+
+Eliminação: confirmação clara de que serão removidos projeto, tarefas, comentários e atribuições; remover também as associações de colaboradores. A operação é atómica e não deixa dados órfãos; não elimina contas de utilizadores. Cancelar não executa a operação.
 
 ### Tarefas
 
-- Título obrigatório, não vazio nem composto apenas por espaços.
-- Descrição, projeto, prazo e prioridade opcionais.
-- Prioridades: Baixa, Média, Alta e Crítica; sem prioridade é permitido.
-- Estados: Por Fazer, Em Curso, Em Revisão e Concluída.
-- Estado inicial Por Fazer quando não for escolhido outro.
-- Transições livres entre os quatro estados, incluindo reabertura.
-- É permitida associação posterior a um projeto, mudança de projeto e passagem a independente, conservando os restantes dados.
-- Eliminação definitiva apenas após confirmação e aviso. Cancelar conserva a tarefa.
+Título obrigatório e não apenas espaços; descrição, projeto, prazo e prioridade opcionais. Estado inicial Por Fazer, salvo escolha válida. Estados: Por Fazer, Em Curso, Em Revisão, Concluída; transições livres, incluindo reabertura. Prioridades: Baixa, Média, Alta, Crítica ou ausência de valor. Prazos passados são permitidos.
 
-### Visualizações e prazos
+O criador é inferido no backend. Sem projeto, apenas o criador pode consultar ou alterar a tarefa. Numa tarefa de projeto, o acesso decorre da participação atual no projeto, não apenas da autoria histórica.
 
-- Lista, Kanban e calendário representam os mesmos dados, refletindo alterações guardadas.
-- O Kanban agrupa tarefas pelo estado; arrastar cartões não é requisito obrigatório.
-- O calendário representa a tarefa na data de conclusão prevista, não na data em que foi efetivamente concluída.
-- Tarefas sem prazo não têm entrada no calendário e continuam acessíveis na lista e no Kanban.
-- Prazos passados são permitidos; não geram notificações no MVP.
-- Não estão definidos ordem inicial da lista nem formato mensal/semanal/diário do calendário.
+Transferir exige autorização sobre tarefa e projeto de destino, que tem de estar não arquivado. Desassociar torna a tarefa privada do criador original; o utilizador que executa a ação pode perder o acesso se não for esse criador. Identificador, criador e dados mantêm-se. As atribuições que se tornem inelegíveis são removidas na mesma operação atómica, conforme COL-06.
 
-### Progresso
+### Responsáveis e comentários
 
-- Progresso = tarefas concluídas do projeto ÷ total de tarefas do projeto × 100.
-- Apresentação arredondada a uma casa decimal.
-- Projeto sem tarefas: 0% e indicação “Sem tarefas”.
-- Apenas tarefas do próprio projeto entram no cálculo; tarefas independentes não entram.
-- Conclusão, reabertura, eliminação e mudança de associação atualizam o cálculo dos projetos afetados.
-- Não existe ponderação por esforço, prioridade ou progresso parcial.
+Uma tarefa pode ter zero ou vários responsáveis. Cada par tarefa/utilizador é único. Elegíveis são utilizadores com acesso atual ao projeto (proprietário e colaboradores) ou apenas o criador numa tarefa independente. A API fornece a lista elegível, sem usar atribuições para conceder acesso.
 
-### Arquivo e restauro
+Comentário: conteúdo obrigatório, não apenas espaços; autor e instante de criação definidos pelo backend, não aceites do cliente como identidade. Listagem apenas por utilizadores com acesso atual à tarefa. Sem edição/eliminação de comentários como funcionalidade autónoma; eliminação de tarefa/projeto remove os comentários dependentes.
 
-- Projeto arquivado e suas tarefas ficam fora das vistas principais, mantendo dados e associações.
-- Existe consulta separada de projetos arquivados para os localizar e restaurar.
-- Durante o arquivo são impedidas novas associações e edição, mudança de estado, eliminação, transferência e desassociação das tarefas desse projeto.
-- O restauro repõe a visibilidade, respeitando filtros, estados e prazos; tarefas sem prazo continuam fora do calendário.
+### Arquivo
 
-### Pesquisa e filtros
+Arquivo conserva dados, estados, colaboradores, comentários e atribuições. Exclui projeto/tarefas das vistas principais. Consulta separada só de projetos arquivados acessíveis; restauro apenas pelo proprietário. Impede novas tarefas/associações e alterações às tarefas, incluindo edição, estado, eliminação, transferência/desassociação, comentários e atribuições. A consulta autorizada de dados existentes pode manter-se em modo de leitura. O restauro repõe visibilidade conforme filtros e prazo.
 
-- Pesquisa por parte do título, sem distinguir maiúsculas de minúsculas.
-- Pesquisa vazia não restringe resultados.
-- Filtros por projeto, estado e prioridade; projeto inclui “Sem projeto” e prioridade inclui “Sem prioridade”.
-- Pesquisa e filtros combinam-se por interseção e aplicam-se às três visualizações, respeitando as regras próprias de cada vista.
-- Zero correspondências não altera os dados.
+### Consultas, progresso e painel
 
-### Falhas de gravação
+Pesquisa de tarefas por parte do título sem distinguir maiúsculas/minúsculas; filtros por projeto, estado e prioridade combinados por interseção nas três vistas. Opções Sem projeto e Sem prioridade; pesquisa vazia não restringe. Todas as consultas começam pelo conjunto autorizado, nunca pelos dados globais.
 
-Em falha de criação, edição ou eliminação, apresentar mensagem explícita, não anunciar sucesso e conservar os últimos dados confirmados. Permitir nova tentativa após corrigir o problema; não é exigida recuperação automática. Regras aprovadas em REV-02 no Exercício 6.
+Pesquisa de projetos pelo nome sem devolver projetos sem acesso; política de correspondência detalhada a confirmar no contrato. O calendário usa prazo previsto; tarefas sem prazo permanecem na lista/Kanban. Arrastar cartões não é obrigatório.
 
-## Requisitos não funcionais e de entrega confirmados
+Progresso = concluídas/total das tarefas do projeto × 100, arredondado a uma casa decimal; sem tarefas, 0% e Sem tarefas. Tarefas independentes não entram no progresso de projetos. Alterações e eliminações atualizam resultados confirmados.
 
-| ID | Requisito | Verificação prevista |
-|---|---|---|
-| RNF-01 | Conservar dados após reabertura no mesmo ambiente. | Executar CA-US-11-01 e CA-US-11-02. |
-| RNF-02 | Executar noutro computador, sem sincronização obrigatória. | Seguir as instruções finais de instalação e arranque num segundo ambiente. |
-| RNF-03 | Configuração reproduzível e documentada. | README final com pré-requisitos, dependências e comandos; configuração de exemplo quando aplicável. |
-| RNF-04 | Não publicar segredos nem dados pessoais desnecessários. | Rever ficheiros e histórico a entregar antes da publicação final. |
+Painel mostra utilizador, projetos acessíveis e contagens por estado do conjunto autorizado relevante, não apenas da página visível. Filtros e contagens não podem revelar dados sem acesso. A inclusão de tarefas independentes/arquivadas nas contagens do painel deve ser explícita no contrato antes da implementação.
 
-Não foram aprovados valores mensuráveis de desempenho, disponibilidade ou requisitos específicos de acessibilidade. São pontos pendentes, não metas já cumpridas. O MVP sem login não fornece isolamento entre pessoas que acedam ao mesmo ambiente.
+### Interface, falhas e sessão
+
+Formulários com validação, carregamento, vazio, sucesso e erro. Preservar entradas quando uma submissão falha; evitar submissões repetidas durante pedido em curso. Atualizar listagens, filtros e contagens com resposta confirmada da API, sem recarregar a página nem duplicar registos. Remover mocks das funcionalidades concluídas.
+
+Sem sucesso antes da gravação; em falha conservar dados confirmados e permitir nova tentativa após corrigir a causa. Sessão inválida encaminha para início de sessão e apresenta mensagem compreensível. Sessão no servidor e cookie aprovados em COL-05; biblioteca, duração e detalhes de proteção continuam por definir.
+
+## Qualidade, verificação e entrega
+
+- Autorizar no backend todos os recursos, incluindo pedidos diretos com identificadores alterados.
+- Se houver palavras-passe locais, guardar apenas hashes com biblioteca adequada; nunca devolver hashes nos DTOs.
+- Preparar pelo menos dois utilizadores fictícios e projetos que permitam testar acessos distintos.
+- Inicialização reproduzível sem apagar dados em cada arranque.
+- Executar pelo menos três testes automatizados: validação, autorização e criação seguida de consulta à persistência; acrescentar regressão quando houver bug.
+- Registar esperado/observado/evidências e comandos em verification.md, distinguindo testes de verificações manuais e não executadas.
+- Configuração e arranque reproduzíveis noutro computador; segredos reais fora do repositório.
+- Entrega 19/11/2026 às 17h, hora de Lisboa, incluindo código, testes, dependências, esquema/migrations, seed, configuração de exemplo e documentação coerente.
 
 ## Fora do âmbito
 
-Colaboração e equipas; autenticação; eliminação de projetos; estados próprios dos projetos; objetivos, âmbito, datas e prioridades próprios de projeto; subtarefas; comentários; notificações; modelos; recorrência; estimativas. A sincronização entre computadores não é exigida.
+Organizações/equipas com gestão própria, convites, registo público, recuperação de palavra-passe, notificações, subtarefas, modelos, recorrência, estimativas e estados próprios de projeto. Colaboradores, autenticação, responsáveis, comentários e eliminação de projetos deixam de estar excluídos.
 
-## Cenário de sucesso aprovado
+## Fontes e estado
 
-> Consigo criar um projeto e tarefas associadas e independentes, consultar as tarefas nas três visualizações, alterar os seus estados, observar o progresso correto do projeto e voltar a abrir a aplicação sem perder os dados.
-
-A especificação verificável encontra-se em [user-stories.md](user-stories.md), com 14 histórias, 54 critérios e 13 casos excecionais. A aprovação da especificação não significa que a aplicação já passou nesses critérios.
-
-## Fontes e rastreabilidade
-
-- [Registo de interações e decisões](ai-logs/ficha-01.md): DEC-01–DEC-18 e aprovação dos exercícios 2 e 3.
-- [Backlog aprovado](user-stories.md): PV-01–PV-08 aprovadas, US-01–US-14 e critérios CA-US.
-- [Restrições e pendências](constraints.md).
+[Reconciliação](scope-reconciliation.md), [User Stories](user-stories.md), [restrições](constraints.md), [arquitetura](architecture.md) e [registo da ficha 3](ai-logs/ficha-03.md). A autorização de alterar o âmbito não prova implementação, aprovação de detalhes pendentes ou cumprimento de testes.

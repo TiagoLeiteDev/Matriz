@@ -1,46 +1,41 @@
-﻿# Matriz — User Stories e critérios de aceitação
+﻿# Matriz — User Stories do MVP colaborativo
 
-**Estado:** aprovado pelo utilizador em 18/11/2026, na sequência da proposta do Exercício 3.
-**Origem:** decisões DEC-01–DEC-18 e funcionalidades F01–F11 em `ai-logs/ficha-01.md`.
+**Versão:** 2.0, 18/11/2026. Âmbito colaborativo autorizado por COL-01. As histórias existentes foram adaptadas ao acesso autenticado, mantendo identificadores para rastreabilidade. Novas histórias correspondem à ficha 03. Detalhes pendentes estão em constraints.md.
 
-## Âmbito e prioridades
+## Precondições e regras transversais
 
-Utilização individual, sem login, com projetos e tarefas independentes ou associadas; lista, Kanban, calendário, progresso e conservação dos dados. Inclui edição, prazos e prioridades opcionais, associação de tarefas, arquivo/restauro, eliminação de tarefas, pesquisa e filtros.
+- Em todos os cenários de sucesso, existe sessão válida e autorização sobre o recurso. Sem sessão, negar; sem permissão, impedir acesso/leitura/escrita sem revelar dados alheios.
+- O proprietário gere projeto e colaboradores, arquivo/restauro e eliminação do projeto. Proprietário e colaboradores gerem tarefas, atribuições e comentários.
+- Tarefas independentes são privadas do criador, definido pelo backend. Participação num projeto não dá acesso às tarefas pessoais de outros utilizadores.
+- Arquivo impede alterações a tarefas/dependentes e exclui-os das vistas principais; restauro mantém filtros e prazo.
+- Estados: Por Fazer (inicial), Em Curso, Em Revisão, Concluída. Prioridades opcionais: Baixa, Média, Alta, Crítica. Prazos opcionais, incluindo passados.
+- Textos obrigatórios não podem ser só espaços. Progresso arredondado a uma casa decimal; sem tarefas 0% e Sem tarefas.
+- Campos omitidos, pesquisa/filtros e Sem projeto/Sem prioridade conservam as regras aprovadas. As consultas operam apenas no conjunto autorizado.
+- Conservar dados confirmados nas falhas, preservar entradas do formulário, não anunciar sucesso e impedir submissão repetida em curso.
+- Identidade, proprietário, criador, autor e data de comentário são inferidos no backend, não confiados ao cliente.
 
-P1 é o núcleo a implementar primeiro; P2 é complemento aprovado para a mesma entrega. Nenhuma prioridade autoriza retirar funcionalidades aprovadas.
+## Referências de regras preservadas
 
-Excluídos: colaboração, eliminação de projetos, estados próprios de projetos, objetivos/âmbito/datas/prioridades próprios dos projetos, subtarefas, comentários, notificações, modelos, recorrência e estimativas.
+As referências PV/DEC nos critérios existentes mantêm rastreabilidade ao histórico das fichas 1/2. Onde existe mudança, COL-01–06 e a política de acesso atual prevalecem.
 
-## Regras adicionais aprovadas com o backlog
-
-As propostas PV-01–PV-08 da resposta do Exercício 3 foram incluídas na aprovação global do utilizador. Mantêm-se os identificadores para rastreabilidade, agora com estado aprovado.
-
-| ID | Regra |
+| Regra | Conteúdo atual |
 |---|---|
-| PV-01 | Estado inicial Por Fazer quando não for escolhido outro estado. |
-| PV-02 | Nome ou título composto apenas por espaços é tratado como vazio e impede a gravação. |
-| PV-03 | Progresso apresentado com arredondamento a uma casa decimal. |
-| PV-04 | Pesquisa por parte do título, sem distinguir maiúsculas/minúsculas; pesquisa vazia não restringe resultados. |
-| PV-05 | Pesquisa e filtros combinados por interseção e aplicados a lista, Kanban e calendário. |
-| PV-06 | São permitidos prazos passados, sem acrescentar notificações. |
-| PV-07 | Consulta separada de projetos arquivados para restauro; durante o arquivo, impedir novas associações e alterações às suas tarefas. |
-| PV-08 | Filtro por projeto inclui a opção Sem projeto. |
-
-Os cenários referem operações guardadas com sucesso. Os limites de caracteres continuam por definir. O tratamento de falhas foi aprovado na revisão do Exercício 6: apresentar erro, não anunciar sucesso e conservar os últimos dados confirmados, permitindo nova tentativa após corrigir o problema.
-
-## Regras transversais aprovadas na revisão do Exercício 6
-
-- Critérios de alteração de tarefas aplicam-se a tarefas independentes ou de projetos não arquivados. Durante o arquivo, ficam impedidas edição, mudança de estado, eliminação, transferência e desassociação das tarefas, bem como novas associações ao projeto.
-- As vistas principais excluem tarefas de projetos arquivados. Referências a lista/Kanban/calendário pressupõem filtros compatíveis; o calendário pressupõe também o período que contém o prazo.
-- O restauro conserva os dados e repõe a elegibilidade para as vistas, respeitando os filtros e o período do calendário.
-- Em falha de gravação, mostrar mensagem explícita, não anunciar sucesso e conservar os últimos dados confirmados. Permitir nova tentativa após corrigir o problema, sem exigir recuperação automática.
-- O filtro de prioridade inclui Sem prioridade, combinável por interseção com a pesquisa e os restantes filtros.
+| PV-01 | Estado inicial Por Fazer quando não escolhido outro. |
+| PV-02 | Nome/título apenas com espaços é inválido. |
+| PV-03 | Progresso com uma casa decimal. |
+| PV-04 | Pesquisa por parte do título sem distinguir maiúsculas; vazio não restringe. |
+| PV-05 | Interseção de pesquisa/filtros nas três vistas, dentro do conjunto autorizado. |
+| PV-06 | Prazo passado permitido, sem notificações. |
+| PV-07 | Consulta separada de arquivo; bloquear alterações de tarefas/dependentes e novas associações; permissões atuais prevalecem. |
+| PV-08 | Filtro Sem projeto, limitado às tarefas pessoais do utilizador autenticado. |
 
 ## Backlog e critérios
 
+
+
 ### US-01 — Criar um projeto
 
-Como utilizador individual, quero criar um projeto, para organizar tarefas relacionadas com uma iniciativa.
+Como utilizador autenticado, quero criar um projeto, para organizar tarefas relacionadas com uma iniciativa.
 
 **Prioridade:** P1 — Base da organização por projeto.
 **Origem:** F01; DEC-07–09.
@@ -58,9 +53,17 @@ Como utilizador individual, quero criar um projeto, para organizar tarefas relac
 - **When:** tento guardar sem nome ou apenas com espaços.
 - **Then:** a criação é impedida e é indicado o campo obrigatório.
 
+**CA-US-01-03 — Projeto inicialmente não arquivado**
+
+- **Given:** estou a criar um projeto com nome válido.
+- **When:** guardo o projeto e a gravação é confirmada.
+- **Then:** o projeto é criado com arquivado=false e fica elegível para as consultas de projetos não arquivados.
+
+Critério acrescentado na revisão do Architecture Pack (P03) para verificar uma decisão já aprovada na preparação da API.
+
 ### US-02 — Consultar e editar projetos
 
-Como utilizador individual, quero consultar e editar os meus projetos, para manter a informação atualizada.
+Como utilizador autenticado, quero consultar e editar os meus projetos, para manter a informação atualizada.
 
 **Prioridade:** P1 — Consulta e manutenção do projeto.
 **Origem:** F01; DEC-08–09.
@@ -80,13 +83,13 @@ Como utilizador individual, quero consultar e editar os meus projetos, para mant
 
 **CA-US-02-03**
 
-- **Given:** existe um projeto guardado.
+- **Given:** existe um projeto do qual sou proprietário.
 - **When:** tento guardar nome vazio ou apenas com espaços.
 - **Then:** a alteração é rejeitada e o nome anterior mantém-se.
 
 ### US-03 — Criar tarefas
 
-Como utilizador individual, quero criar tarefas com ou sem projeto, para registar ações que preciso de realizar.
+Como utilizador autenticado, quero criar tarefas com ou sem projeto, para registar ações que preciso de realizar.
 
 **Prioridade:** P1 — Registo do trabalho.
 **Origem:** F02; DEC-07–10.
@@ -124,7 +127,7 @@ Como utilizador individual, quero criar tarefas com ou sem projeto, para regista
 
 ### US-04 — Consultar e editar tarefas
 
-Como utilizador individual, quero consultar e editar os dados das tarefas, para manter o planeamento atualizado.
+Como utilizador autenticado, quero consultar e editar os dados das tarefas, para manter o planeamento atualizado.
 
 **Prioridade:** P1 — Manutenção do trabalho.
 **Origem:** F02, F06; DEC-08, DEC-10.
@@ -162,7 +165,7 @@ Como utilizador individual, quero consultar e editar os dados das tarefas, para 
 
 ### US-05 — Alterar estados e reabrir tarefas
 
-Como utilizador individual, quero alterar o estado das tarefas, para acompanhar o trabalho e retomar tarefas concluídas.
+Como utilizador autenticado, quero alterar o estado das tarefas, para acompanhar o trabalho e retomar tarefas concluídas.
 
 **Prioridade:** P1 — Acompanhamento da execução.
 **Origem:** F03; DEC-03.
@@ -182,7 +185,7 @@ Como utilizador individual, quero alterar o estado das tarefas, para acompanhar 
 
 ### US-06 — Consultar tarefas em lista
 
-Como utilizador individual, quero consultar as tarefas em lista, para ter uma visão conjunta do trabalho.
+Como utilizador autenticado, quero consultar as tarefas em lista, para ter uma visão conjunta do trabalho.
 
 **Prioridade:** P1 — Consulta geral.
 **Origem:** F05; DEC-02, DEC-04.
@@ -202,7 +205,7 @@ Como utilizador individual, quero consultar as tarefas em lista, para ter uma vi
 
 ### US-07 — Consultar tarefas em Kanban
 
-Como utilizador individual, quero consultar tarefas agrupadas por estado num Kanban, para perceber a distribuição do trabalho.
+Como utilizador autenticado, quero consultar tarefas agrupadas por estado num Kanban, para perceber a distribuição do trabalho.
 
 **Prioridade:** P1 — Visualização obrigatória por estado.
 **Origem:** F05; DEC-02–04.
@@ -222,7 +225,7 @@ Como utilizador individual, quero consultar tarefas agrupadas por estado num Kan
 
 ### US-08 — Consultar tarefas em calendário
 
-Como utilizador individual, quero consultar tarefas pelos prazos num calendário, para planear o trabalho ao longo do tempo.
+Como utilizador autenticado, quero consultar tarefas pelos prazos num calendário, para planear o trabalho ao longo do tempo.
 
 **Prioridade:** P1 — Visualização obrigatória por prazo.
 **Origem:** F05, F06; DEC-04, DEC-10.
@@ -248,7 +251,7 @@ Como utilizador individual, quero consultar tarefas pelos prazos num calendário
 
 ### US-09 — Consultar progresso dos projetos
 
-Como utilizador individual, quero consultar a percentagem de conclusão de cada projeto, para acompanhar o progresso do trabalho associado.
+Como utilizador autenticado, quero consultar a percentagem de conclusão de cada projeto, para acompanhar o progresso do trabalho associado.
 
 **Prioridade:** P1 — Acompanhamento do resultado.
 **Origem:** F07; DEC-05.
@@ -284,9 +287,9 @@ Como utilizador individual, quero consultar a percentagem de conclusão de cada 
 - **When:** consulto o progresso.
 - **Then:** vejo 33,3%, segundo PV-03.
 
-### US-10 — Reorganizar a associação das tarefas
+### US-10 — Reorganizar a associação das tarefas autorizadas
 
-Como utilizador individual, quero associar, transferir ou desassociar tarefas de projetos, para reorganizar o trabalho sem recriar tarefas.
+Como utilizador autenticado, quero associar, transferir ou desassociar tarefas de projetos, para reorganizar o trabalho sem recriar tarefas.
 
 **Prioridade:** P1 — Reorganização do trabalho.
 **Origem:** F08; DEC-06.
@@ -308,11 +311,17 @@ Como utilizador individual, quero associar, transferir ou desassociar tarefas de
 
 - **Given:** uma tarefa pertence a um projeto.
 - **When:** retiro a associação e guardo.
-- **Then:** fica independente, conserva os dados e deixa de contar no projeto anterior.
+- **Then:** fica independente e privada do criador original, conserva os dados e deixa de contar no projeto anterior. Se não sou o criador, deixo de ter acesso por esta operação.
+
+**CA-US-10-04 — Remover atribuições inelegíveis**
+
+- **Given:** uma tarefa tem responsáveis que não têm acesso ao projeto de destino.
+- **When:** uma transferência autorizada é confirmada.
+- **Then:** as atribuições agora inelegíveis são removidas na mesma operação; as elegíveis mantêm-se, os comentários/autoria conservam-se e nenhuma alteração parcial é confirmada.
 
 ### US-11 — Retomar o trabalho sem perder dados
 
-Como utilizador individual, quero encontrar os dados guardados quando reabro a aplicação, para continuar o trabalho anterior.
+Como utilizador autenticado, quero encontrar os dados guardados quando reabro a aplicação, para continuar o trabalho anterior.
 
 **Prioridade:** P1 — Cenário de sucesso e utilização continuada.
 **Origem:** F04; DEC-02.
@@ -321,13 +330,13 @@ Como utilizador individual, quero encontrar os dados guardados quando reabro a a
 **CA-US-11-01**
 
 - **Given:** guardei projetos, tarefas, estados, prioridades, prazos e associações.
-- **When:** fecho e reabro no mesmo ambiente.
+- **When:** recarrego a interface ou reinicio o backend e volto a autenticar-me quando necessário.
 - **Then:** os dados continuam disponíveis com os mesmos valores.
 
 **CA-US-11-02**
 
 - **Given:** arquivei um projeto e confirmei eliminar uma tarefa.
-- **When:** fecho e reabro.
+- **When:** reinicio o backend e volto a autenticar-me quando necessário.
 - **Then:** o projeto continua arquivado com as suas tarefas e a tarefa eliminada não reaparece.
 
 **CA-US-11-03 — Falha de criação**
@@ -350,7 +359,7 @@ Como utilizador individual, quero encontrar os dados guardados quando reabro a a
 
 ### US-12 — Arquivar e restaurar projetos
 
-Como utilizador individual, quero arquivar e restaurar projetos, para retirar trabalho das vistas principais sem perder informação.
+Como utilizador autenticado, quero arquivar e restaurar projetos, para retirar trabalho das vistas principais sem perder informação.
 
 **Prioridade:** P2 — Organização de trabalho antigo.
 **Origem:** F09; DEC-12, DEC-14.
@@ -394,9 +403,9 @@ Como utilizador individual, quero arquivar e restaurar projetos, para retirar tr
 
 ### US-13 — Eliminar tarefas
 
-Como utilizador individual, quero eliminar tarefas que deixaram de ser necessárias, para manter o trabalho organizado.
+Como utilizador autenticado, quero eliminar tarefas que deixaram de ser necessárias, para manter o trabalho organizado.
 
-**Prioridade:** P2 — Remoção de registos desnecessários.
+**Prioridade:** P1 — Gestão de tarefas exigida na ficha 03.
 **Origem:** F10; DEC-13.
 **Dependências:** US-03.
 
@@ -420,9 +429,9 @@ Como utilizador individual, quero eliminar tarefas que deixaram de ser necessár
 
 ### US-14 — Pesquisar e filtrar tarefas
 
-Como utilizador individual, quero pesquisar tarefas pelo título e filtrá-las, para encontrar o trabalho relevante.
+Como utilizador autenticado, quero pesquisar tarefas pelo título e filtrá-las, para encontrar o trabalho relevante.
 
-**Prioridade:** P2 — Localização de trabalho.
+**Prioridade:** P1 — Filtros de tarefas exigidos na ficha 03.
 **Origem:** F11; DEC-15.
 **Dependências:** US-03 e visualizações correspondentes.
 
@@ -474,48 +483,304 @@ Como utilizador individual, quero pesquisar tarefas pelo título e filtrá-las, 
 - **When:** pesquiso apresentação e filtro por Sem projeto, Por Fazer e Sem prioridade.
 - **Then:** apenas A corresponde; aplicam-se também as regras de visibilidade e prazo de cada vista.
 
+### US-15 — Aceder e terminar sessão
+
+Como utilizador autenticado, quero iniciar sessão, consultar o meu perfil e terminar sessão, para utilizar a aplicação com a minha identidade.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F12; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-15-01**
+
+- **Given:** existe uma conta fictícia válida.
+- **When:** inicio sessão com credenciais válidas.
+- **Then:** obtenho sessão válida e o perfil sem palavra-passe ou hash.
+
+**CA-US-15-02**
+
+- **Given:** não existe sessão válida.
+- **When:** tento aceder a operação protegida ou uso credenciais inválidas.
+- **Then:** o backend nega o acesso e a interface apresenta mensagem de acesso necessária ou credenciais inválidas.
+
+**CA-US-15-03**
+
+- **Given:** tenho sessão válida.
+- **When:** termino sessão.
+- **Then:** a sessão deixa de autorizar novos pedidos e a interface regressa ao início de sessão.
+
+**CA-US-15-04**
+
+- **Given:** a sessão deixou de ser válida.
+- **When:** a interface recebe recusa de autenticação.
+- **Then:** apresenta mensagem compreensível e encaminha para início de sessão.
+
+### US-16 — Impedir acesso indevido
+
+Como utilizador autenticado, quero ter os meus recursos protegidos no backend, para evitar acesso por utilizadores sem permissão.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F13; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-16-01**
+
+- **Given:** A e B têm projetos privados distintos.
+- **When:** B altera identificadores em pedidos diretos para os recursos de A.
+- **Then:** não obtém projeto, tarefas, comentários ou atribuições de A nem consegue alterá-los.
+
+**CA-US-16-02**
+
+- **Given:** sou colaborador de um projeto.
+- **When:** tento editar/eliminar o projeto ou gerir colaboradores.
+- **Then:** a operação é negada; continuo autorizado a gerir tarefas conforme a política.
+
+**CA-US-16-03**
+
+- **Given:** A tem tarefa independente.
+- **When:** B tenta consultar, alterar ou atribuir responsáveis nessa tarefa.
+- **Then:** o acesso é negado e nenhum dado é alterado.
+
+**CA-US-16-04**
+
+- **Given:** um cliente envia proprietário/criador/autor de outra pessoa como identidade.
+- **When:** o pedido é processado.
+- **Then:** esses valores não conferem identidade ou permissão e não substituem a identidade autenticada.
+
+### US-17 — Gerir colaboradores e elegibilidade
+
+Como utilizador autenticado, quero gerir colaboradores de um projeto meu, para partilhar o trabalho com pessoas autorizadas.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F14; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-17-01**
+
+- **Given:** sou proprietário e existe outro utilizador.
+- **When:** adiciono-o como colaborador.
+- **Then:** passa a ter acesso ao projeto sem duplicar a mesma colaboração.
+
+**CA-US-17-02**
+
+- **Given:** sou proprietário de projeto com colaborador.
+- **When:** retiro a colaboração.
+- **Then:** o utilizador perde o acesso por essa relação e as atribuições que se tornam inelegíveis são removidas na mesma operação atómica, sem apagar comentários ou conta.
+
+**CA-US-17-03**
+
+- **Given:** tenho acesso a uma tarefa de projeto.
+- **When:** consulto utilizadores elegíveis.
+- **Then:** recebo proprietário e colaboradores atuais sem contas inelegíveis nem hashes.
+
+**CA-US-17-04**
+
+- **Given:** sou criador de tarefa independente.
+- **When:** consulto elegíveis.
+- **Then:** só o meu utilizador é elegível.
+
+### US-18 — Gerir responsáveis de tarefas
+
+Como utilizador autenticado, quero associar vários responsáveis elegíveis e remover atribuições, para repartir o trabalho entre colaboradores.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F15; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-18-01**
+
+- **Given:** tenho acesso a tarefa não arquivada e dois utilizadores elegíveis.
+- **When:** associo ambos.
+- **Then:** as duas atribuições ficam disponíveis após reabrir a tarefa e reiniciar o backend.
+
+**CA-US-18-02**
+
+- **Given:** já existe atribuição para um par tarefa/utilizador.
+- **When:** tento repetir a atribuição.
+- **Then:** não é criado registo duplicado.
+
+**CA-US-18-03**
+
+- **Given:** um utilizador não existe ou não é elegível.
+- **When:** tento atribuí-lo.
+- **Then:** o backend rejeita a atribuição e não concede acesso por esse pedido.
+
+**CA-US-18-04**
+
+- **Given:** existe atribuição e tenho acesso à tarefa não arquivada.
+- **When:** removo a atribuição.
+- **Then:** apenas essa associação é removida, sem eliminar conta ou tarefa.
+
+### US-19 — Adicionar e consultar comentários
+
+Como utilizador autenticado, quero comentar e consultar comentários de tarefas autorizadas, para partilhar informação sobre o trabalho.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F16; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-19-01**
+
+- **Given:** tenho acesso a tarefa não arquivada.
+- **When:** envio conteúdo não vazio.
+- **Then:** o comentário fica guardado com o meu utilizador e instante definidos no backend.
+
+**CA-US-19-02**
+
+- **Given:** tenho acesso à tarefa.
+- **When:** reabro a tarefa após reiniciar o backend.
+- **Then:** vejo conteúdo, autor e data dos comentários guardados.
+
+**CA-US-19-03**
+
+- **Given:** estou a comentar.
+- **When:** envio conteúdo vazio ou só espaços.
+- **Then:** o comentário é rejeitado e o formulário conserva os dados introduzidos.
+
+**CA-US-19-04**
+
+- **Given:** o projeto está arquivado ou não tenho acesso.
+- **When:** tento adicionar comentário.
+- **Then:** a operação é impedida.
+
+### US-20 — Eliminar projeto e dependentes
+
+Como utilizador autenticado, quero eliminar um projeto meu com confirmação explícita, para remover definitivamente os dados desse projeto.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F17; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-20-01**
+
+- **Given:** sou proprietário de projeto com tarefas, comentários e atribuições.
+- **When:** peço para eliminar.
+- **Then:** a interface avisa que projeto e dependentes serão removidos e pede confirmação.
+
+**CA-US-20-02**
+
+- **Given:** está aberta a confirmação.
+- **When:** cancelo.
+- **Then:** não há pedido de eliminação nem alteração de dados.
+
+**CA-US-20-03**
+
+- **Given:** sou proprietário e confirmo eliminação.
+- **When:** a operação é concluída.
+- **Then:** projeto, tarefas, comentários, atribuições e colaborações do projeto são removidos sem apagar contas de utilizador ou outros projetos.
+
+**CA-US-20-04**
+
+- **Given:** a gravação da eliminação falha.
+- **When:** a operação termina com erro.
+- **Then:** nenhuma eliminação parcial fica confirmada e a interface não anuncia sucesso.
+
+### US-21 — Pesquisar projetos acessíveis
+
+Como utilizador autenticado, quero pesquisar projetos pelo nome, para encontrar os projetos em que trabalho.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F18; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-21-01**
+
+- **Given:** existem projetos meus, partilhados comigo e sem acesso.
+- **When:** pesquiso pelo nome.
+- **Then:** só recebo correspondências entre os projetos acessíveis e conforme estado de arquivo da consulta.
+
+**CA-US-21-02**
+
+- **Given:** não há correspondência acessível.
+- **When:** pesquiso.
+- **Then:** vejo ausência de resultados sem dados de projetos alheios.
+
+**CA-US-21-03**
+
+- **Given:** a pesquisa de projetos está preenchida.
+- **When:** limpo o campo.
+- **Then:** deixa de restringir por nome e mantêm-se as regras de acesso.
+
+**CA-US-21-04**
+
+- **Given:** um projeto era partilhado comigo e o proprietário retirou a colaboração.
+- **When:** volto a pesquisar pelo nome desse projeto.
+- **Then:** esse projeto deixa de aparecer nos meus resultados.
+
+### US-22 — Consultar painel inicial
+
+Como utilizador autenticado, quero ver os meus projetos acessíveis e contagens por estado, para acompanhar o trabalho e navegar para o detalhe.
+
+**Prioridade:** P1 — Âmbito integral da ficha 03.
+**Origem:** F19; COL-01.
+**Dependências:** autenticação e política de acesso; consultar implementation-plan.md.
+
+**CA-US-22-01**
+
+- **Given:** tenho sessão válida.
+- **When:** abro o painel.
+- **Then:** vejo o utilizador autenticado, projetos acessíveis e contagens identificadas por estado.
+
+**CA-US-22-02**
+
+- **Given:** há mais tarefas do que as linhas apresentadas.
+- **When:** consulto contagens.
+- **Then:** refletem o conjunto autorizado relevante e não apenas a página visível.
+
+**CA-US-22-03**
+
+- **Given:** crio, edito ou elimino tarefa com sucesso.
+- **When:** regresso ao painel ou atualizo o conjunto apresentado.
+- **Then:** listagens e contagens refletem dados confirmados sem exigir recarregar a página.
+
+**CA-US-22-04**
+
+- **Given:** outro utilizador tem dados sem acesso para mim.
+- **When:** consulto projetos, contagens e navegação.
+- **Then:** esses dados não contribuem para os resultados apresentados.
+
 ## Casos excecionais
 
-| ID | Situação | Critério |
+| ID | Situação | Referências |
 |---|---|---|
-| CE-01 | Projeto sem nome ou só espaços: rejeitar. | CA-US-01-02 |
-| CE-02 | Tarefa sem título ou só espaços: rejeitar. | CA-US-03-03 |
-| CE-03 | Projeto sem tarefas: 0% e Sem tarefas. | CA-US-09-02 |
-| CE-04 | Tarefa sem prazo: fora do calendário, presente em lista/Kanban. | CA-US-08-02 |
-| CE-05 | Reabrir tarefa: recalcular progresso. | CA-US-05-02 |
-| CE-06 | Transferir tarefa concluída: recalcular ambos os projetos. | CA-US-10-02 |
-| CE-07 | Cancelar eliminação: conservar dados. | CA-US-13-02 |
-| CE-08 | Arquivar/restaurar: conservar dados e repor visibilidade. | CA-US-12-01/02/03 |
-| CE-09 | Pesquisa sem correspondência: zero resultados sem alterar dados. | CA-US-14-03 |
-| CE-10 | Eliminar única tarefa não concluída: projeto sem tarefas. | CA-US-13-03 e CA-US-09-02 |
-| CE-11 | Falha de criação, edição ou eliminação: erro e conservação dos dados confirmados. | CA-US-11-03/04/05 |
-| CE-12 | Tentativa de alterar ou eliminar tarefa arquivada: impedir. | CA-US-12-06 |
-| CE-13 | Tarefa sem prioridade: incluir apenas no filtro correspondente, com interseção. | CA-US-14-08 |
+| CE-01 | Nome/título obrigatório ausente ou só espaços. | CA-US-01-02; CA-US-03-03 |
+| CE-02 | Projeto sem tarefas: 0% e Sem tarefas. | CA-US-09-02 |
+| CE-03 | Tarefa sem prazo: fora do calendário. | CA-US-08-02 |
+| CE-04 | Reabertura e transferência recalculam progresso. | CA-US-05-02; CA-US-10-02 |
+| CE-05 | Cancelar eliminação não altera dados. | CA-US-13-02; CA-US-20-02 |
+| CE-06 | Arquivo impede alteração de tarefas/dependentes. | CA-US-12-05/06; CA-US-19-04 |
+| CE-07 | Falha de gravação conserva dados confirmados. | CA-US-11-03/04/05; CA-US-20-04 |
+| CE-08 | Pesquisa sem resultados e valores opcionais. | CA-US-14-03/08; CA-US-21-02 |
+| CE-09 | Credenciais inválidas ou sessão expirada. | CA-US-15-02/04 |
+| CE-10 | Alterar identificadores não permite acesso alheio. | CA-US-16-01/03 |
+| CE-11 | Atribuição duplicada ou inelegível. | CA-US-18-02/03 |
+| CE-12 | Comentário vazio ou apenas espaços. | CA-US-19-03 |
+| CE-13 | Eliminar projeto não elimina contas/outros projetos. | CA-US-20-03 |
 
 ## Matriz de cobertura
 
-| Funcionalidade | Histórias | Critérios |
-|---|---|---|
-| F01 | US-01, US-02 | CA-US-01-01/02; CA-US-02-01/02/03 |
-| F02 | US-03, US-04 | CA-US-03-01/02/03/04/05; CA-US-04-01/04 |
-| F03 | US-05 | CA-US-05-01/02 |
-| F04 | US-11 | CA-US-11-01/02/03/04/05 |
-| F05 | US-06, US-07, US-08 | CA-US-06-01/02; CA-US-07-01/02; CA-US-08-01/02/03 |
-| F06 | US-03, US-04 | CA-US-03-04; CA-US-04-02/03/05 |
-| F07 | US-09 | CA-US-09-01/02/03/04/05 |
-| F08 | US-10 | CA-US-10-01/02/03 |
-| F09 | US-12 | CA-US-12-01/02/03/04/05/06 |
-| F10 | US-13 | CA-US-13-01/02/03 |
-| F11 | US-14 | CA-US-14-01/02/03/04/05/06/07/08 |
+| Funcionalidade | Histórias |
+|---|---|
+| F01 | US-01, US-02 |
+| F02 | US-03, US-04 |
+| F03 | US-05 |
+| F04 | US-11 |
+| F05 | US-06, US-07, US-08 |
+| F06 | US-03, US-04 |
+| F07 | US-09 |
+| F08 | US-10 |
+| F09 | US-12 |
+| F10 | US-13 |
+| F11 | US-14 |
+| F12 | US-15 |
+| F13 | US-16 |
+| F14 | US-17 |
+| F15 | US-18 |
+| F16 | US-19 |
+| F17 | US-20 |
+| F18 | US-21 |
+| F19 | US-22 |
 
-## Cenário de sucesso e revisão
+## Estado dos cenários
 
-Criar projeto → criar tarefas associadas e independentes → consultar lista/Kanban/calendário → alterar estados → consultar progresso → fechar e reabrir sem perder dados.
-
-Cobertura: US-01 → US-03 → US-06/07/08 → US-05 → US-09 → US-11.
-
-Todas as funcionalidades aprovadas têm cobertura. Os efeitos entre histórias são intencionais: edição de prazo altera calendário; estados, transferência e eliminação alteram progresso. Não se exige arrastar cartões, ordem inicial da lista ou um formato específico do calendário.
-
-## Entrega separada do backlog funcional
-
-Prazo: 19/11/2026 às 17h, hora de Lisboa. Verificar execução noutro computador, configuração reproduzível, README, dependências, repositório GitHub acessível ao formador, submissão do URL, ausência de segredos e demonstração preparada de 1–2 fluxos em até cinco minutos. Preparar explicação de tecnologias, metodologia, utilização e validação da IA e um desafio com solução e aprendizagem. Estas obrigações não acrescentam funcionalidades ao produto.
+São especificações, não resultados de testes. Biblioteca/duração de sessão e âmbito exato das contagens devem estar fechados antes de implementar os cenários dependentes. Mantêm-se limites de texto e detalhes de pesquisa por decidir. A base individual anterior foi preservada em history/mvp-individual-v1; não constitui especificação ativa.

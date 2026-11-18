@@ -733,3 +733,7 @@ A base está coerente quanto ao âmbito. A principal correção é tornar explí
 requirements.md, user-stories.md, constraints.md e README.md atualizados de forma consistente. O backlog mantém 14 histórias e passa a 54 critérios e 13 casos excecionais. Não foram executados testes da aplicação; trata-se de revisão documental. O registo num commit Git continua por realizar.
 
 **Estado:** revisão do Exercício 6 concluída com decisão humana e correções aplicadas. Segue-se a ficha 2, Architecture Pack.
+
+## Mudança posterior de âmbito — COL-01, 18/11/2026
+
+O utilizador autorizou alinhar o projeto com o colaborativo integral da ficha 03. As decisões históricas individuais foram substituídas onde indicado em [scope-reconciliation.md](../scope-reconciliation.md); consultar o [registo da ficha 3](ficha-03.md) e os documentos ativos. As aprovações anteriores permanecem como evidência da evolução, não como impedimento à mudança agora autorizada.

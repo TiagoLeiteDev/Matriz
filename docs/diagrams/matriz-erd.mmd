@@ -1,0 +1,49 @@
+erDiagram
+    UTILIZADOR ||..o{ PROJETO : possui
+    UTILIZADOR ||..o{ TAREFA : cria
+    PROJETO o|..o{ TAREFA : agrupa
+    PROJETO ||--o{ COLABORACAO_PROJETO : concede
+    UTILIZADOR ||--o{ COLABORACAO_PROJETO : participa
+    TAREFA ||--o{ ATRIBUICAO_TAREFA : recebe
+    UTILIZADOR ||--o{ ATRIBUICAO_TAREFA : assume
+    TAREFA ||..o{ COMENTARIO : tem
+    UTILIZADOR ||..o{ COMENTARIO : escreve
+
+    UTILIZADOR {
+        identificador id PK
+        texto nome
+        texto email UK
+        texto password_hash
+    }
+    PROJETO {
+        identificador id PK
+        texto nome
+        texto descricao "Opcional"
+        booleano arquivado
+        identificador proprietario_id FK
+    }
+    TAREFA {
+        identificador id PK
+        texto titulo
+        texto descricao "Opcional"
+        estado_tarefa estado
+        prioridade_tarefa prioridade "Opcional"
+        data prazo "Opcional"
+        identificador projeto_id FK "Opcional"
+        identificador criador_id FK
+    }
+    COLABORACAO_PROJETO {
+        identificador projeto_id PK,FK
+        identificador utilizador_id PK,FK
+    }
+    ATRIBUICAO_TAREFA {
+        identificador tarefa_id PK,FK
+        identificador utilizador_id PK,FK
+    }
+    COMENTARIO {
+        identificador id PK
+        texto conteudo
+        identificador tarefa_id FK
+        identificador autor_id FK
+        instante criado_em
+    }

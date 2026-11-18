@@ -1,79 +1,64 @@
-﻿# Matriz — Restrições, pressupostos e decisões pendentes
+﻿# Matriz — Restrições e decisões do MVP colaborativo
 
-**Data:** 18/11/2026. Consolidação da base aprovada; novas propostas são identificadas explicitamente.
+**Versão:** 2.0, 18/11/2026. A base individual foi substituída por COL-01. Consultar scope-reconciliation.md para o histórico.
 
-## Restrições confirmadas
+## Decisões confirmadas
 
-| ID | Restrição |
+| ID | Decisão |
 |---|---|
-| RC-01 | Entrega final em 19/11/2026 às 17h, hora de Lisboa. Este prazo substitui a referência inicial genérica a 24 horas. |
-| RC-02 | Prazo inclui implementação, verificações, documentação, configuração reproduzível, GitHub e preparação da apresentação. |
-| RC-03 | Entregar aplicação funcional com o âmbito de [requirements.md](requirements.md); não apenas protótipo. |
-| RC-04 | Uso individual sem registo ou login; colaboração e funcionalidades adiadas permanecem fora do MVP. |
-| RC-05 | Lista, Kanban e calendário são obrigatórios. Prioridades de implementação não autorizam exclusões. |
-| RC-06 | Funcionar noutro computador sem exigir sincronização dos mesmos dados. |
-| RC-07 | A ficha 1 produz especificação; a ficha 2 produz arquitetura. As escolhas técnicas não foram aprovadas nesta fase. |
+| COL-01 | Cumprir o âmbito colaborativo integral da ficha 03. |
+| COL-02 | Proprietário gere projeto e colaboradores; proprietário/colaboradores gerem tarefas, responsáveis elegíveis e comentários. |
+| COL-03 | Eliminação de projeto/dependentes em cascata, com confirmação explícita e sem apagar contas. |
+| COL-04 | Manter tarefas independentes, privadas do criador. |
+| COL-05 | Autenticação por sessão no servidor e cookie. Spring Security aprovado em TEC-01; detalhes temporais/configuração por concretizar. |
+| COL-06 | Remover atribuições que se tornem inelegíveis na mesma operação que remove acesso ou transfere/desassocia tarefa. |
+| ARQ-01 | Manter monólito modular, acrescentando identidade/acesso às responsabilidades existentes. |
+| TEC-01 | Java 21/Spring Boot/Maven/Spring Security, PostgreSQL/JPA/Flyway, React/TypeScript/Vite/CSS, JUnit/MockMvc/Testcontainers/Playwright/ESLint, Docker/Compose/GitHub Actions. |
 
-## Pressupostos e distinção de estados
+O pedido geral autorizou a mudança de âmbito. COL-02–04 e COL-05–06 foram confirmadas em respostas específicas. Os detalhes de contrato/layout são propostas documentais de implementação, não implementação concluída.
 
-- A utilização num computador de confiança é uma condição de utilização aprovada, não uma garantia técnica de proteção dos dados.
-- A execução noutro computador não significa que os dados tenham de ser transferidos, sincronizados ou acedidos remotamente.
-- As regras originalmente identificadas como PV-01–PV-08 foram aprovadas globalmente com o backlog; deixaram de ser pressupostos pendentes.
-- As sugestões tecnológicas da Parte A não foram aprovadas e não determinam a stack.
-- A mudança do enunciado colaborativo para MVP individual foi aprovada pelo utilizador. Não existe evidência de aceitação pelo formador.
-- Não há novos pressupostos adotados por esta consolidação. Questões não resolvidas mantêm-se abaixo como pendências.
+## Restrições de entrega
 
-## Segurança e privacidade
+- Entrega em 19/11/2026 às 17h, hora de Lisboa, incluindo desenvolvimento, testes, configuração, documentação e apresentação. Não foi autorizado alterar o prazo.
+- Frontend e backend reais, persistência após recarregar/reiniciar; sem mocks nas funcionalidades concluídas.
+- Contas de demonstração e pelo menos dois utilizadores/projetos para verificar acessos distintos. Seed repetível sem apagar dados em cada arranque.
+- Contratos completos necessários aos fluxos; a regra de apenas duas operações dizia respeito ao exercício da ficha 2, não ao desenvolvimento integral da ficha 3.
+- Plano em implementation-plan.md e evidência esperado/observado em verification.md.
+- Pelo menos três testes automatizados: validação, autorização, criação com consulta à persistência. Regressão para bugs corrigidos.
+- README e AGENTS atualizados com comandos reais quando existirem; execução a partir de cópia limpa, GitHub acessível ao formador e demonstração de até cinco minutos.
 
-### Confirmado
+## Segurança
 
-- Não incluir palavras-passe, tokens, chaves de API, ficheiros `.env` reais nem dados pessoais desnecessários no repositório.
-- Usar configuração de exemplo sem valores sensíveis quando aplicável.
-- Garantir que o formador tem acesso ao repositório; se privado, conceder as permissões necessárias.
-- Sem autenticação, quem aceder à aplicação no mesmo ambiente poderá consultar os dados. Não prometer contas privadas ou isolamento entre utilizadores.
-- A eliminação de tarefas requer confirmação e aviso de que é definitiva.
+- Identidade derivada da sessão; proprietário, criador, autor e data de comentário definidos no backend.
+- Autorizar recursos concretos em todos os pontos de entrada, incluindo pedidos diretos com IDs alterados. Login não substitui autorização.
+- Palavras-passe locais apenas em hash com biblioteca apropriada; não inventar algoritmo de autenticação/criptografia.
+- Cookie de sessão HttpOnly, política SameSite e Secure em HTTPS, invalidação no logout e proteção CSRF devem ser concretizados com a biblioteca escolhida. As convenções do contrato são proposta de desenho técnico.
+- Não devolver hashes, credenciais ou detalhes internos. Segredos reais fora do repositório e configuração de exemplo fictícia.
+- O uso de sessão/cookie exige proteção contra CSRF e configuração coerente de origem/CORS; não usar SameSite como única garantia universal.
+- Exposição pública não aprovada. Não confundir execução noutro computador com publicação em rede.
 
-### Por definir
+Referências técnicas consultadas para sessão e CSRF: https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html e https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html . Não substituem as decisões funcionais do projeto.
 
-Proteção dos dados guardados, política de cópias de segurança e recuperação, ambiente de execução e eventual exposição em rede. A ausência de sincronização obrigatória não resolve estas escolhas. Não está aprovado alojamento público.
+## Pendências reais
 
-## Decisões técnicas pendentes
-
-| ID | Questão | Fase e impacto |
+| ID | Tema | Estado |
 |---|---|---|
-| DT-01 | Linguagem, framework e organização da aplicação. | Arquitetura; fundamentar escolha em prazo e requisitos. |
-| DT-02 | Mecanismo de persistência. | Arquitetura; cumprir conservação dos dados sem impor tecnologia antecipadamente. |
-| DT-03 | Forma de instalação e arranque noutro computador. | Arquitetura/entrega; permitir execução reproduzível. |
-| DT-04 | Modelo de dados e contratos de comunicação, quando aplicáveis. | Ficha 2; respeitar tarefas independentes, arquivo e regras aprovadas. |
-| DT-05 | Ambiente de execução e distribuição. | Entrega; distinguir execução local de eventual alojamento. |
+| DT-01 | Linguagem/frameworks e stack. | Resolvido em TEC-01. Versões exatas serão fixadas no incremento 1. |
+| DT-02 | Persistência, tipos físicos, migrations, sessão e seed. | PostgreSQL/JPA/Flyway e Spring Security aprovados; tipos físicos, esquema/seed e configuração de sessão por concretizar no código. |
+| DT-03 | Instalação, arranque, ambiente de execução e distribuição. | Estratégia aprovada: desenvolvimento local e entrega Compose com aplicação (React compilado no Spring Boot) + PostgreSQL; comandos/configuração ainda não implementados ou testados. |
+| DT-04 | Contrato API colaborativo. | 24 operações documentadas e validadas. Base de planeamento concluída; rever convenções pendentes antes do incremento dependente e manter contrato alinhado com a implementação. |
+| PD-01 | Limites de texto. | Não definidos; limites dos exemplos da aula não são automaticamente requisitos deste projeto. |
+| PD-02 | Falhas de gravação. | Regra aprovada: erro explícito, conservar dados confirmados e formulário; atomicidade e solução concreta ainda por implementar. |
+| PD-03 | Desempenho, acessibilidade e larguras-alvo. | Interface adaptável pedida na ficha; testes/metas ainda por definir. |
+| PD-04 | Correspondência de pesquisa/acentos. | Tarefas ignoram maiúsculas; acentos e detalhe da pesquisa de projetos por definir. |
+| PD-05 | Ordem inicial e navegação do calendário. | Desenho ainda por detalhar. |
+| PD-06 | Âmbito exato das contagens do painel. | Incluir só conjunto autorizado; definir explicitamente tarefas independentes/arquivadas antes de implementar. |
+| PD-07 | Expiração/duração de sessão e pormenores cookie/CSRF. | Convenções de contrato propostas; política temporal/configuração pendentes; Spring Security escolhido. |
 
-## Detalhes funcionais e de qualidade ainda pendentes
+A antiga pendência de aceitação do âmbito individual deixou de ser aplicável: o utilizador decidiu alinhar com o colaborativo. Isto não afirma revisão pelo formador dos detalhes da política.
 
-| ID | Ponto | Estado |
-|---|---|---|
-| PD-01 | Limites de caracteres dos campos. | Não definidos; não introduzir limites arbitrários como requisitos aprovados. |
-| PD-02 | Tratamento de falhas de gravação. | Resolvido em REV-02: erro explícito, sem anúncio de sucesso, conservação dos dados confirmados e nova tentativa após corrigir a causa. Recuperação automática não é exigida. |
-| PD-03 | Metas de desempenho, disponibilidade e acessibilidade. | Não foram aprovadas métricas nem ambiente-alvo detalhado. |
-| PD-04 | Correspondência de acentos na pesquisa. | Só está aprovado ignorar maiúsculas/minúsculas. |
-| PD-05 | Ordenação inicial, navegação do calendário e gestos de interface. | A definir no desenho; não são funcionalidades obrigatórias adicionais. |
-| PD-06 | Aceitação pelo formador do âmbito individual. | Sem evidência de confirmação externa. |
+## Fora do âmbito
 
-Estas pendências não reabrem decisões aprovadas. Devem ser resolvidas na fase adequada e identificadas como propostas quando alterem o comportamento esperado.
+Gestão global de organizações/equipas, convites, registo público, recuperação de palavra-passe, notificações, subtarefas, recorrência, modelos, estimativas e estados próprios de projeto. As tarefas pessoais e calendário/Kanban não são retirados.
 
-## Entrega final e apresentação
-
-Fonte: `17 - Apresentações Finais.pdf`, na pasta de materiais do curso.
-
-- Submeter URL do repositório GitHub da versão final no espaço disponibilizado pelo formador.
-- Incluir código-fonte, configuração e dependências, README com funcionalidades implementadas, tecnologias e instruções de instalação/execução.
-- Documentar pré-requisitos e comandos e incluir `.env.example` sem segredos quando aplicável.
-- Repositório acessível ao formador; ZIP e capturas não substituem o URL.
-- Preparar aplicação aberta e dados de teste; evitar instalações durante a apresentação.
-- Apresentação até cinco minutos com 1–2 fluxos principais, objetivo, funcionalidades, tecnologias, decisões, metodologia, utilização/validação da IA e desafio/solução/aprendizagem.
-- Ensaiar a demonstração. Diapositivos são opcionais.
-
-## Referências
-
-- [Requisitos](requirements.md)
-- [User Stories e critérios](user-stories.md)
-- [Decisões e evidências](ai-logs/ficha-01.md)
+[Requisitos](requirements.md) · [Modelo](database.md) · [Plano](implementation-plan.md) · [Log](ai-logs/ficha-03.md)
