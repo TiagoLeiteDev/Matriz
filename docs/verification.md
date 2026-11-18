@@ -1,3 +1,97 @@
+# Matriz — Verificação consolidada do MVP
+
+**Data:** 18/11/2026. **Exercício:** ficha 03, exercício 8. **Base:** commit `71dbf47` (exercício 7 publicado). **Rastreabilidade:** [issue #9](https://github.com/TiagoLeiteDev/Matriz/issues/9). **Estado:** nove cenários aprovados por verificações automatizadas, incluindo reinício/expiração; BUG-08-01 corrigido com regressão. Registo Git autorizado; confirmação de publicação na issue #9.
+
+## Implementação analisada e aplicabilidade
+
+Monólito modular Java 21/Spring Boot/Spring Security/Maven, PostgreSQL/JPA/Flyway, React/TypeScript/Vite/CSS e Docker Compose. Nove classes de testes backend (75 testes), cinco ficheiros Playwright existentes e três testes novos em mvp-verification.spec.ts. Consultados AGENTS, requisitos/histórias, restrições, plano, README e implementação real; contrato ativo OpenAPI 0.7.0 com 24 operações.
+
+**Os nove cenários são aplicáveis e têm funcionalidades implementadas.** Não se confundem contagens documentais, testes executados e entrega concluída. Neste conjunto não há cenário funcional classificado como Não aplicável ou Não implementado. Registo público, recuperação de palavra-passe, edição/eliminação individual de comentários e exposição pública não fazem parte do MVP aprovado. CI/entrega e ensaios mais amplos não são dados como concluídos por estes resultados.
+
+Regras usadas: COL-02/04/06/07, SEG-01 (60 minutos de inatividade; reinício/logout invalidam sessão), TAR-01 (três estados/prioridades, null opcional), PESQ-01/02, COM-01 (1–2000 pontos de código Unicode) e PAINEL-01 (pessoais + projetos ativos acessíveis, excluir arquivados). Sem máximos de título/descrição copiados dos exemplos pedagógicos.
+
+## Matriz dos nove cenários — esperado e observado
+
+As linhas seguintes são verificações **automatizadas**, por MockMvc/PostgreSQL real descartável e/ou Playwright sobre a aplicação real. Os passos usam fixtures fictícias próprias; não executar alterações destrutivas nos dados do seed.
+
+| Caso / objetivo e reprodução | Resultado esperado | Resultado observado / evidência | Estado |
+|---|---|---|---|
+| 01 — Acesso. Entrar com Ana; tentar palavra-passe errada/conta ausente; pedir recurso sem sessão; terminar sessão; aguardar expiração na instância isolada. | Login válido 200/perfil seguro; credenciais erradas e sem sessão 401; CSRF/origem inválida 403; sessão revogada perde acesso; UI regressa ao login. | SecurityTest 12 passou; auth.spec.ts passou nos cenários normais e no teste separado de 65 s sem pedidos numa instância de 1 minuto. Política real de 60 minutos verificada pelo teste de servlet. | Aprovado |
+| 02 — Projetos. Criar projeto, pesquisar por parte do nome sem acentos/maiúsculas, editar/reabrir e cancelar/confirmar eliminação; tentar gestão por colaborador/outro utilizador. | Dados persistem; só proprietário gere; pesquisa só no conjunto autorizado; cancelamento não envia DELETE e confirmação remove o projeto/dependentes. | ProjectCrudTest 12 e projects.spec.ts normais passaram. Projeto criado/editado na UI também consultado noutra sessão em mvp-verification.spec.ts. | Aprovado |
+| 03 — Persistência de tarefas. Criar tarefa pela interface, consultar sem reload; reabrir/recarregar; reiniciar app e voltar a autenticar; consultar os mesmos campos. | Tarefa/estado/prioridade/prazo persistem em PostgreSQL; UI apresenta gravação confirmada; sessão anterior inválida após restart. | Criação/reload/nova sessão passaram; teste separado de reinício de tarefas passou, conservando IN_PROGRESS/HIGH/prazo após novo login. | Aprovado |
+| 04 — Validação. Enviar título vazio, só espaços Unicode, null/tipo inválido, estados/prioridades anteriores, data impossível, UUID inválido e campos de identidade; comparar registo antes/depois. | 422 para validação, 400 para campos proibidos; nenhum dado confirmado alterado ou dependente criado; UI conserva entradas na falha. | Novo teste “pedidos inválidos não alteram dados...” passou: task DTO inalterado após cada PATCH inválido, comentários/atribuições vazios. TaskCrudTest, CommentTest e testes de formulários passaram. | Aprovado |
+| 05 — Estado/prioridade. Editar estado/prioridade/prazo; filtrar por projeto/estado/prioridade; alternar lista/Kanban/calendário e voltar ao painel. | Mesmos dados autorizados; transições livres e progresso atualizado; painel usa PAINEL-01, não filtros da lista; prazos mudam de dia/mês. | TaskCrudTest cobre as nove transições; tasks.spec.ts/frontend-integration.spec.ts passaram, incluindo HIGH, mudança para DONE, calendário e contagens. | Aprovado |
+| 06 — Responsáveis. Associar dois elegíveis; repetir par, inclusive concorrentemente; remover um; tentar inexistente/inelegível/pessoal alheia. | Par único, duplicado 409, inexistente 404, inelegível/acesso 403; só a atribuição selecionada é removida; contas/tarefa conservadas. | AssignmentTest 8 passou, incluindo concorrência 201/409 e uma só linha. collaboration.spec.ts confirmou múltiplos, remoção individual e reload; novo teste confirmou limpeza após revogação. | Aprovado |
+| 07 — Comentários. Enviar conteúdo válido/inválido e autor/data forjados; reabrir/nova sessão; reiniciar e voltar a consultar. | Conteúdo, autor da sessão e instante do servidor persistem; limite COM-01 e ordem criadoEm/id; arquivo/sem acesso bloqueiam escrita. | CommentTest 8 e cenários normais passaram; novo teste confirmou conteúdo/autor/data noutra sessão. Teste separado conservou comentário e dois responsáveis após reinício/novo login. | Aprovado |
+| 08 — Autorização por IDs. Bruno usa IDs de projeto/tarefa/pessoal privados da Ana para GET e dez escritas; depois recebe acesso e perde-o sem novo login. | Pedidos diretos recusados 403; listas não revelam recursos privados; revogação tem efeito na sessão atual; limpar atribuições e preservar autoria. | Novo teste com sete leituras e dez escritas alheias passou; concessão 201, consulta 200, remoção 204 e nova consulta/escrita 403. Comentário mantém autor; responsáveis ficam vazios. SecurityTest e restantes testes de recursos passaram. | Aprovado |
+| 09 — Eliminação/erros. Cancelar/confirmar DELETE; provocar falha de cascata/limpeza em BD descartável; abortar comunicação de formulários. | Cascata atómica sem órfãos ou contas apagadas; rollback em falha; erro genérico sem SQL; sem falso sucesso, perda de entradas ou repetição automática. | ProjectCrudTest/TaskCrudTest/ProjectCollaborationTest/CommentTest passaram com falhas reais induzidas; testes UI de projetos/tarefas/responsáveis/comentários conservaram entradas e só reenviaram por ação explícita. | Aprovado |
+
+Fontes dos testes: [backend](../backend/src/test/java/pt/matriz), [Playwright](../e2e/tests), [três novos testes](../e2e/tests/mvp-verification.spec.ts). Evidência técnica local: backend/target/surefire-reports (JUnit XML/texto); e2e/playwright-report (suite normal); e2e/test-results e tmp/e2e-* (execuções separadas). Relatórios gerados não são versionados; este resumo e o teste de regressão ficam no repositório.
+
+## Comandos e resultados reais desta execução
+
+PowerShell na raiz do repositório; Docker Desktop Linux disponível, app principal em 8080 e PostgreSQL com volume conservado. Usadas as contas fictícias do seed e a DEMO_PASSWORD local, sem a imprimir ou guardar nos relatórios.
+
+| Comando | Observado |
+|---|---|
+| `./backend/mvnw.cmd -f backend/pom.xml verify` | 75 testes, 0 falhas/erros/ignorados. Backend/migrations não alterados pela correção de UI posterior; não repetir esta execução como se tivesse ocorrido após uma alteração de backend. |
+| `npm.cmd --prefix frontend run lint` e `npm.cmd --prefix frontend run build` | Código 0, também após a correção final. |
+| `docker compose build app seed` e `docker compose up -d app --wait` | Imagem com a correção integrada; app/db saudáveis. Seed não executado. |
+| `. ./scripts/Load-LocalEnv.ps1`; `PLAYWRIGHT_CHANNEL=chrome`; `npm.cmd --prefix e2e test` | Primeira execução: 23 passaram, 1 falhou e 4 especiais ignorados; BUG-08-01 identificado. Repetição após correção: **24 passaram**, 0 falhas, 4 especiais ignorados. |
+| Três percursos separados com `--grep restart` | **3 passaram** (46,5 s): projetos, tarefas e responsáveis/comentários, com reinício real e nova autenticação. |
+| Instância temporária + `npm.cmd --prefix e2e run test:expiry -- --reporter=line --output=../tmp/e2e-expiry` | **1 passou** após 65 s sem pedidos, timeout temporário 1 minuto. A instância foi parada/removida; app principal mantém 60 minutos. |
+| `git diff --check` | Sem erros de whitespace na revisão da correção; verificação final no fecho. |
+
+Comandos exatos para repetir os reinícios (reiniciam explicitamente app; não usar durante outra suite sobre a mesma instância):
+
+```powershell
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+$env:MATRIZ_BASE_URL = 'http://127.0.0.1:8080'
+$env:MATRIZ_RESTART_TEST = '1'
+$env:MATRIZ_TASK_RESTART_TEST = '1'
+$env:MATRIZ_COLLAB_RESTART_TEST = '1'
+npm.cmd --prefix e2e test -- --grep restart --reporter=line --output=../tmp/e2e-restarts
+```
+
+Expiração: criada com `docker compose run -d --no-deps --name matriz-session-verification -p 127.0.0.1:18081:8080 app --server.servlet.session.timeout=1m --matriz.security.allowed-origins=http://127.0.0.1:18081`; confirmado healthy por docker inspect. No shell do teste: MATRIZ_BASE_URL=http://127.0.0.1:18081 e MATRIZ_SHORT_SESSION_TEST=1. No fim: `docker stop matriz-session-verification` e `docker rm matriz-session-verification`, sem volumes. A política real não foi reduzida. O comando de reinícios com alternativa regex contendo `|` falhou na interpretação por npm.cmd/cmd no Windows; substituído por `--grep restart`, que seleciona os três testes. Essa falha instrumental não conta como teste aprovado.
+
+### Comandos de referência da suite normal e da conferência final
+
+```powershell
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+npm.cmd --prefix e2e test
+
+docker compose exec -T db psql -U matriz_demo -d matriz -c "SELECT count(*) AS utilizadores FROM utilizador; SELECT count(*) AS projetos FROM projeto; SELECT count(*) AS tarefas FROM tarefa; SELECT count(*) AS comentarios FROM comentario; SELECT count(*) AS atribuicoes FROM atribuicao_tarefa; SELECT version, success FROM flyway_schema_history;"
+docker compose ps
+```
+
+Validação documental adicional: OpenAPIV31SpecValidator confirmou OpenAPI 0.7.0 válido. Contrato, backend e migrations sem alteração neste exercício. A verificação não introduziu funcionalidades novas.
+
+## BUG-08-01 — Detalhe da tarefa perde seleção ao recarregar dentro do projeto
+
+- **Reprodução:** criar projeto/tarefa na UI; abrir tarefa no detalhe do projeto; associar responsável e adicionar comentário; recarregar. Primeiro teste falhou ao procurar o comentário no detalhe.
+- **Esperado:** restaurar o detalhe aberto e voltar a consultar os dados persistidos.
+- **Observado:** a interface regressava à lista de tarefas do projeto; o detalhe não era reconstruído. [Captura anterior à correção](ui/bug-08-task-reload-before.png).
+- **Causa confirmada no código:** em TasksWorkspace, id inicial era null quando projectId existia, a navegação de tarefa era apenas setId local e o listener de hash era ignorado para esse contexto. ProjectsWorkspace interpretava todo o sufixo do endereço como ID do projeto. Não foi demonstrada corrupção/perda de dados em PostgreSQL; a falha era de navegação/seleção.
+- **Diagnóstico e proposta apresentados ao utilizador antes de modificar a aplicação.** Correção limitada a ProjectsWorkspace.tsx e TasksWorkspace.tsx: endereço `#projetos/{projetoId}/tarefas/{tarefaId}`, parsing separado e restauro da seleção, pai mantém contexto ao mudar tarefa, navegação explícita do projeto refresca os dados. Tarefa de outro projeto não é apresentada no contexto errado. API, regras de negócio, segurança e esquema não alterados.
+- **Regressão:** terceiro teste novo verifica URL, reload, lista/voltar no browser, edição do projeto a partir do detalhe da tarefa e consulta de projeto/tarefa/comentário/responsável por outra sessão; passou na repetição. Suite normal completa passou 24/24 aplicáveis. Prioridade média, corrigido.
+
+## Testes automatizados versus verificações manuais
+
+75 testes backend e cenários Playwright são automatizados; pedidos diretos à API, consultas de contagens e inspeção de relatórios são verificações técnicas executadas por ferramentas. Não foram feitas verificações funcionais manuais por um humano neste exercício: **Não executado**, sem as contabilizar como aprovadas. Os passos da matriz servem para uma eventual repetição manual. Capturas/lint/revisão de código não substituem os testes funcionais.
+
+## Integridade, conclusão e limites
+
+Contagens iniciais: 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições. Testes browser criam e removem somente os seus IDs; TRUNCATE/triggers/falhas de SQL apenas em bases Testcontainers descartáveis. Conferência final: as mesmas contagens iniciais, app/db healthy e apenas Flyway V1/V2 success=true. A instância temporária de expiração já foi removida. Sem novas migrations ou funcionalidades acrescentadas; correção de navegação limitada ao bug reproduzido.
+
+Os resultados sustentam o comportamento aprovado nos nove cenários e a integridade/persistência testadas, incluindo reinício. Estado final: 9 Aprovados, 0 Falhou e 0 Não executado na matriz automatizada; testes funcionais manuais humanos continuam Não executados. Permanecem fora desta conclusão: CI, ensaio de cópia limpa/noutro computador, apresentação/entrega, auditoria WCAG, cobertura universal de browsers e ensaios de desempenho/carga. Limitações conhecidas mantidas: sem paginação/ETag e pesquisa/contagens no conjunto autorizado em memória. Sem bugs funcionais adicionais confirmados nesta execução; isto não prova ausência de qualquer defeito.
+
+
+<details>
+<summary>Histórico preservado — verificações dos exercícios anteriores</summary>
+
 ﻿# Matriz — Plano e evidências de verificação
 
 **Data:** 18/11/2026. **Estado:** base técnica, acesso e gestão de projetos (Exercícios 2–4) verificados. Tarefas, colaboração de escrita e restantes fluxos do MVP ainda não concluídos. As secções por exercício preservam a sequência de evidências.
@@ -295,3 +389,5 @@ Enunciado consultado: 10 - Ficha Prática 03.pdf, página 5. Plano em frontend-i
 A interface suporta as funcionalidades aprovadas, mas isto não declara encerrada a ficha 03 ou a entrega. Exercício 8: auditoria consolidada dos cenários da ficha e evidências. CI, cópia limpa/noutro computador e preparação de apresentação permanecem pendentes. Testados Chrome desktop e largura 360 px; não há auditoria WCAG, cobertura universal de browsers ou ensaios de grandes volumes. Pesquisa/painel sem paginação, contagens calculadas a partir do conjunto autorizado em memória e sem ETags para formulários antigos. Sem drag-and-drop no Kanban (não obrigatório), registo público ou exposição pública.
 
 No fecho da implementação, o Exercício 7 estava local. O utilizador autorizou posteriormente commit/push; a confirmação de publicação fica na issue #8.
+
+</details>

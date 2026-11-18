@@ -1479,3 +1479,135 @@ Trabalho implementado e verificado localmente, sem commit/push deste exercício.
 O utilizador autorizou “vamos passar ao commit/push então”. Preparado commit com Refs #8 para Frontend integrado, painel PAINEL-01, colaboradores COL-07, vistas, testes, contrato, capturas e documentação associados. Confirmação de SHA remoto/publicação e fecho na issue #8 após push verificado.
 
 Evidência funcional existente: 75 testes backend, lint/build, 21 cenários normais Chrome e um teste separado de reinício passaram; três cenários afetados pelo ajuste móvel foram repetidos com sucesso. Não se apresenta esta operação Git como nova execução desses testes. Diff/ficheiros revistos, sem ambiente, gerados ou temporários. Sem reescrever histórico, alterar migrations ou dados da aplicação.
+
+
+## Exercício 8 — Verificação consolidada do MVP — 18/11/2026
+
+**Ferramenta:** ChatGPT/Codex. **Base:** 71dbf47. **Issue:** [#9](https://github.com/TiagoLeiteDev/Matriz/issues/9), aberta antes dos testes/alterações.
+
+<details>
+<summary>Pedido integral do utilizador</summary>
+
+# Goal
+
+Verificar e validar o funcionamento do MVP da plataforma Matriz, garantindo que as funcionalidades implementadas cumprem os requisitos definidos, que os dados são corretamente persistidos e que a aplicação apresenta um comportamento consistente perante operações válidas e inválidas.
+
+Identificar eventuais problemas, recolher evidências e executar testes automatizados relevantes, documentando os resultados em `docs/verification.md`.
+
+# Context
+
+A Matriz é uma aplicação de gestão de projetos e tarefas, desenvolvida no contexto de um MVP (Minimum Viable Product).
+
+Nesta fase, é necessário verificar se as funcionalidades implementadas funcionam corretamente e se a aplicação mantém a integridade dos dados.
+
+A verificação deve considerar os seguintes cenários:
+
+1. **Acesso à aplicação:** Confirmar que credenciais válidas permitem autenticação e que credenciais inválidas ou pedidos não autenticados são corretamente tratados.
+2. **Gestão de projetos:** Verificar as operações de criação, pesquisa, edição e eliminação, respeitando as permissões existentes.
+3. **Persistência de tarefas:** Confirmar que as tarefas são apresentadas após a criação e permanecem guardadas após reiniciar o Backend.
+4. **Validação de dados:** Verificar a rejeição de campos obrigatórios vazios, preenchidos apenas com espaços ou com valores inválidos.
+5. **Estado e prioridade:** Confirmar que as alterações são corretamente refletidas nas tarefas, filtros e contagens.
+6. **Responsáveis:** Verificar a associação e remoção de responsáveis, impedindo associações duplicadas.
+7. **Comentários:** Confirmar a persistência do conteúdo, autor autenticado e data.
+8. **Autorização na API:** Verificar que utilizadores sem permissões não conseguem consultar ou alterar recursos de outros utilizadores, mesmo manipulando os identificadores dos pedidos.
+9. **Eliminação e erros:** Confirmar que a eliminação respeita as dependências existentes e que os erros da API não geram mensagens de sucesso nem provocam perda de dados dos formulários.
+
+Estes cenários devem ser avaliados de acordo com as funcionalidades efetivamente implementadas e os requisitos previamente confirmados para a Matriz.
+
+# Constraints
+
+- Considerar exclusivamente o âmbito do MVP da Matriz.
+- Não assumir que todas as funcionalidades dos nove cenários estão implementadas.
+- Verificar primeiro a estrutura do projeto, os requisitos existentes e os testes disponíveis.
+- Distinguir funcionalidades implementadas, não implementadas e não aplicáveis.
+- Não introduzir novas funcionalidades ou requisitos sem validação.
+- Executar verificações reais sempre que o ambiente o permitir.
+- Não apresentar testes como executados quando não foram efetivamente realizados.
+- Criar e executar pelo menos três testes automatizados relevantes, abrangendo:
+  - Uma regra de validação de dados.
+  - Um cenário de autorização.
+  - Uma operação de criação seguida de consulta para confirmar a persistência.
+- Distinguir claramente testes automatizados de verificações manuais.
+- Registar os comandos utilizados, os resultados observados e as limitações encontradas.
+- Em caso de erro, investigar a causa antes de propor alterações ao código.
+- Não modificar ficheiros da aplicação antes de apresentar o diagnóstico e a correção proposta.
+- Manter a documentação simples, objetiva e adequada ao MVP.
+
+# Task
+
+1. Analisar a estrutura atual do projeto Matriz, identificando as funcionalidades implementadas, as tecnologias utilizadas e os testes existentes.
+
+2. Comparar as funcionalidades implementadas com os nove cenários de verificação apresentados, identificando quais são aplicáveis ao MVP.
+
+3. Para cada cenário aplicável, definir:
+   - Objetivo da verificação.
+   - Passos necessários para reproduzir o cenário.
+   - Resultado esperado.
+   - Resultado observado.
+   - Evidência recolhida.
+   - Estado da verificação: Aprovado, Falhou ou Não executado.
+
+4. Executar os testes existentes e, quando necessário, criar pelo menos três testes automatizados relevantes para validar regras de negócio, autorização e persistência.
+
+5. Registar os comandos utilizados para executar os testes, incluindo os respetivos resultados.
+
+6. Identificar eventuais bugs ou comportamentos inesperados e, para cada problema:
+   - Descrever os passos de reprodução.
+   - Identificar o resultado esperado e o observado.
+   - Recolher evidências.
+   - Localizar o código potencialmente envolvido.
+   - Distinguir hipóteses de causas confirmadas.
+   - Propor uma correção limitada.
+   - Identificar um teste de regressão adequado.
+
+7. Avaliar se os resultados obtidos demonstram que o MVP cumpre os requisitos confirmados e mantém a integridade dos dados.
+
+8. Gerar o conteúdo final para `docs/verification.md`, organizando as verificações, os testes executados, os problemas encontrados e as limitações.
+
+# Validation
+
+A resposta será considerada válida apenas se:
+
+- Analisar as funcionalidades efetivamente implementadas na Matriz.
+- Avaliar os nove cenários de verificação, identificando os aplicáveis.
+- Apresentar resultados esperados e observados para os cenários executados.
+- Incluir evidências que sustentem os resultados apresentados.
+- Criar e executar pelo menos três testes automatizados relevantes, quando o ambiente o permitir.
+- Incluir verificações de validação, autorização e persistência.
+- Registar os comandos executados e os respetivos resultados.
+- Distinguir verificações manuais de testes automatizados.
+- Identificar os problemas encontrados e apresentar propostas de correção justificadas.
+- Não inventar resultados nem considerar aprovados testes que não foram executados.
+- Produzir documentação pronta a integrar em `docs/verification.md`.
+- Manter a verificação consistente com os requisitos e o âmbito do MVP da Matriz.
+
+</details>
+
+### Plano e análise
+
+Inventariados stack, requisitos e implementação: nove classes backend (75 testes) e cinco ficheiros Playwright existentes. Todos os nove cenários aplicáveis; não presumidos concluídos por documentação. Plano anunciado: três novos testes de validação sem alterações, autorização por IDs/revogação e criação/consulta noutra sessão; regressão, reinícios/expiração isolada, matriz esperado/observado em verification.md. Sem novas funcionalidades.
+
+### Problema reproduzido e diagnóstico antes da correção
+
+Primeira suite normal: 23 passaram, um falhou, quatro especiais ignorados. BUG-08-01: abrir tarefa dentro de projeto e recarregar regressava à lista, sem restaurar o detalhe. A seleção existia apenas em estado local e não no endereço. Não demonstrada corrupção de dados. Diagnóstico/proposta apresentados em comentário ao utilizador antes de alterar a aplicação.
+
+Correção limitada a ProjectsWorkspace/TasksWorkspace: separar IDs do projeto/tarefa em #projetos/{id}/tarefas/{id}, restaurar seleção/listener e preservar contexto, com refresco nas ações explícitas de projeto. Tarefa de outro projeto não é apresentada no contexto errado. API, segurança, regras e migrations inalteradas. Terceiro teste novo cobre reload, Voltar, edição do projeto nesse contexto, responsáveis/comentário e consulta independente.
+
+### Resultados observados
+
+75 testes backend passaram (sem alteração posterior ao backend), lint/build após correção passaram. Nova suite normal: 24 passaram, zero falhas, quatro especiais ignorados. Três reinícios separados passaram (projetos, tarefas, responsáveis/comentários); expiração real passou após 65 segundos sem pedidos na instância temporária com timeout de um minuto, entretanto removida. Política principal de 60 minutos preservada. Uma invocação do filtro de reinícios com | falhou no npm.cmd/cmd; repetida com --grep restart, três testes selecionados e aprovados.
+
+Dados originais antes/depois: 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições; app/db healthy, V1/V2 success=true. Nenhum reset do seed/volume. OpenAPI 0.7.0 validado sem alterações.
+
+### Documentação e conclusão local
+
+verification.md atualizado com matriz dos nove cenários, passos/esperado/observado/evidência/estado, comandos, BUG-08-01, diagnóstico/correção/regressão e limitações. Histórico preservado em secção recolhida; testes automáticos separados de verificações manuais humanas não executadas. Captura anterior à correção em docs/ui/bug-08-task-reload-before.png.
+
+Exercício 8 concluído localmente, sem commit/push. Issue #9 aberta até registo/publicação posterior. CI, cópia limpa/noutro computador, apresentação/entrega e auditorias amplas continuam pendentes; aprovação automatizada dos nove cenários não equivale a entrega integral concluída.
+
+
+## Registo Git do Exercício 8 — 18/11/2026
+
+O utilizador autorizou “faz isso então” relativamente ao commit/push pendente. Preparado commit com Refs #9 para os três novos testes, correção BUG-08-01, evidência visual e documentação de verificação associados. Confirmação de SHA remoto/publicação e fecho na issue #9 após push verificado.
+
+Evidência funcional existente: 75 testes backend, lint/build, 24 cenários normais Playwright, três testes separados de reinício e um de expiração passaram. Não se apresenta esta operação Git como nova execução desses testes. Ficheiros/diff revistos, sem ambiente, gerados ou temporários. Sem reescrever histórico, alterar migrations ou dados da aplicação.

@@ -8,7 +8,7 @@ import DeleteProjectDialog from './DeleteProjectDialog'
 import TasksWorkspace from '../tasks/TasksWorkspace'
 import ProjectMembers from './ProjectMembers'
 
-function selectedId() { return window.location.hash.startsWith('#projetos/') ? window.location.hash.slice('#projetos/'.length) : null }
+function selectedId() { return window.location.hash.startsWith('#projetos/') ? window.location.hash.split('/')[1] : null }
 
 export default function ProjectsWorkspace({ user, onSessionExpired }: { user: UserProfile; onSessionExpired: () => void }) {
   const [id, setId] = useState(selectedId)
@@ -34,7 +34,13 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
     })
   }, [id, onSessionExpired])
   useEffect(() => {
-    const change = () => { setId(selectedId()); setLoading(true); setRevision(value => value + 1); setForm(null); setConfirmDelete(false); setError('') }
+    let current = selectedId()
+    const change = () => {
+      const next = selectedId()
+      if (next === current) return
+      current = next
+      setId(next); setLoading(true); setRevision(value => value + 1); setForm(null); setConfirmDelete(false); setError('')
+    }
     window.addEventListener('hashchange', change)
     return () => window.removeEventListener('hashchange', change)
   }, [])
@@ -53,8 +59,8 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
   function navigate(projectId: string | null) {
     setLoading(true); setError(''); setForm(null)
     const target = projectId ? `#projetos/${projectId}` : '#projetos'
-    if (window.location.hash === target) { setId(projectId); setRevision(value => value + 1) }
-    else window.location.hash = target
+    if (selectedId() === projectId) { setId(projectId); setRevision(value => value + 1) }
+    if (window.location.hash !== target) window.location.hash = target
   }
   function search(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setError(''); setAppliedQuery(query); setRevision(value => value + 1)

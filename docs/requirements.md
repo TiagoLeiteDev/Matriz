@@ -1,6 +1,6 @@
 ﻿# Matriz — Requisitos do MVP colaborativo
 
-**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; Responsáveis e comentários integrados no Exercício 6; Frontend integrado no Exercício 7, incluindo colaboradores, painel e vistas; verificação final e entrega ainda por concluir.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; Responsáveis e comentários integrados no Exercício 6; Frontend integrado no Exercício 7, incluindo colaboradores, painel e vistas; verificação consolidada do Exercício 8 realizada; entrega e CI ainda pendentes.
 
 ## Visão e objetivos
 

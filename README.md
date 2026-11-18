@@ -4,7 +4,7 @@ Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso
 
 ## Estado atual
 
-Exercícios 1–7 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. Responsáveis e comentários integrados no Exercício 6. Gestão de colaboradores, painel e vistas Lista/Kanban/Calendário integrados no Exercício 7; verificação final/CI/entrega continuam por concluir. Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
+Exercícios 1–8 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. Responsáveis e comentários integrados no Exercício 6. Gestão de colaboradores, painel e vistas Lista/Kanban/Calendário integrados no Exercício 7; verificação consolidada do Exercício 8 executada; CI/entrega continuam por concluir. Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
 
 ## Tecnologias aprovadas
 
@@ -311,3 +311,12 @@ Não existem novos mocks funcionais, tabelas ou migrations. API centralizada em 
 Testes manuais: entrar como Ana, criar projeto/tarefas, alternar vistas e filtros; editar prazo/estado e voltar ao painel; adicionar Bruno por email, atribuí-lo e registar comentário; remover a colaboração e confirmar revogação/limpeza sem apagar autoria; testar gestão em arquivo pelo proprietário; consultar a interface a 360 px. Os testes automatizados usam apenas fixtures próprias e não eliminam dados do seed.
 
 Comandos de regressão mantidos: backend verify, frontend lint/build e `npm.cmd --prefix e2e test`. [Issue #8](https://github.com/TiagoLeiteDev/Matriz/issues/8); resultados e limites em [verification.md](docs/verification.md). Nenhuma publicação pública ou commit/push deste incremento implícitos.
+
+
+## Verificação consolidada — Exercício 8
+
+Os nove cenários da ficha foram verificados com dados reais/fixtures próprias: acesso, projetos, persistência de tarefas, validação, estado/prioridade, responsáveis, comentários, autorização por IDs e eliminação/erros. Resultados: 75 testes backend, 24 cenários normais Playwright, três testes separados de reinício e um de expiração passaram; lint/build passaram. Os quatro testes especiais são ignorados no comando normal e foram executados separadamente, não contados como aprovados nessa execução normal.
+
+Três novos testes em e2e/tests/mvp-verification.spec.ts verificam rejeição sem alterações, matriz de acessos indevidos/revogação e criação/consulta noutra sessão. Encontrado e corrigido BUG-08-01: tarefa aberta dentro do projeto perdia o detalhe ao recarregar. Agora o endereço `#projetos/{projetoId}/tarefas/{tarefaId}` restaura a seleção, incluindo Voltar do browser; o teste cobre também edição do projeto nesse contexto. As rotas globais `#tarefas/{id}` mantêm-se. Sem alterações à API, regras ou base de dados.
+
+[verification.md](docs/verification.md) contém objetivo/passos/esperado/observado/evidência/estado por cenário, comandos, diagnóstico e limites. Testes automatizados não são apresentados como verificação manual humana; essa verificação manual não foi executada. Dados originais conservados e instância temporária removida. CI, execução de cópia limpa/noutro computador e preparação da apresentação continuam pendentes. [Issue #9](https://github.com/TiagoLeiteDev/Matriz/issues/9): registo Git autorizado e confirmação de publicação na própria issue.

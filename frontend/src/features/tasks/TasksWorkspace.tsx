@@ -13,12 +13,15 @@ import { currentMonth } from './types'
 import type { TaskView } from './TaskViews'
 
 const empty = { q: '', project: '', state: '', priority: '', from: '', to: '' }
-function hashTask() { return window.location.hash.startsWith('#tarefas/') ? window.location.hash.slice('#tarefas/'.length) : null }
+function hashTask(projectId?: string) {
+  const prefix = projectId ? `#projetos/${projectId}/tarefas/` : '#tarefas/'
+  return window.location.hash.startsWith(prefix) ? window.location.hash.slice(prefix.length) : null
+}
 
 export default function TasksWorkspace({ userId, projectId, readOnly = false, onChanged, onSessionExpired }: {
   userId: string; projectId?: string; readOnly?: boolean; onChanged?: () => void; onSessionExpired: () => void
 }) {
-  const [id, setId] = useState<string | null>(() => projectId ? null : hashTask())
+  const [id, setId] = useState<string | null>(() => hashTask(projectId))
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [selected, setSelected] = useState<Task | null>(null)
@@ -36,8 +39,7 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
   const [month, setMonth] = useState(currentMonth)
   const inFlight = useRef(false)
   useEffect(() => {
-    if (projectId) return
-    const change = () => { setId(hashTask()); setLoading(true); setRevision(n => n + 1); setForm(null); setConfirm(false); setError('') }
+    const change = () => { setId(hashTask(projectId)); setLoading(true); setRevision(n => n + 1); setForm(null); setConfirm(false); setError('') }
     window.addEventListener('hashchange', change)
     return () => window.removeEventListener('hashchange', change)
   }, [projectId])
@@ -57,6 +59,7 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
       api<Task[]>(`/tarefas?${params}`, { signal: controller.signal }),
       id ? api<Task>(`/tarefas/${encodeURIComponent(id)}`, { signal: controller.signal }) : Promise.resolve(null)])
       .then(async ([list, rows, task]) => {
+        if (projectId && task && task.projetoId !== projectId) throw new ApiError(404, 'A tarefa não pertence a este projeto.')
         let isArchived = false
         if (task?.projetoId) {
           const parent = list.find(p => p.id === task.projetoId) ?? await api<Project>(`/projetos/${task.projetoId}`, { signal: controller.signal })
@@ -73,8 +76,7 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
   }, [projectId, id, filters, revision, readOnly, onSessionExpired])
   function navigate(taskId: string | null) {
     setLoading(true); setError(''); setForm(null); setConfirm(false)
-    if (projectId) { setId(taskId); setRevision(n => n + 1); return }
-    const target = taskId ? `#tarefas/${taskId}` : '#tarefas'
+    const target = projectId ? taskId ? `#projetos/${projectId}/tarefas/${taskId}` : `#projetos/${projectId}` : taskId ? `#tarefas/${taskId}` : '#tarefas'
     if (window.location.hash === target) { setId(taskId); setRevision(n => n + 1) } else window.location.hash = target
   }
   function saved(task: Task | null) {

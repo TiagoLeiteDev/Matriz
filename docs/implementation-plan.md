@@ -118,3 +118,10 @@ Responsáveis/elegíveis e comentários implementados na API/UI segundo plano ap
 ## Revisão após Exercício 7
 
 Frontend integrado com gestão de colaboradores COL-07, painel PAINEL-01, Lista/Kanban/calendário e layout adaptável. API 0.7.0 com 24 operações implementadas; sem novas entidades/migrations. Evidências em frontend-integration.md/verification.md. Exercício 8: auditoria final dos cenários da ficha e evidências; qualidade/CI/entrega continuam pendentes. Issue #8: registo Git autorizado, confirmação de publicação na própria issue.
+
+
+## Revisão após Exercício 8
+
+Verificação consolidada realizada: nove cenários automatizados aprovados, 75 testes backend, 24 cenários normais Playwright, três reinícios e uma expiração isolada passaram; lint/build passaram. Criados três testes relevantes de validação/autorização/criação com consulta posterior. BUG-08-01 identificado, diagnóstico apresentado antes de alterar a aplicação e correção limitada à navegação do detalhe de tarefa em projeto, com regressão. Dados originais conservados; backend/contrato/migrations preservados. Detalhe em verification.md.
+
+A auditoria funcional deste exercício está concluída localmente; isto não conclui CI, cópia limpa/noutro computador, apresentação/entrega ou verificações manuais humanas. Registo Git autorizado; confirmação de publicação/fecho na issue #9. Consultar o exercício seguinte da ficha antes de alargar o trabalho.
