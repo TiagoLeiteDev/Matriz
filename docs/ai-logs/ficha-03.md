@@ -1,6 +1,6 @@
 ﻿# Ficha Prática 03 — Registo de trabalho e decisões
 
-**Início:** 18/11/2026. **Ferramenta:** Codex. **Estado:** Exercícios 1/2 concluídos; acesso do Exercício 3 verificado. CRUD ainda por implementar.
+**Início:** 18/11/2026. **Ferramenta:** Codex. **Estado:** Exercícios 1–4 implementados nos respetivos incrementos; acesso SEG-01 e projetos PESQ-01 verificados. Tarefas, colaboração de escrita e restante MVP ainda por implementar. Rastreabilidade Git no checkpoint de publicação abaixo. As secções anteriores mantêm o estado histórico de cada etapa.
 
 ## 1. Análise do enunciado
 
@@ -553,6 +553,256 @@ O resultado será considerado válido apenas se permitir identificar de forma se
 
 </details>
 
-## Separação Git do Exercício 3
+## Exercício 4 — gestão de projetos integrada
 
-O utilizador autorizou separar os exercícios 3/4 em dois commits e fazer push. Este commit referencia a issue #4 e contém apenas o acesso, consultas protegidas, interface de sessão, testes e documentação correspondente. A versão intermédia foi preparada para validação numa pasta isolada, preservando a pasta final. A publicação e o fecho serão confirmados no GitHub após o push.
+**Data:** 18/11/2026. **Ferramenta:** Codex/ChatGPT. **Issue:** [#5](https://github.com/TiagoLeiteDev/Matriz/issues/5), criada antes da implementação. Depende do incremento local da issue #4, ainda não publicado.
+
+### Pedido e decisões humanas
+
+O utilizador forneceu o prompt de Senior Full-Stack Engineer para implementar criação/listagem/consulta/edição/eliminação de projetos, autorização, pesquisa, validação segundo o contrato e primeiro percurso vertical com persistência após reinício. Revistos os documentos pedidos, código de acesso, contratos e dados. Análise/plano registados em docs/projects.md antes das alterações significativas.
+
+A pesquisa de projetos estava pendente. O utilizador rejeitou a primeira proposta de distinguir acentos (“Quero outra correspondência”) e escolheu **“Por parte do nome, ignorando maiúsculas e acentos: «APRESENTACAO» encontra «Preparar apresentação»”**. Registada PESQ-01. Não se atribuiu aprovação à proposta rejeitada.
+
+O contrato não fixa máximos de nome/descrição nem paginação. Aplicado nome obrigatório/não só espaços e descrição opcional, sem copiar 3–100/1000 dos exemplos. Mantidas permissões COL-02/03: só proprietário gere projeto; colaborador consulta; eliminação com confirmação e cascata atómica, sem apagar contas.
+
+### Implementação e interação com IA
+
+- ProjectInput com DTOs Create/Patch, JSON estrito e distinção omitido/null; validação sem máximos arbitrários.
+- ProjectCommands transacional: UUID/proprietário inferidos; lock/autorização antes de editar/eliminar; cascata da V1 reutilizada.
+- Listagem agregada só de projetos autorizados/arquivo; pesquisa NFD/sem marcas/maiúsculas normalizadas no backend, texto literal e sem extensão nova de BD.
+- Interface ProjectsWorkspace/ProjectForm/DeleteProjectDialog: navegação por hash, lista/pesquisa/arquivo, detalhe, criação/edição, confirmação/cancelamento, mensagens e preservação do formulário em falha; CSRF e 401 integrados.
+- OpenAPI 0.4.0 com 12 operações implementadas, pesquisa PESQ-01 e status codes coerentes; sem alteração de entidades, schema V1 ou stack.
+- Testes backend e browser, incluindo falha real de cascata e reinício de app; README, projetos, requisitos, restrições, arquitetura, modelo, plano, histórias e evidências atualizados.
+
+### Provas e revisão crítica
+
+**33 testes Java passaram**: 9 infraestrutura + 12 segurança + 12 projetos, zero falhas/erros/ignorados. Lint/build frontend passaram. No Chrome, **10 testes normais passaram**; expiração/reinício ficam ignorados no comando normal. O percurso de reinício foi executado separadamente e **1 passou**: criar pela UI, reload, reiniciar backend, novo login e confirmar mesmo projeto/descrição.
+
+Cancelar eliminação enviou 0 DELETE; confirmar enviou 1, com ausência posterior. Trigger de falha apenas na BD descartável comprovou rollback de toda a cascata e erro genérico. A mensagem de falha de comunicação foi traduzida no cliente HTTP para português; o teste verifica essa mensagem e a ausência de reenvio. Falha de comunicação injetada no teste conservou o formulário e não anunciou sucesso/reenvio automático. API real validada contra schemas: 5 respostas conformes e DELETE 204. Contagens originais da demonstração conservadas após limpeza apenas dos registos criados pelo teste.
+
+A primeira execução de browser falhou por seletor role=status ambíguo (sucesso/carregamento simultâneos); corrigido para mensagem exata e repetição passou. Também ajustado ref do dialog e coordenação de navegação/hash para não deixar carregamento pendente sem pedido. Resultados e limitações em verification.md.
+
+### Estado e próximos passos
+
+Exercício 4 concluído para gestão de projetos e primeiro percurso vertical. Restam tarefas/colaboração de escrita e restante ficha. Issues #4/#5 e alterações dos exercícios 3/4 continuam locais quanto a código, sem commits/push novos nesta atividade. Não foi reescrito histórico, apagado volume ou publicado o serviço na Internet.
+
+### Prompt integral fornecido
+
+<details>
+<summary>Ver pedido do Exercício 4</summary>
+
+# ROLE
+
+Atua como Senior Full\-Stack Engineer, especializado em desenvolvimento de aplicações web, APIs REST, persistência de dados, autenticação/autorização e integração completa entre Frontend, Backend e Base de Dados.
+
+# GOAL
+
+Implementar a gestão de projetos da aplicação Matriz, disponibilizando o primeiro percurso funcional completo entre interface, API e persistência de dados, garantindo conformidade com o contrato OpenAPI, as regras de autorização e os requisitos do MVP.
+
+# CONTEXT
+
+Consulta os seguintes documentos:
+
+- docs/requirements.md
+- docs/user\-stories.md
+- docs/constraints.md
+- docs/database.md
+- docs/architecture.md
+- openapi.yaml
+- README.md
+- AGENTS.md
+
+A autenticação, autorização, persistência e contratos de API já foram definidos nos exercícios anteriores.
+
+O objetivo deste exercício é implementar o primeiro fluxo vertical completo da aplicação, desde a interface até à base de dados, utilizando a gestão de projetos como funcionalidade principal.
+
+# CONSTRAINTS
+
+- Considera apenas o âmbito do MVP.
+- Respeita rigorosamente o contrato OpenAPI aprovado.
+- Não introduzas novos requisitos ou funcionalidades.
+- Todas as operações devem respeitar os códigos HTTP definidos.
+- As validações devem seguir exatamente as regras documentadas no OpenAPI.
+- A associação entre projeto e utilizador deve ser inferida no Backend.
+- Nunca aceitar o proprietário do projeto como dado de confiança enviado pelo cliente.
+- Aplicar todas as regras de autorização também em pedidos diretos à API.
+- Evitar registos órfãos ao eliminar projetos.
+- Utilizar persistência real.
+- Garantir que os dados persistem após reinício do Backend.
+- A experiência da interface deve ser coerente com os fluxos definidos nas User Stories.
+
+# TASKS
+
+## Gestão de Projetos
+
+1. Implementar a criação de projetos.
+2. Implementar a listagem de projetos.
+3. Implementar a consulta de um projeto específico.
+4. Implementar a edição de projetos.
+5. Implementar a eliminação de projetos.
+6. Validar todas as operações contra o contrato OpenAPI.
+
+## Validações
+
+1. Aplicar as regras de validação definidas para:
+    - Nome do projeto
+    - Descrição do projeto
+2. Garantir o cumprimento dos limites definidos no OpenAPI.
+
+Exemplo:
+
+- Nome: entre 3 e 100 caracteres.
+- Descrição: até 1000 caracteres.
+
+Utilizar sempre os valores efetivamente definidos no contrato aprovado.
+
+## Associação ao Utilizador
+
+1. Associar automaticamente cada projeto ao utilizador autenticado.
+2. Impedir a criação ou alteração do proprietário através da API.
+3. Garantir que o proprietário é obtido exclusivamente a partir da autenticação.
+
+## Autorização
+
+1. Limitar a listagem aos projetos acessíveis ao utilizador autenticado.
+2. Restringir:
+- Consulta
+- Edição
+- Eliminação
+
+a projetos para os quais o utilizador possua autorização.
+
+1. Verificar estas regras tanto:
+- Na interface
+- Como na API
+
+## Pesquisa e Paginação
+
+1. Implementar pesquisa por nome.
+2. Implementar paginação caso exista no contrato OpenAPI.
+3. Garantir consistência entre resposta da API e comportamento da interface.
+
+## Eliminação
+
+1. Solicitar confirmação explícita antes da eliminação.
+2. Aplicar a regra documentada para entidades dependentes.
+3. Garantir que não são criados dados órfãos.
+
+## Integração Completa
+
+1. Validar o fluxo completo:
+- Iniciar sessão.
+- Criar um projeto.
+- Visualizar o projeto na listagem.
+- Consultar o projeto individualmente.
+- Recarregar a página.
+- Reiniciar o Backend.
+- Confirmar que os dados continuam disponíveis.
+
+# OUTPUT
+
+## Análise de Implementação
+
+Descrever:
+
+- Requisitos suportados
+- User Stories cobertas
+- Fluxos implementados
+
+## Operações Implementadas
+
+Para cada operação:
+
+- Método HTTP
+- Endpoint
+- Permissões necessárias
+- Validações aplicadas
+- Status codes suportados
+
+## Validações
+
+Apresentar:
+
+- Campos validados
+- Regras aplicadas
+- Mensagens de erro previstas
+
+## Regras de Autorização
+
+Tabela contendo:
+
+- Operação
+- Recurso
+- Regra aplicada
+- Resultado esperado
+
+## Fluxo Completo
+
+Documentar o percurso:
+
+1. Login
+2. Criação de projeto
+3. Listagem
+4. Consulta
+5. Atualização
+6. Eliminação
+7. Persistência após reinício
+
+## Persistência
+
+Descrever:
+
+- Como os dados são armazenados
+- Como é garantida a sua persistência
+- Como são tratados os registos dependentes
+
+## Atualizações Necessárias ao README
+
+Gerar os conteúdos a incluir relativamente a:
+
+- Configuração
+- Arranque da aplicação
+- Fluxo de autenticação
+- Gestão de projetos
+- Testes manuais do fluxo principal
+
+## Problemas e Riscos
+
+Identificar:
+
+- Limitações conhecidas
+- Riscos técnicos
+- Melhorias futuras
+
+# VALIDATION
+
+Antes de concluir:
+
+- Verifica que todas as operações CRUD estão implementadas.
+- Confirma que os endpoints respeitam o contrato OpenAPI.
+- Verifica que as validações coincidem com as definições aprovadas.
+- Confirma que o proprietário do projeto é inferido a partir da autenticação.
+- Verifica que um utilizador não consegue aceder a projetos não autorizados.
+- Confirma que a pesquisa por nome funciona conforme definido.
+- Verifica a paginação, caso exista no contrato.
+- Confirma que a eliminação exige confirmação na interface.
+- Verifica que não existem dados órfãos após eliminação.
+- Confirma que os dados permanecem disponíveis após reinício do Backend.
+- Verifica que o fluxo completo do MVP pode ser executado sem intervenção manual na base de dados.
+
+## Critério de Aceitação
+
+O resultado será considerado válido apenas se permitir que um utilizador autenticado consiga criar, listar, consultar, editar e eliminar projetos de forma segura, utilizando uma interface integrada com a API e com persistência real dos dados, mantendo total conformidade com o contrato OpenAPI e as regras de autorização definidas para o MVP.
+
+</details>
+
+## Registo Git dos Exercícios 3/4 — 18/11/2026
+
+Após recomendar dois commits por incremento, o utilizador autorizou: **“faz isso então”**, incluindo push e fecho das issues após confirmação.
+
+- Issue #4: commit 0c1351e, autenticação/autorização, consultas protegidas, interface de acesso e documentação.
+- Issue #5: commit deste registo, gestão de projetos, pesquisa PESQ-01, formulários, cascata e respetiva evidência.
+
+Como os ficheiros partilhados continham alterações de ambos os exercícios, foi preparada e validada uma versão autónoma do exercício 3 numa pasta temporária ignorada pelo Git. Passaram 21 testes backend e lint/build; OpenAPI e links locais válidos. O conteúdo final da pasta de trabalho foi preservado e comparado por hash antes de registar a evolução do exercício 4. Não foi reescrito o histórico anterior.
+
+.env, node_modules, target, relatórios e cópias temporárias ficam excluídos. As confirmações de push e fecho das issues são registadas no GitHub após a publicação dos dois commits. Não foi publicada a aplicação na Internet nem alterada a base de dados por esta operação Git.

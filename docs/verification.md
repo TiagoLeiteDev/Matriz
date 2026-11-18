@@ -1,25 +1,25 @@
 ﻿# Matriz — Plano e evidências de verificação
 
-**Data:** 18/11/2026. **Estado:** base técnica e acesso verificados; CRUD e restantes fluxos ainda pendentes. Evidências por exercício abaixo.
+**Data:** 18/11/2026. **Estado:** base técnica, acesso e gestão de projetos (Exercícios 2–4) verificados. Tarefas, colaboração de escrita e restantes fluxos do MVP ainda não concluídos. As secções por exercício preservam a sequência de evidências.
 
 | Caso | Resultado esperado | Resultado observado | Evidência |
 |---|---|---|---|
-| V01 Acesso | Credenciais válidas permitem sessão, inválidas são rejeitadas; perfil e logout funcionam. | Passou no Exercício 3, API e Chrome. | SecurityTest/Playwright; secção do Exercício 3. |
-| V02 Projetos | Criar/pesquisar/editar/eliminar respeita propriedade e cascata. | Não executado. | Pendente. |
-| V03 Persistência | Tarefa surge sem recarregar e mantém-se após reinício. | Não executado. | Pendente. |
-| V04 Validação | Vazio/só espaços e valores inválidos rejeitados no backend. | Não executado. | Pendente. |
+| V01 Acesso | Credenciais válidas permitem sessão, inválidas são rejeitadas; perfil e logout funcionam. | Passou no Exercício 3, API e Chrome. | SecurityTest e e2e/tests/auth.spec.ts. |
+| V02 Projetos | Criar/pesquisar/editar/eliminar respeita propriedade e cascata. | Passou no Exercício 4: API/UI, arquivo/restauro, pesquisa e cascata/rollback. | ProjectCrudTest, projects.spec.ts e OpenAPI. |
+| V03 Persistência | Tarefa surge sem recarregar e mantém-se após reinício. | Projetos passaram em reload/reinício; fluxo de tarefas ainda não executado. | projects.spec.ts @restart; tarefas pendentes. |
+| V04 Validação | Vazio/só espaços e valores inválidos rejeitados no backend. | Passou para projetos no Exercício 4; DTOs de tarefas ainda pendentes. | ProjectCrudTest e formulário no Chrome. |
 | V05 Estados/filtros | Alterações atualizam tarefa, filtros, progresso e contagens. | Não executado. | Pendente. |
 | V06 Responsáveis | Múltiplos elegíveis, sem duplicação; remoção e limpeza atómicas. | Não executado. | Pendente. |
 | V07 Comentários | Conteúdo, autor e data confiáveis persistem e são autorizados. | Não executado. | Pendente. |
-| V08 Autorização | Segundo utilizador não acede a dados alheios por IDs manipulados; tarefas pessoais privadas. | Consultas e políticas passaram; escritas ainda pendentes. | SecurityTest/Playwright; secção do Exercício 3. |
-| V09 Eliminação/erro | Cascata sem órfãos, cancelar sem pedido, erro sem falso sucesso/perda do formulário. | Não executado. | Pendente. |
-| V10 Sessão/CSRF | Cookie, logout, invalidação e proteção de operações de escrita. | Login/logout, expiração/reinício e flags de cookie passaram; escritas de negócio pendentes. | SecurityTest/Playwright; secção do Exercício 3. |
+| V08 Autorização | Segundo utilizador não acede a dados alheios por IDs manipulados; tarefas pessoais privadas. | Passou nas consultas e nas escritas de projetos; restantes escritas futuras ainda pendentes. | SecurityTest e Playwright; limites em security.md. |
+| V09 Eliminação/erro | Cascata sem órfãos, cancelar sem pedido, erro sem falso sucesso/perda do formulário. | Passou para projetos, incluindo rollback por falha de BD; gestão autónoma de tarefas pendente. | ProjectCrudTest e projects.spec.ts. |
+| V10 Sessão/CSRF | Cookie, logout, invalidação e proteção de operações de escrita. | Passou em login/logout, expiração/reinício e flags do cookie; escritas de negócio ainda pendentes. | SecurityTest, Playwright, test:restart e perfil prod local. |
 
-## Testes automatizados mínimos a implementar
+## Testes automatizados mínimos da entrega — estado atual
 
-1. Regra de validação (nome/título obrigatório e não só espaços).
-2. Autorização com dois utilizadores e recurso não acessível.
-3. Criação e consulta posterior à persistência real.
+1. Regra de validação: nome obrigatório/não só espaços passou nos projetos (Exercício 4); título de tarefa ainda pendente.
+2. Autorização: dois utilizadores e recursos não acessíveis verificados em leitura e CRUD de projetos.
+3. Criação/consulta posterior: projeto com PostgreSQL real, nova sessão, reload e reinício verificados no Exercício 4.
 
 Registar comandos, ambiente, resultados e limitações reais. Não substituir testes de aplicação por validação de OpenAPI. Acrescentar regressão para bugs reproduzidos e corrigidos.
 
@@ -132,3 +132,56 @@ Relatório gerado: backend/target/surefire-reports/pt.matriz.InfrastructureTest.
 - Cookies Secure foram verificados no perfil prod, mas HTTPS/reverse proxy/certificados e implantação pública não foram executados. Sem rate limiting, monitorização ou gestão global de contas no MVP atual.
 - A interface trata 401 nos fluxos existentes; os próximos ecrãs devem reutilizar essa política. Não há reenvio automático de escritas, polling de sessão ou lembrar-me.
 - Traces/vídeo de rede desativados. Relatórios e screenshots de falha ficam ignorados pelo Git. Apenas contas e dados fictícios utilizados.
+
+## Exercício 4 — gestão de projetos, 18/11/2026
+
+**PESQ-01:** o utilizador rejeitou pesquisa que distingue acentos e confirmou correspondência por parte do nome, ignorando maiúsculas e acentos. Sem paginação e sem copiar máximos dos exemplos para o contrato.
+
+| Verificação | Evidência | Resultado observado |
+|---|---|---|
+| Backend completo | `./backend/mvnw.cmd -B -ntp -f backend/pom.xml verify` | BUILD SUCCESS: **33 testes**, 0 falhas/erros/ignorados (9 infraestrutura + 12 segurança + 12 projetos). |
+| Criação/persistência | ProjectCrudTest | 201/Location/DTO; proprietário da sessão; arquivado=false; consulta noutra sessão conserva dados; nome de 1 carácter e textos acima de 100/1000 aceites. |
+| Validação/identidade | ProjectCrudTest | Nome vazio/branco/null/tipo errado e descrição inválida 422; JSON/campos extra de identidade 400; sem dados alterados. |
+| PATCH | ProjectCrudTest | Omitidos conservam; null limpa descrição; vazio de descrição aceite; booleanos/null/nome inválidos recusados; proprietário imutável. |
+| Listagem/pesquisa | ProjectCrudTest/Chrome | Só acessíveis, sem duplicação de proprietário/colaborador; revogação imediata. APRESENTACAO encontra apresentação; %, _ e aspas são literais. Arquivo true/false estrito; parâmetros inválidos 400. |
+| Permissões/CSRF | ProjectCrudTest | Colaborador/não membro não editam/eliminam; todas as escritas exigem CSRF; ausência de sessão recusada. |
+| Arquivo/restauro | ProjectCrudTest/Chrome | Preserva tarefas/dependentes; alterna listas ativa/arquivo; metadados conservados. |
+| Cascata | ProjectCrudTest | Remove só projeto/tarefas/comentários/atribuições/colaborações relacionados; conserva contas, outro projeto e tarefa pessoal. Seed explícito não faz reaparecer projeto eliminado. |
+| Falha real de cascata | Trigger de falha apenas no PostgreSQL descartável | DELETE devolve 500 genérico; todas as seis tabelas conservam contagens originais, sem eliminação parcial ou detalhes SQL no erro. Trigger/função de teste removidos. |
+| Frontend | lint + TypeScript/Vite build | Passaram sem avisos na versão final. Ajustado cleanup do ref do dialog e navegação para evitar estado de carregamento sem novo pedido ao mudar hash. |
+| Browser normal | `npm.cmd --prefix e2e test`, Chrome headless | **10 passaram; 2 ignorados por desenho** (expiração curta e reinício separados). Inclui 5 de acesso e 5 de projetos. |
+| Eliminação UI | projects.spec.ts | Dialog explica cascata; Cancelar envia 0 DELETE, confirmar envia 1; 204 e ausência posterior. |
+| Falha de comunicação | projects.spec.ts com abort de POST no teste | Mensagem de comunicação em português; formulário conserva nome/descrição, não anuncia sucesso nem reenvia; corrigida a causa, guardar passa e cria apenas o registo esperado. A app não contém mocks. |
+| Percurso vertical com reinício | MATRIZ_RESTART_TEST=1 + `npm.cmd --prefix e2e run test:projects-restart` | **1 passou**: login/criação/reload/reinício real de app/novo login/mesmo projeto e descrição. Sem intervenção SQL manual para o fluxo. |
+| Contrato | OpenAPI 3.1 e JSON Schema | Especificação válida: 24 operações, 12 implementadas. Cinco respostas reais de projetos/erro validadas contra schemas; DELETE 204. |
+| Conservação de demonstração | Contagens SQL após cleanup dos testes | 2 utilizadores, 2 projetos, 3 tarefas e 1 comentário originais mantidos. Cleanup só dos IDs criados pelos testes. |
+| Build integrado | Docker Compose build/up | App e PostgreSQL healthy, React servido pelo Spring Boot, sem alterar V1 ou apagar volume. |
+
+### ProjectCrudTest — 12 casos
+
+1. Criação infere proprietário, Location e consulta persistida com nova sessão.
+2. Não impõe máximos pedagógicos nem trim de texto válido.
+3. Corpos inválidos/campos proibidos sem alteração de dados.
+4. PATCH/omissão/null, tipos estritos e proprietário imutável.
+5. Listagem autorizada, sem duplicação e revogação de colaboração.
+6. Pesquisa parcial sem acentos/maiúsculas, wildcards/aspas literais e vazio.
+7. Arquivo/restauro e filtro booleano estrito, conservando dependentes.
+8. Colaborador e utilizador alheio não editam/eliminam.
+9. CSRF em todas as escritas e proteção de pedidos não autenticados.
+10. Cascata sem órfãos, sem apagar contas/outros projetos/tarefa pessoal e sem restauro pelo seed.
+11. Falha real de cascata faz rollback integral e não expõe erro de BD.
+12. IDs malformados/inexistentes não alteram dados.
+
+### Revisão, correções e limites
+
+O primeiro comando normal de browser teve 1 falha num seletor de teste demasiado amplo: havia dois role=status (sucesso e carregamento) após DELETE. Corrigido o seletor para a mensagem exata; repetição passou 10/10 cenários normais. Não foi necessário alterar a API ou eliminar dados para ultrapassar essa falha.
+
+O teste de reinício é explícito/separado por alterar o estado de app durante a execução. O de expiração curta foi executado no Exercício 3 e não foi repetido neste incremento, cuja política de sessão não mudou. Não somar testes ignorados como passados. Relatórios JUnit/Playwright são gerados fora do Git; resumo de resultados preservado aqui.
+
+Permanecem limitações documentadas: sem paginação/garantias para grandes volumes; pesquisa normalizada no conjunto autorizado em memória; sem versão/ETag para rejeitar edições baseadas em dados antigos; só operações de projeto concluídas. Gestão de tarefas/colaboração de escrita/limpeza COL-06, vistas, painel e CI/entrega integral continuam pendentes. Rastreabilidade dos commits e publicação dos exercícios 3/4 registada nas issues #4/#5 e no checkpoint do log.
+
+## Verificação da separação Git — 18/11/2026
+
+A pedido do utilizador, o acesso e os projetos foram separados em dois commits. A versão intermédia de acesso foi materializada numa pasta isolada a partir da base do Exercício 2, sem alterar os ficheiros finais: 21 testes backend passaram, lint/build do frontend passaram e OpenAPI com oito operações implementadas foi validado. Os links locais dessa versão também foram verificados. O commit 0c1351e referencia #4.
+
+As fontes finais foram comparadas por SHA-256 com a cópia anterior à separação e conservaram o conteúdo verificado no Exercício 4 (33 testes backend e cenários de browser documentados). O commit seguinte contém apenas a evolução de projetos/documentação, com Refs #5. Nenhum teste foi apresentado como execução nova da versão final nesta operação de Git; usou-se a evidência existente e a igualdade dos ficheiros de código. Credenciais/padrões e ficheiros gerados foram revistos antes dos commits. A confirmação de publicação é registada nas issues após o push.

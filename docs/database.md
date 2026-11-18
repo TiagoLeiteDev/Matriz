@@ -121,3 +121,7 @@ Implementada em [V1__initial_schema.sql](../backend/src/main/resources/db/migrat
 ## Acesso — Exercício 3
 
 Sem alteração ao esquema V1. Sessões em memória do servidor, não entidades funcionais novas. Consultas autorizam participação atual/privacidade pessoal antes de devolver dados, numa transação consistente; ver security.md. Hashes BCrypt permanecem apenas na BD e no processo de verificação de credenciais, nunca nos DTOs. Criação de recursos e limpeza COL-06 continuam por implementar nos casos de uso de escrita.
+
+## Gestão de projetos — Exercício 4
+
+Sem alterações de esquema. Criação usa UUID no backend e proprietário da sessão. Edição/eliminação de projeto são transacionais, com lock e autorização do proprietário; cascata atómica da V1 verificada com rollback por falha induzida apenas numa BD descartável. Contas, outros projetos e tarefas pessoais são conservados. PESQ-01 normaliza Unicode na aplicação depois de filtrar acesso/arquivo em SQL, sem extensão de BD. Ver projects.md e verification.md.

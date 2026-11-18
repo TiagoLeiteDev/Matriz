@@ -783,4 +783,4 @@ Como utilizador autenticado, quero ver os meus projetos acessíveis e contagens 
 
 ## Estado dos cenários
 
-São especificações, não resultados de testes. Spring Security e SEG-01 (60 minutos de inatividade, sem lembrar-me, reinício/logout exigem login) concretizados no Exercício 3. Âmbito das contagens continua pendente; resultados de acesso/leitura em verification.md. CRUD ainda por implementar. Mantêm-se limites de texto e detalhes de pesquisa por decidir. A base individual anterior foi preservada em history/mvp-individual-v1; não constitui especificação ativa.
+São especificações, não resultados de testes. Spring Security e a política SEG-01 (60 minutos de inatividade, sem lembrar-me, reinício/logout exigem login) foram concretizados no Exercício 3. Âmbito exato das contagens continua por fechar antes do painel. PESQ-01 de projetos foi confirmada e implementada no Exercício 4. Resultados reais de acesso/leitura em verification.md; CRUD e escritas ainda pendentes. Mantêm-se limites de texto e detalhes de pesquisa por decidir. A base individual anterior foi preservada em history/mvp-individual-v1; não constitui especificação ativa.

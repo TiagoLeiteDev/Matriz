@@ -1,13 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { api, ApiError, logout } from './api/client'
 import type { UserProfile } from './api/client'
 import LoginForm from './features/auth/LoginForm'
+import ProjectsWorkspace from './features/projects/ProjectsWorkspace'
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
+  const sessionExpired = useCallback(() => {
+    setUser(null); setMessage('A tua sessão terminou. Inicia sessão novamente.')
+  }, [])
   useEffect(() => {
     const controller = new AbortController()
     api<UserProfile>('/sessao', { signal: controller.signal })
@@ -47,6 +51,7 @@ export default function App() {
       {message && <p role="status">{message}</p>}
       <div className="actions"><button onClick={refresh} disabled={busy}>Atualizar perfil</button>
         <button onClick={exit} disabled={busy}>Terminar sessão</button></div>
+      <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} />
     </section> : <LoginForm message={message} onLogin={profile => { setUser(profile); setMessage('') }} />}
   </main>
 }

@@ -1,13 +1,19 @@
 openapi: 3.1.0
 info:
   title: Matriz API colaborativa
-  version: 0.3.0
-  description: 'Matriz colaborativa: sessão/CSRF e consultas protegidas de projeto, tarefa, comentários
-    e responsáveis implementadas no Exercício 3. Restantes operações planeadas e bloqueadas. Sessão em
-    memória: 60 minutos de inatividade, sem lembrar-me; reinício/logout exigem login. Cookie HttpOnly/SameSite=Lax/Secure
-    no perfil HTTPS. CSRF também no login/logout; renovar após autenticação. Sem paginação ou correspondência
-    de pesquisa de projetos aprovada nesta versão. Identidade vem do backend; UUIDs opacos. Sem exposição
-    pública.'
+  version: 0.4.0
+  description: 'Matriz colaborativa — contrato ativo. Exercício 3 implementa sessão/CSRF e consultas protegidas;
+    Exercício 4 implementa CRUD de projetos, arquivo/restauro e pesquisa PESQ-01. As restantes operações
+    estão planeadas e continuam bloqueadas. Ver x-implementation-status em cada operação. Sessão no servidor:
+    60 minutos de inatividade, sem lembrar-me, sem persistência após reinício, revogada no logout. Cookie
+    matriz_session HttpOnly/SameSite=Lax/Secure no perfil HTTPS de produção. CSRF obrigatório em operações
+    de escrita, incluindo login/logout; token obtido por GET /sessao/csrf e novamente após autenticação/logout.
+    Cabeçalho X-CSRF-Token. Uma escrita sem CSRF pode devolver 403 antes da verificação de autenticação.
+    Listagens futuras não têm paginação definida nem ordem garantida. PATCH futuro conserva campos omitidos;
+    null limpa apenas opcionais. Identidade do ator nunca vem do pedido. UUIDs são devolvidos como strings
+    opacas. Pesquisa de projetos por parte do nome, ignorando maiúsculas e acentos, sem paginação e com
+    q literal; filtro arquivado=false por defeito. Nome não vazio/não só espaços; descrição opcional;
+    sem limites máximos de texto definidos. Não há exposição pública aprovada.'
 security:
 - Sessao: []
 paths:
@@ -113,8 +119,9 @@ paths:
     get:
       operationId: listarProjetos
       summary: Listar e pesquisar projetos acessiveis
-      description: 'Apenas proprietário ou colaborador atual. Filtro de arquivo separa ativos/arquivo.
-        Pesquisa por nome: correspondência e acentos ainda pendentes. Sem paginação.'
+      description: 'Apenas proprietário ou colaborador atual. arquivado=false por defeito separa ativos/arquivo.
+        PESQ-01: q procura parte do nome ignorando maiúsculas e acentos; vazio não restringe. %, _ e aspas
+        são texto literal, sem wildcards. Sem paginação ou ordem garantida. Nunca devolver projetos alheios.'
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -136,7 +143,8 @@ paths:
       - name: q
         in: query
         required: false
-        description: Pesquisa por nome; correspondência pendente.
+        description: Parte do nome, ignorando maiúsculas e acentos (PESQ-01); texto literal, vazio não
+          restringe.
         schema:
           type: string
       - name: arquivado
@@ -146,7 +154,7 @@ paths:
         schema:
           type: boolean
           default: false
-      x-implementation-status: planned
+      x-implementation-status: implemented
     post:
       operationId: criarProjeto
       summary: Criar projeto
@@ -197,7 +205,7 @@ paths:
               $ref: '#/components/schemas/CriarProjeto'
             example:
               nome: Demonstracao
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /projetos/{projetoId}:
     parameters:
     - $ref: '#/components/parameters/ProjetoId'
@@ -227,8 +235,10 @@ paths:
     patch:
       operationId: atualizarProjeto
       summary: Editar, arquivar ou restaurar projeto
-      description: Só proprietário; arquivado=true arquiva, false restaura. Omitidos conservam; null limpa
-        apenas descricao. Proprietário imutável; operação ainda não implementada.
+      description: 'Só proprietário. PATCH não vazio: campos omitidos conservam valor; null limpa apenas
+        descricao. nome não vazio/não só espaços; descricao opcional sem máximo definido. arquivado=true
+        arquiva, false restaura, sem apagar dependentes. Proprietário é imutável. Operação transacional
+        com lock do projeto.'
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -256,12 +266,14 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AtualizarProjeto'
-      x-implementation-status: planned
+      x-implementation-status: implemented
     delete:
       operationId: eliminarProjeto
       summary: Eliminar projeto e dependentes
-      description: Só proprietário; confirmação explícita na UI; cascata atómica de dependentes sem eliminar
-        contas. Operação ainda não implementada.
+      description: Só proprietário, com CSRF. UI exige confirmação explícita antes do pedido; cancelar
+        não envia DELETE. Remover atomicamente projeto, tarefas, comentários, atribuições e colaborações;
+        conservar contas, outros projetos e tarefas pessoais. Rollback integral em falha; 204 só após
+        commit.
       responses:
         '204':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -277,7 +289,7 @@ paths:
           $ref: '#/components/responses/400'
       parameters:
       - $ref: '#/components/parameters/Csrf'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /projetos/{projetoId}/colaboradores:
     parameters:
     - $ref: '#/components/parameters/ProjetoId'

@@ -80,3 +80,7 @@ Consultar docs/setup.md e README.md para a configuração e os comandos reais. E
 ## Acesso — Exercício 3
 
 SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Consultar docs/security.md. Usar CurrentIdentity e as políticas ProjectAccess/TaskAccess em cada novo caso de uso. O ator não é um ID do pedido; o responsável selecionado exige elegibilidade. Não desativar CSRF nem permitir genericamente /api/**. Contexto deve ser guardado explicitamente após autenticação e a sessão/token CSRF rodados; não guardar credenciais ou tokens no frontend persistente. Leituras protegidas não comprovam que CRUD/limpeza COL-06 estejam implementados. Novas escritas exigem transação e testes próprios. E2E de expiração curta só contra instância isolada; não reduzir a política real da demonstração.
+
+## Projetos — Exercício 4
+
+PESQ-01: pesquisa por parte do nome, ignorando maiúsculas e acentos, sobre conjunto autorizado/arquivo. Consultar docs/projects.md. Projetos não têm máximos de texto nem paginação no contrato atual. Proprietário vem de CurrentIdentity; PATCH conserva omitidos e null só limpa descrição. Não retirar locks/transações/cascata nem abrir gestão a colaboradores. E2E limpa só IDs criados pelos próprios testes; nunca apagar dados do seed ou o volume para fazer passar testes.

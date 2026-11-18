@@ -1,5 +1,6 @@
 # Matriz — Acesso à aplicação (Exercício 3)
 
+Este documento regista o incremento de acesso. A evolução posterior com CRUD/pesquisa de projetos do Exercício 4 encontra-se em [projects.md](projects.md); os limites abaixo sobre escritas futuras são históricos do fecho do Exercício 3, exceto onde ainda aplicáveis a tarefas/colaboração.
 
 ## Análise e plano para revisão
 

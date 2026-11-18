@@ -4,7 +4,7 @@ Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso
 
 ## Estado atual
 
-Exercícios 1/2 concluídos. Exercício 3 implementa acesso e consultas protegidas com SEG-01; CRUD e restante MVP ainda por implementar. Sessão de 60 minutos de inatividade, sem lembrar-me; reinício/logout exigem novo login.
+Exercícios 1–4 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. **CRUD de tarefas, colaboração de escrita, painel e vistas integrais continuam nos exercícios seguintes.** Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
 
 ## Tecnologias aprovadas
 
@@ -35,12 +35,13 @@ Sem gestão global de organizações/equipas, convites, registo público, recupe
 | [Reconciliação](docs/scope-reconciliation.md) | Diferenças entre fichas e decisões substituídas. |
 | [Arquitetura](docs/architecture.md) | Monólito modular e responsabilidades. |
 | [Modelo e ER](docs/database.md) | Seis entidades, relações e regras. |
-| [OpenAPI](openapi.yaml) | Contratos colaborativos; operações de negócio ainda não implementadas. |
+| [OpenAPI](openapi.yaml) | API em /api; 12 operações implementadas e restantes marcadas como planeadas. |
 | [Wireframes](docs/ui/wireframe-tarefas.md) | Tarefas colaborativas e início de sessão. |
 | [Revisão](docs/architecture-review.md) | Rastreabilidade e limitações da base colaborativa. |
 | [Plano](docs/implementation-plan.md) | Incrementos e verificações do Exercício 1 da ficha 03. |
 | [Verificação](docs/verification.md) | Resultados de infraestrutura e cenários funcionais ainda pendentes. |
-| [Segurança](docs/security.md) | Sessão SEG-01, identidade, CSRF e matriz de autorização. |
+| [Projetos](docs/projects.md) | CRUD, pesquisa PESQ-01, permissões, transações e limites do Exercício 4. |
+| [Segurança](docs/security.md) | Política SEG-01, ciclo de sessão, identidade, matriz de autorização e limites. |
 | [Base técnica](docs/setup.md) | Estrutura, dependências, variáveis, persistência, migrations, seed e riscos. |
 | [Registo da ficha 3](docs/ai-logs/ficha-03.md) | Autorizações e trabalho documental atual. |
 | [AGENTS](AGENTS.md) | Instruções para agentes e segurança. |
@@ -68,11 +69,11 @@ docker compose up -d app --wait
 Invoke-RestMethod http://127.0.0.1:8080/actuator/health
 ```
 
-Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Ecrã de login/perfil/logout disponível; CRUD ainda não implementado. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
+Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout e gestão de projetos estão disponíveis; tarefas e painel integral continuam por implementar. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
 
 As migrations correm no arranque antes do seed. Para aplicar apenas o esquema, omitir o comando seed e iniciar app. Para carregar a demonstração mais tarde, executar explicitamente o mesmo comando seed. Uma nova execução não repõe dados editados/eliminados nem altera palavras-passe. Falhas/colisões fazem rollback; consultar os logs sem apagar dados para contornar o problema.
 
-Contas fictícias: `ana@example.test` e `bruno@example.test`; palavra-passe inicial definida por `DEMO_PASSWORD` em `.env` (exemplo: `MatrizDemoOnly42!`). O hash é BCrypt. Usar as contas no ecrã de login; não há registo público. Ana é proprietária do projeto partilhado e Bruno colaborador; o segundo projeto é privado do Bruno. Há também uma tarefa pessoal privada da Ana.
+Contas fictícias: `ana@example.test` e `bruno@example.test`; palavra-passe inicial definida por `DEMO_PASSWORD` em `.env` (exemplo: `MatrizDemoOnly42!`). O hash é BCrypt. Usar estas contas no ecrã de login; não há registo público. Ana é proprietária do projeto partilhado e Bruno colaborador; o segundo projeto é privado do Bruno. Há também uma tarefa pessoal privada da Ana.
 
 ### Desenvolvimento no host (PowerShell)
 
@@ -131,7 +132,7 @@ docker compose down
 docker compose up -d db app --wait
 ```
 
-Não usar `docker compose down -v` para um reinício: elimina o volume. O esquema evolui por novas migrations; não editar uma migration já aplicada. `.env`, caches, `node_modules` e `target` ficam fora do Git. A configuração atual é local; CI, E2E e publicação não foram concluídos.
+Não usar `docker compose down -v` para um reinício: elimina o volume. O esquema evolui por novas migrations; não editar uma migration já aplicada. `.env`, caches, `node_modules` e `target` ficam fora do Git. A configuração atual é local; os testes E2E de acesso foram acrescentados no Exercício 3. CI, entrega integral e publicação continuam pendentes.
 
 ## Autenticação e sessão — Exercício 3
 
@@ -154,7 +155,7 @@ APP_ALLOWED_ORIGINS tem valores locais de exemplo em .env.example. O Compose enc
 - Públicas: GET /api/sessao/csrf e POST /api/sessao (login exige CSRF).
 - Com sessão: GET/DELETE /api/sessao.
 - Com sessão e autorização por recurso: GET /api/projetos/{id}, GET /api/tarefas/{id}, GET /api/tarefas/{id}/comentarios e GET /api/tarefas/{id}/responsaveis.
-- Restantes operações do OpenAPI continuam bloqueadas até ao respetivo incremento.
+- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. Restantes operações de tarefas/colaboração/painel continuam bloqueadas.
 
 O OpenAPI tem servidor relativo /api e x-implementation-status por operação. [security.md](docs/security.md) documenta a matriz e a distinção entre ator autenticado e responsável selecionado entre elegíveis.
 
@@ -198,6 +199,47 @@ npm.cmd --prefix e2e run test:restart
 ```
 
 Os resultados reais e as limitações, incluindo a ausência de uma implantação HTTPS pública, constam de [verification.md](docs/verification.md).
+
+## Gestão de projetos — Exercício 4
+
+Após login, a secção Projetos mostra apenas projetos de que és proprietário ou colaborador. A listagem começa nos ativos; Mostrar projetos arquivados muda para o arquivo.
+
+1. Escolher Criar projeto, indicar nome obrigatório e descrição opcional e Guardar projeto.
+2. Confirmar o detalhe, proprietário inferido, situação e progresso; voltar a Projetos e abrir o projeto na lista.
+3. Pesquisar por parte do nome: **sem distinguir maiúsculas nem acentos** (PESQ-01). Por exemplo, APRESENTACAO encontra Preparar apresentação. Pesquisa vazia/Limpar pesquisa remove a restrição; o filtro de arquivo mantém-se. Não há paginação no contrato.
+4. Como proprietário, Editar projeto altera nome/descrição. Omitir um campo em PATCH conserva o valor; null limpa apenas descricao. Na UI, limpar a descrição envia null. Nome de um carácter é válido, nome vazio/só espaços é recusado. Não foram copiados limites 3–100/1000 dos exemplos.
+5. Arquivar/Restaurar projeto muda a visibilidade sem apagar tarefas/dependentes. O progresso continua derivado de todas as tarefas do projeto; sem tarefas, 0% e Sem tarefas.
+6. Eliminar projeto abre uma confirmação que explica a remoção definitiva de projeto/tarefas/comentários/atribuições/colaborações. Cancelar não envia DELETE. Só Confirmar eliminação executa o pedido; contas, outros projetos e tarefas pessoais são conservados.
+7. Um colaborador pode consultar o projeto, mas não tem os controlos de gestão. A API recusa também pedidos diretos de edição/eliminação por colaboradores ou utilizadores sem acesso.
+
+Operações disponíveis: POST/GET /api/projetos e GET/PATCH/DELETE /api/projetos/{id}. Criação devolve 201, Location e DTO; consultas/edição devolvem 200; eliminação 204 após commit. Validação 422, pedido malformado/campos proibidos/UUID inválido 400, ausência de sessão 401, permissão/CSRF 403, recurso inexistente 404 e falha interna genérica 500. Todas as escritas exigem CSRF. Proprietário/ID não são aceites como campos de criação/edição.
+
+Os dados ficam no PostgreSQL com volume persistente; a V1 não mudou. As cascatas são transacionais: uma falha não confirma eliminação parcial. Formulários conservam entradas em falha e não anunciam sucesso nem repetem escritas automaticamente. Uma falha de comunicação após envio não garante que a operação tenha sido revertida; consultar o estado antes de tentar novamente se o resultado for desconhecido.
+
+### Verificação manual do primeiro percurso completo
+
+- Iniciar sessão como ana@example.test e criar um projeto com nome/descrição próprios.
+- Voltar à lista, abrir o projeto, editar e recarregar a página; verificar os valores guardados.
+- Executar `docker compose restart app`, aguardar health UP, Atualizar perfil e iniciar sessão novamente. O projeto/descrição mantêm-se, incluindo o detalhe indicado pelo fragmento #projetos/{id}.
+- Pedir eliminação, cancelar e verificar que o projeto permanece. Pedir novamente e confirmar; verificar a ausência na lista.
+- Entrar como bruno@example.test: consultar o projeto partilhado da Ana, sem controlos de gestão. Como Ana, o projeto privado do Bruno não aparece.
+
+### Testes automatizados de projetos
+
+```powershell
+./backend/mvnw.cmd -f backend/pom.xml verify
+npm.cmd --prefix frontend run lint
+npm.cmd --prefix frontend run build
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome' # Se usares Chrome já instalado; alternativa Chromium do Playwright.
+npm.cmd --prefix e2e test
+# Percurso separado que reinicia app explicitamente e volta a autenticar.
+$env:MATRIZ_RESTART_TEST = '1'
+npm.cmd --prefix e2e run test:projects-restart
+Remove-Item Env:MATRIZ_RESTART_TEST
+```
+
+O comando normal ignora por desenho os testes de expiração curta e de reinício; executar cada um separadamente nos ambientes indicados. Os testes de projetos criam fixtures pela API/UI e removem apenas os IDs que registaram; não eliminam os projetos do seed. Os testes de falha/cascata usam PostgreSQL descartável no backend. Ver [evidências](docs/verification.md).
 
 ## Entrega
 

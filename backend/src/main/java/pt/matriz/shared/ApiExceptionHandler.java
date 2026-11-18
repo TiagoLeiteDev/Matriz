@@ -29,6 +29,10 @@ public class ApiExceptionHandler {
     ResponseEntity<ApiProblem> validation(MethodArgumentNotValidException error) {
         return problem(422, "VALIDACAO", "Verifica os campos do pedido.");
     }
+    @ExceptionHandler(RequestValidationException.class)
+    ResponseEntity<ApiProblem> requestValidation(RequestValidationException error) {
+        return problem(422, "VALIDACAO", error.getMessage());
+    }
     @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     ResponseEntity<ApiProblem> malformed(Exception error) {
         return problem(400, "PEDIDO_INVALIDO", "O formato do pedido é inválido.");
@@ -36,6 +40,7 @@ public class ApiExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     ResponseEntity<ApiProblem> resource(ResponseStatusException error) {
         int status = error.getStatusCode().value();
+        if (status == 400) return problem(400, "PEDIDO_INVALIDO", "O formato ou os campos do pedido são inválidos.");
         return problem(status, status == 404 ? "NAO_ENCONTRADO" : "CONFLITO",
             status == 404 ? "Recurso não encontrado." : "O estado do recurso impede esta operação.");
     }

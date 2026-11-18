@@ -64,6 +64,10 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/sessao").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/sessao").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/sessao").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/projetos").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/projetos").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/projetos/*").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/projetos/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/projetos/*", "/api/tarefas/*",
                     "/api/tarefas/*/comentarios", "/api/tarefas/*/responsaveis").authenticated()
                 .anyRequest().denyAll())

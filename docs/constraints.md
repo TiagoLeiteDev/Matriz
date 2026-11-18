@@ -12,6 +12,7 @@
 | COL-04 | Manter tarefas independentes, privadas do criador. |
 | COL-05 | Autenticação por sessão no servidor e cookie. Spring Security aprovado em TEC-01; política/configuração concretizadas em SEG-01 e security.md. |
 | COL-06 | Remover atribuições que se tornem inelegíveis na mesma operação que remove acesso ou transfere/desassocia tarefa. |
+| PESQ-01 | Projetos: pesquisa por parte do nome, ignorando maiúsculas e acentos; vazio não restringe o conjunto autorizado/arquivo. Escolha expressa do utilizador no Exercício 4. |
 | SEG-01 | 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Sessão em memória, cookie e CSRF concretizados no Exercício 3; ver security.md. |
 | ARQ-01 | Manter monólito modular, acrescentando identidade/acesso às responsabilidades existentes. |
 | TEC-01 | Java 21/Spring Boot/Maven/Spring Security, PostgreSQL/JPA/Flyway, React/TypeScript/Vite/CSS, JUnit/MockMvc/Testcontainers/Playwright/ESLint, Docker/Compose/GitHub Actions. |
@@ -45,13 +46,13 @@ Referências técnicas consultadas para sessão e CSRF: https://cheatsheetseries
 | ID | Tema | Estado |
 |---|---|---|
 | DT-01 | Linguagem/frameworks e stack. | Resolvido em TEC-01; versões concretizadas em pom.xml, package-lock.json e imagens Docker fixadas no Exercício 2. |
-| DT-02 | Persistência, tipos físicos, migrations, sessão e seed. | Tipos físicos UUID/text/date/timestamptz, migration V1, mapeamentos JPA e seed explícito implementados no Exercício 2; sessão SEG-01 concretizada no Exercício 3. |
+| DT-02 | Persistência, tipos físicos, migrations, sessão e seed. | Tipos físicos UUID/text/date/timestamptz, migration V1, mapeamentos JPA e seed explícito implementados no Exercício 2; sessão em memória e política SEG-01 implementadas no Exercício 3. |
 | DT-03 | Instalação, arranque, ambiente de execução e distribuição. | Base local/Compose implementada com React compilado no Spring Boot e PostgreSQL; comandos e evidências em README/setup/verification. Entrega funcional, CI e validação noutro computador continuam pendentes. |
-| DT-04 | Contrato API colaborativo. | 24 operações documentadas e validadas. Base de planeamento concluída; rever convenções pendentes antes do incremento dependente e manter contrato alinhado com a implementação. |
-| PD-01 | Limites de texto. | Não definidos; limites dos exemplos da aula não são automaticamente requisitos deste projeto. |
-| PD-02 | Falhas de gravação. | Regra aprovada: erro explícito, conservar dados confirmados e formulário; atomicidade e solução concreta ainda por implementar. |
+| DT-04 | Contrato API colaborativo. | 24 operações documentadas e validadas. Base de planeamento concluída; Exercícios 3/4 implementam 12 operações (acesso, consultas e CRUD de projetos), com servidor /api e estado por operação; restantes fluxos continuam planeados. Manter contrato alinhado com cada incremento. |
+| PD-01 | Limites de texto. | Projetos seguem exatamente o contrato: nome não vazio/não só espaços e descrição opcional, sem máximos. Não adotar 3–100/1000 dos exemplos. Restantes campos seguem o contrato de cada incremento. |
+| PD-02 | Falhas de gravação. | Regra aprovada: erro explícito, conservar dados confirmados e formulário; transações/cascata/rollback implementados e verificados para projetos no Exercício 4; restantes escritas pendentes. |
 | PD-03 | Desempenho, acessibilidade e larguras-alvo. | Interface adaptável pedida na ficha; testes/metas ainda por definir. |
-| PD-04 | Correspondência de pesquisa/acentos. | Tarefas ignoram maiúsculas; acentos e detalhe da pesquisa de projetos por definir. |
+| PD-04 | Correspondência de pesquisa/acentos. | Projetos resolvidos por PESQ-01 (parcial, sem maiúsculas/acentos). Tarefas ignoram maiúsculas; correspondência de acentos para tarefas continua pendente antes da sua pesquisa. |
 | PD-05 | Ordem inicial e navegação do calendário. | Desenho ainda por detalhar. |
 | PD-06 | Âmbito exato das contagens do painel. | Incluir só conjunto autorizado; definir explicitamente tarefas independentes/arquivadas antes de implementar. |
 | PD-07 | Expiração/duração de sessão e pormenores cookie/CSRF. | Resolvido no Exercício 3: SEG-01, cookie matriz_session HttpOnly/SameSite=Lax/Secure no perfil prod; CSRF por sessão e X-CSRF-Token. Ver security.md e evidências. |

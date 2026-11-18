@@ -3,6 +3,7 @@ body { margin: 0; }
 main { max-width: 48rem; margin: 10vh auto; padding: 2rem; background: white; border: 1px solid #ddd; }
 form { display: grid; gap: .75rem; max-width: 26rem; }
 input, button { font: inherit; padding: .7rem; }
+textarea { font: inherit; padding: .7rem; resize: vertical; border: 1px solid #777; border-radius: .25rem; }
 input { border: 1px solid #777; border-radius: .25rem; min-width: 0; }
 button { cursor: pointer; border: 1px solid #444; border-radius: .25rem; background: #f2f2f2; }
 button:disabled { cursor: wait; opacity: .65; }
@@ -10,3 +11,17 @@ button:disabled { cursor: wait; opacity: .65; }
 [role=alert] { color: #9c2020; }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; }
 @media (max-width: 40rem) { main { margin: 1rem; padding: 1.25rem; } }
+.projects { border-top: 1px solid #ddd; margin-top: 2rem; padding-top: 1.5rem; }
+.projects nav { margin-bottom: 1rem; }
+.project-search { margin-top: 1.5rem; }
+.archive-filter { display: block; margin: 1rem 0; }
+.project-list { list-style: none; padding: 0; }
+.project-list li { display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap; border-bottom: 1px solid #ddd; padding: 1rem 0; }
+.project-list span { color: #555; }
+.description { white-space: pre-wrap; overflow-wrap: anywhere; }
+dt { font-weight: 600; margin-top: .75rem; } dd { margin: .25rem 0 1rem; }
+dialog { border: 1px solid #777; border-radius: .4rem; padding: 1.5rem; max-width: min(32rem, 80vw); }
+dialog::backdrop { background: #0006; }
+
+.project-list a { overflow-wrap: anywhere; min-width: 0; flex: 1 1 16rem; }
+h2, dd { overflow-wrap: anywhere; }

@@ -1,6 +1,6 @@
 ﻿# Matriz — Requisitos do MVP colaborativo
 
-**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; Exercício 3 implementa acesso e consultas protegidas com SEG-01; CRUD e restante MVP ainda por implementar.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; tarefas/colaboração de escrita e restante MVP ainda por concluir.
 
 ## Visão e objetivos
 
@@ -77,7 +77,7 @@ Arquivo conserva dados, estados, colaboradores, comentários e atribuições. Ex
 
 Pesquisa de tarefas por parte do título sem distinguir maiúsculas/minúsculas; filtros por projeto, estado e prioridade combinados por interseção nas três vistas. Opções Sem projeto e Sem prioridade; pesquisa vazia não restringe. Todas as consultas começam pelo conjunto autorizado, nunca pelos dados globais.
 
-Pesquisa de projetos pelo nome sem devolver projetos sem acesso; política de correspondência detalhada a confirmar no contrato. O calendário usa prazo previsto; tarefas sem prazo permanecem na lista/Kanban. Arrastar cartões não é obrigatório.
+Pesquisa de projetos pelo nome sem devolver projetos sem acesso; PESQ-01 confirma correspondência por parte do nome sem distinguir maiúsculas ou acentos; texto literal, vazio não restringe. Sem paginação definida. O calendário usa prazo previsto; tarefas sem prazo permanecem na lista/Kanban. Arrastar cartões não é obrigatório.
 
 Progresso = concluídas/total das tarefas do projeto × 100, arredondado a uma casa decimal; sem tarefas, 0% e Sem tarefas. Tarefas independentes não entram no progresso de projetos. Alterações e eliminações atualizam resultados confirmados.
 
@@ -87,7 +87,7 @@ Painel mostra utilizador, projetos acessíveis e contagens por estado do conjunt
 
 Formulários com validação, carregamento, vazio, sucesso e erro. Preservar entradas quando uma submissão falha; evitar submissões repetidas durante pedido em curso. Atualizar listagens, filtros e contagens com resposta confirmada da API, sem recarregar a página nem duplicar registos. Remover mocks das funcionalidades concluídas.
 
-Sem sucesso antes da gravação; em falha conservar dados confirmados e permitir nova tentativa após corrigir a causa. Sessão inválida encaminha para início de sessão e apresenta mensagem compreensível. Sessão no servidor e cookie aprovados em COL-05; Spring Security e SEG-01 concretizam sessão em memória com 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Ver security.md.
+Sem sucesso antes da gravação; em falha conservar dados confirmados e permitir nova tentativa após corrigir a causa. Sessão inválida encaminha para início de sessão e apresenta mensagem compreensível. Sessão no servidor e cookie aprovados em COL-05; Spring Security e SEG-01 concretizam sessão em memória com 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Ver security.md para cookie/CSRF.
 
 ## Qualidade, verificação e entrega
 
