@@ -133,3 +133,8 @@ CRUD/listagem de tarefas implementados com CurrentIdentity, TaskAccess e CSRF; 1
 ## Atualização — Exercício 6
 
 20 de 24 operações implementadas: elegíveis, criação/remoção de responsáveis e criação de comentários acrescentados. Escritas verificam acesso/arquivo com locks projeto/tarefa dentro da transação; CSRF obrigatório. utilizadorId é uma seleção validada, nunca identidade do ator. Duplicado não concede acesso; apenas criador elegível em pessoais. Autor/instante de comentário exclusivamente do backend; conteúdo COM-01 (1–2000 pontos de código Unicode, não só espaços). Gestão de colaboradores continua bloqueada. Ver task-collaboration.md e verification.md.
+
+
+## Atualização — Exercício 7
+
+Colaboradores (US-17), painel (US-22), Kanban (US-07) e calendário (US-08) integrados na interface/API. PAINEL-01 inclui pessoais + projetos ativos acessíveis na UI, exclui arquivo, não depende dos filtros da lista. COL-07 permite ao proprietário gerir colaboradores mesmo arquivado; remoção limpa atribuições atomicamente e conserva autoria/contas. Tarefas arquivadas continuam protegidas contra escrita. Modelo/stack/V1/V2 preservados; OpenAPI 0.7.0 com 24 operações implementadas. As referências anteriores a estas funcionalidades pendentes ficam superadas por este incremento. Ver [integração](frontend-integration.md) e verification.md para resultados/limites; entrega final/CI não declaradas concluídas.

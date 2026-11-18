@@ -8,6 +8,9 @@ import TaskForm from './TaskForm'
 import DeleteTaskDialog from './DeleteTaskDialog'
 import TaskAssignees from './TaskAssignees'
 import TaskComments from './TaskComments'
+import TaskViews from './TaskViews'
+import { currentMonth } from './types'
+import type { TaskView } from './TaskViews'
 
 const empty = { q: '', project: '', state: '', priority: '', from: '', to: '' }
 function hashTask() { return window.location.hash.startsWith('#tarefas/') ? window.location.hash.slice('#tarefas/'.length) : null }
@@ -29,6 +32,8 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [view, setView] = useState<TaskView>('list')
+  const [month, setMonth] = useState(currentMonth)
   const inFlight = useRef(false)
   useEffect(() => {
     if (projectId) return
@@ -116,10 +121,7 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
         </form>
         <p data-testid="task-count">Nesta lista: {tasks.length} tarefas.</p>
         <p>{Object.entries(states).map(([state, label]) => `${label}: ${tasks.filter(t => t.estado === state).length}`).join(' · ')}</p>
-        {tasks.length === 0 ? <p>Nenhuma tarefa encontrada.</p> : <ul className="task-list">{tasks.map(task => <li key={task.id}>
-          <button className="task-open" onClick={() => navigate(task.id)}>{task.titulo}</button>
-          <span>{states[task.estado]} · {task.prioridade ? priorities[task.prioridade] : 'Sem prioridade'} · {task.prazo ?? 'Sem prazo'}</span>
-        </li>)}</ul>}
+        <TaskViews tasks={tasks} view={view} onView={setView} month={month} onMonth={setMonth} onOpen={navigate} />
       </>}
     </>}
     {confirm && selected && <DeleteTaskDialog title={selected.titulo} busy={busy} error={error} onCancel={() => { setConfirm(false); setError('') }} onConfirm={remove} />}

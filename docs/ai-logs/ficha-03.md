@@ -1438,3 +1438,44 @@ Cada incremento foi testado e revisto antes do seguinte. Gestão de colaboradore
 O utilizador autorizou: “avança com o commit e push do exercicio 6”. Preparado commit com Refs #7 para responsáveis/elegíveis, comentários COM-01, interface, testes, contrato e documentação associados. A confirmação de SHA remoto/publicação e fecho da issue será registada no GitHub após push verificado.
 
 Evidência funcional existente: 66 testes backend, lint/build, 18 testes normais Chrome e 1 separado de reinício passaram; não foram apresentados como nova execução nesta operação Git. Diff e ficheiros revistos, sem incluir ambiente, gerados, caches ou temporários. Sem reescrever histórico, alterar migrations ou dados da aplicação.
+
+
+## Exercício 7 — Frontend e integração — 18/11/2026
+
+**Pedido:** “ok vamos então passar para o exercicio 7”. Consultada a página 5 da ficha prática 03 e documentação/implementação existentes. Plano em frontend-integration.md.
+
+**PAINEL-01, resposta do utilizador:** “Tarefas pessoais + projetos ativos acessíveis; excluir arquivados”. Contagens independentes dos filtros da lista.
+
+**COL-07, resposta do utilizador:** “Permitir ao proprietário adicionar/remover colaboradores mesmo arquivado”. Preservar bloqueio de escritas de tarefas arquivadas e limpeza COL-06.
+
+Incrementos anunciados: colaboradores, painel, vistas de tarefas e revisão responsiva/integração, com testes e revisão do diff entre passos. Sem novas entidades/migrations.
+
+
+### Exercício 7, incremento 1 — Colaboradores
+
+GET/POST/DELETE de colaboradores e interface no detalhe, email exato de conta existente, proprietário exclusivo, duplicado/proprietário=409 e inexistente=404. COL-07 permite gestão em arquivado. Remoção aplica COL-06 na transação/lock de projeto, sem apagar comentários/contas. Testes executados: 17 passaram (5 ProjectCollaborationTest + 12 SecurityTest), incluindo rollback real da limpeza em PostgreSQL descartável, CSRF e revogação. Lint/build passaram no passo de UI. Diff revisto antes do painel: rotas específicas, esquema preservado e ordem de locks compatível com tarefas. Testes de navegador serão executados na integração final com fixtures próprias.
+
+
+### Exercício 7, incremento 2 — Painel
+
+Snapshot transacional autorizado com utilizador, projetos ativos e contagens TAR-01; UI pede incluirIndependentes=true conforme PAINEL-01, independente dos filtros da lista. Navegação Painel/Projetos/Tarefas; painel consulta valores atuais ao voltar/atualizar, sem polling que renove sessão. Quatro testes DashboardTest passaram; o primeiro comando revelou 500 por parâmetro ausente, corrigido para 400 com validação explícita e repetição 4/4. Lint/build passaram; diff revisto antes das vistas. Regressão backend completa após integração: 75 testes passaram, zero falhas/erros/ignorados.
+
+### Exercício 7, incrementos 3/4 — Vistas e layout
+
+Lista/Kanban/calendário sobre o mesmo conjunto autorizado/filtrado; detalhe e formulários existentes reutilizados, rótulos portugueses e três estados técnicos. Calendário mensal, segunda-feira primeiro, navegação/mês atual, prazos como datas sem conversão UTC; tarefas sem prazo na lista/Kanban. Layout adaptável e componentes consistentes. Lint/build passaram; um aviso Fast Refresh foi resolvido movendo a função de mês atual para o módulo de tipos/utilitários. Backend/proxy mantêm endereço central /api. Verificação de navegador e revisão visual em curso; resultados finais em verification.md.
+
+
+### Exercício 7 — Fecho local e evidências
+
+21 testes normais Chrome passaram, com 4 especiais ignorados. Após inspeção visual, os títulos do calendário móvel estavam comprimidos; grelha com contagens e agenda legível acrescentadas, lint/build/Docker e três testes afetados repetidos com sucesso. Capturas finais desktop e móvel inspecionadas e guardadas em docs/ui. Navegação após reinício testada separadamente: projeto/descrição conservados após novo login, 1 teste passou.
+
+OpenAPI 0.7.0 válido com as 24 operações implementadas; cinco exemplos e cinco respostas reais novas de painel/colaboradores validadas, DELETE 204 e cleanup próprio. Baseline após testes: 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário, 2 atribuições; V1/V2 preservadas. Regressão backend: 75 testes sem falhas/erros/ignorados. README, requisitos, histórias, restrições, arquitetura/modelo, plano, instruções e verification.md atualizados com PAINEL-01/COL-07 e limites.
+
+Trabalho implementado e verificado localmente, sem commit/push deste exercício. Issue #8 permanece aberta. A ficha 03/entrega não são declaradas concluídas: segue Exercício 8, verificação consolidada; CI, entrega noutro computador e apresentação continuam pendentes.
+
+
+## Registo Git do Exercício 7 — 18/11/2026
+
+O utilizador autorizou “vamos passar ao commit/push então”. Preparado commit com Refs #8 para Frontend integrado, painel PAINEL-01, colaboradores COL-07, vistas, testes, contrato, capturas e documentação associados. Confirmação de SHA remoto/publicação e fecho na issue #8 após push verificado.
+
+Evidência funcional existente: 75 testes backend, lint/build, 21 cenários normais Chrome e um teste separado de reinício passaram; três cenários afetados pelo ajuste móvel foram repetidos com sucesso. Não se apresenta esta operação Git como nova execução desses testes. Diff/ficheiros revistos, sem ambiente, gerados ou temporários. Sem reescrever histórico, alterar migrations ou dados da aplicação.

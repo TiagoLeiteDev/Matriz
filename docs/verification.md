@@ -257,3 +257,41 @@ No fecho da implementação, o incremento estava local. O utilizador autorizou p
 
 
 **Conferência final do Exercício 6:** dois utilizadores, dois projetos, três tarefas, um comentário e duas atribuições preexistentes conservados após cleanup; Flyway apenas V1/V2 success=true. Links locais dos ficheiros alterados válidos; diff sem erros de whitespace; ficheiros de ambiente/gerados e migrations fora do conjunto alterado. Apenas artefactos próprios criados nos testes foram removidos.
+
+
+## Exercício 7 — Frontend e integração — 18/11/2026
+
+Enunciado consultado: 10 - Ficha Prática 03.pdf, página 5. Plano em frontend-integration.md. Decisões humanas PAINEL-01 (pessoais + projetos ativos acessíveis, excluindo arquivados) e COL-07 (proprietário gere colaboradores mesmo arquivado) registadas antes da implementação. Issue #8 aberta antes do código.
+
+| Verificação/incremento | Esperado | Observado |
+|---|---|---|
+| Colaboradores: ProjectCollaborationTest + SecurityTest | Proprietário, referências, duplicados, CSRF, arquivo, revogação/limpeza atómica e rollback. | 17 passaram (5+12), zero falhas/erros/ignorados. |
+| Painel: DashboardTest | Contagens autorizadas, pessoais/arquivo, três estados, vazio, revogação e parâmetro explícito. | 4 passaram após corrigir parâmetro ausente de 500 para 400; teste de regressão mantido. |
+| backend/mvnw.cmd -f backend/pom.xml verify | Regressão completa PostgreSQL descartável. | 75 testes, 0 falhas/erros/ignorados: 66 anteriores + 5 colaboradores + 4 painel. |
+| frontend lint/build | ESLint, TypeScript e bundle válidos. | Código 0; aviso Fast Refresh inicial resolvido movendo a função utilitária para types.ts. |
+| Docker build/up --wait | App integrada, sem apagar dados/volume. | Build concluído e app/db healthy. Seed não repetido; nenhuma migration nova. |
+| npm.cmd --prefix e2e test (Chrome) | Regressão com ecrã inicial Painel e novos fluxos. | 21 passaram, 4 especiais ignorados por desenho (expiração e reinícios separados). |
+| frontend-integration.spec.ts, após ajuste móvel | Painel, colaboradores em arquivo e vistas/filtros/prazo; legibilidade móvel. | 3 passaram; sem overflow horizontal a 360 px, agenda móvel visível com título completo. Não somar esta repetição como testes adicionais à suite de 21. |
+| MATRIZ_RESTART_TEST=1, test:projects-restart | Navegação para detalhe e persistência após restart e novo login. | 1 passou (19,9 s); projeto/descrição conservados. |
+| OpenAPIV31SpecValidator/JSON Schema | Contrato e respostas reais conformes. | OpenAPI 0.7.0 válido, 24 operações implementadas; 5 exemplos válidos, 5 respostas novas reais de painel/colaboradores conformes, DELETE colaborador/projeto 204. Fixture própria removida. Listagem/detalhes de tarefas também conformes. |
+| Conferência da BD após cleanup | Dados originais conservados. | 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições; Flyway V1/V2 success=true, sem versões adicionais. |
+
+### Percursos e revisão visual
+
+1. Painel inicial corresponde à API; editar tarefa para DONE atualiza contagens ao voltar, arquivar retira projeto/tarefas, pessoal continua incluída. Painel não usa filtros da lista.
+2. Ana adiciona Bruno numa fixture própria; Bruno acede mas não recebe controlos de gestão de colaboradores. Responsável e comentário criados; remoção de Bruno em arquivo revoga acesso e elimina só atribuição, preservando comentário/autoria. Nova adição em arquivo também funciona.
+3. Três tarefas em três estados aparecem nas colunas corretas; tarefa sem prazo mantém-se no Kanban; filtro HIGH reutilizado no calendário; alterar prazo para outro mês e estado para DONE atualiza as vistas sem reload.
+4. Capturas desktop e 360 px inspecionadas. A primeira captura móvel mostrou títulos comprimidos na grelha; ajustada a apresentação para grelha com contagens e agenda legível abaixo, mantendo os mesmos dados. Lint/build, imagem integrada e os três testes afetados repetidos com sucesso. Capturas finais em docs/ui/frontend-kanban-desktop.png e frontend-calendar-mobile.png.
+
+### Revisão do diff e rastreabilidade
+
+- Incremento 1 reutiliza o lock de projeto e transação com COL-06; contas/autoria preservadas. Incremento 2 usa snapshot REPEATABLE_READ entre perfil/projetos/tarefas; nova API não aceita identidade do cliente. Diff e validações revistos antes das vistas.
+- Vistas reutilizam dados e filtros reais, sem endpoints/mocks próprios; datas sem conversão UTC. Layout reutiliza formulários, cliente /api, mensagens e proteção CSRF. Primeiro ecrã agora é Painel; o teste antigo de projetos foi atualizado para selecionar Projetos explicitamente, preservando deep links.
+- Schema físico/stack/V1/V2 mantidos. Backend conta o conjunto autorizado completo, sem depender de quantos cartões/linhas são apresentados. Sem paginação aprovada, sem garantias novas de desempenho.
+- Ficheiros de ambiente/gerados/temporários excluídos; capturas contêm apenas fixtures fictícias. Testes eliminam somente os próprios IDs, nunca o seed/volume. Não repetir as verificações especiais ignoradas como se tivessem passado: apenas o reinício de projetos foi executado neste incremento; os restantes têm evidência dos incrementos anteriores.
+
+### Limites e próximos passos
+
+A interface suporta as funcionalidades aprovadas, mas isto não declara encerrada a ficha 03 ou a entrega. Exercício 8: auditoria consolidada dos cenários da ficha e evidências. CI, cópia limpa/noutro computador e preparação de apresentação permanecem pendentes. Testados Chrome desktop e largura 360 px; não há auditoria WCAG, cobertura universal de browsers ou ensaios de grandes volumes. Pesquisa/painel sem paginação, contagens calculadas a partir do conjunto autorizado em memória e sem ETags para formulários antigos. Sem drag-and-drop no Kanban (não obrigatório), registo público ou exposição pública.
+
+No fecho da implementação, o Exercício 7 estava local. O utilizador autorizou posteriormente commit/push; a confirmação de publicação fica na issue #8.

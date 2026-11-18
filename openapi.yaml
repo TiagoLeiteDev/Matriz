@@ -1,22 +1,17 @@
 openapi: 3.1.0
 info:
   title: Matriz API colaborativa
-  version: 0.6.0
-  description: 'Matriz colaborativa — contrato ativo. Exercício 3 implementa sessão/CSRF e consultas protegidas;
-    Exercício 4 implementa CRUD de projetos, arquivo/restauro e pesquisa PESQ-01. Exercício 5 implementa
-    CRUD de tarefas, filtros PESQ-02 e transferências COL-06. TAR-01 altera estados e prioridades com
-    migração V2 aprovada. As restantes operações estão planeadas e continuam bloqueadas. Ver x-implementation-status
-    em cada operação. Sessão no servidor: 60 minutos de inatividade, sem lembrar-me, sem persistência
-    após reinício, revogada no logout. Cookie matriz_session HttpOnly/SameSite=Lax/Secure no perfil HTTPS
-    de produção. CSRF obrigatório em operações de escrita, incluindo login/logout; token obtido por GET
-    /sessao/csrf e novamente após autenticação/logout. Cabeçalho X-CSRF-Token. Uma escrita sem CSRF pode
-    devolver 403 antes da verificação de autenticação. Listagens não têm paginação definida nem ordem
-    garantida. PATCH conserva campos omitidos; null limpa apenas opcionais. Identidade do ator nunca vem
-    do pedido. UUIDs são devolvidos como strings opacas. Pesquisa de projetos por parte do nome, ignorando
-    maiúsculas e acentos, sem paginação e com q literal; filtro arquivado=false por defeito. Nome não
-    vazio/não só espaços; descrição opcional; sem limites máximos de texto definidos. Não há exposição
-    pública aprovada. Exercício 6 implementa elegíveis, atribuições e criação de comentários COM-01; restantes
-    operações planeadas permanecem bloqueadas.'
+  version: 0.7.0
+  description: 'Matriz colaborativa — contrato ativo OpenAPI 0.7.0, 24 operações implementadas em /api.
+    Sessão no servidor com 60 minutos de inatividade, sem lembrar-me, invalidada no logout/reinício. Cookie
+    matriz_session HttpOnly/SameSite=Lax/Secure no perfil HTTPS de produção. Escritas exigem X-CSRF-Token
+    obtido por GET /sessao/csrf; renovar após autenticação/logout. Identidade inferida no backend, autorização
+    por recurso. TAR-01: TODO/IN_PROGRESS/DONE, LOW/MEDIUM/HIGH ou null; nova prioridade omitida=MEDIUM,
+    null explícito=Sem prioridade. Pesquisas PESQ-01/02 literais, sem maiúsculas/acentos, sem paginação/ordem
+    garantida. PATCH preserva omitidos e limpa apenas opcionais com null. COM-01 limita novos comentários
+    a 1–2000 pontos de código Unicode; autor/instante do servidor. PAINEL-01 usa conjunto autorizado/ativo,
+    parâmetro explícito incluirIndependentes; UI envia true. COL-07 permite gerir colaboradores de arquivados
+    pelo proprietário; COL-06 limpa atribuições atomicamente. Não há exposição pública aprovada.'
 security:
 - Sessao: []
 paths:
@@ -318,12 +313,15 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-      x-implementation-status: planned
+        '400':
+          $ref: '#/components/responses/400'
+      x-implementation-status: implemented
     post:
       operationId: adicionarColaborador
       summary: Adicionar colaborador existente
-      description: So proprietario; identificar conta existente por email, sem registo publico. Nao duplicar
-        colaboracao nem criar perfil global.
+      description: 'So proprietario; identificar conta existente por email, sem registo publico. Nao duplicar
+        colaboracao nem criar perfil global. COL-07: proprietário pode gerir também em projeto arquivado.
+        Email exato de conta existente, como no login; proprietário/duplicado=409.'
       responses:
         '201':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -359,7 +357,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ColaboradorRequest'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /projetos/{projetoId}/colaboradores/{utilizadorId}:
     parameters:
     - $ref: '#/components/parameters/ProjetoId'
@@ -368,7 +366,8 @@ paths:
       operationId: removerColaborador
       summary: Remover colaborador
       description: So proprietario. Remover colaboracao e atribuicoes agora inelegiveis na mesma operacao.
-        Nao remover proprietario por esta rota nem apagar contas ou autoria de comentarios.
+        Nao remover proprietario por esta rota nem apagar contas ou autoria de comentarios. COL-07 permite
+        também em arquivado; par inexistente=404; proprietário=409. Limpeza COL-06 transacional.
       responses:
         '204':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -382,9 +381,11 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       parameters:
       - $ref: '#/components/parameters/Csrf'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /tarefas:
     get:
       operationId: listarTarefas
@@ -814,9 +815,10 @@ paths:
     get:
       operationId: consultarPainel
       summary: Consultar painel inicial
-      description: 'Proposta explicita: projetos acessiveis nao arquivados e contagens de tarefas desses
-        projetos; parametro incluirIndependentes escolhe incluir tarefas pessoais. Nunca inclui arquivados,
-        dados alheios ou apenas a pagina visivel. Politica de contagem para revisao.'
+      description: 'PAINEL-01: snapshot do utilizador, projetos ativos acessíveis e contagens autorizadas
+        por estado. incluirIndependentes=true inclui tarefas pessoais; false conta apenas tarefas dos
+        projetos ativos. A interface envia true. Exclui arquivados; não depende dos filtros/página da
+        lista. Requer booleano explícito true/false.'
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -836,10 +838,10 @@ paths:
       - name: incluirIndependentes
         in: query
         required: true
-        description: Escolha explicita do conjunto; sem valor assumido.
+        description: Escolha explícita do conjunto; UI usa true conforme PAINEL-01. Sem valor assumido.
         schema:
           type: boolean
-      x-implementation-status: planned
+      x-implementation-status: implemented
 components:
   securitySchemes:
     Sessao:

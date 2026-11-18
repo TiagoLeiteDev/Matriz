@@ -4,15 +4,16 @@ import type { UserProfile } from './api/client'
 import LoginForm from './features/auth/LoginForm'
 import ProjectsWorkspace from './features/projects/ProjectsWorkspace'
 import TasksWorkspace from './features/tasks/TasksWorkspace'
+import Dashboard from './features/projects/Dashboard'
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
-  const [tasksPage, setTasksPage] = useState(() => window.location.hash.startsWith('#tarefas'))
+  const [route, setRoute] = useState(() => window.location.hash)
   useEffect(() => {
-    const change = () => setTasksPage(window.location.hash.startsWith('#tarefas'))
+    const change = () => setRoute(window.location.hash)
     window.addEventListener('hashchange', change)
     return () => window.removeEventListener('hashchange', change)
   }, [])
@@ -58,9 +59,9 @@ export default function App() {
       {message && <p role="status">{message}</p>}
       <div className="actions"><button onClick={refresh} disabled={busy}>Atualizar perfil</button>
         <button onClick={exit} disabled={busy}>Terminar sessão</button></div>
-      <nav className="actions" aria-label="Navegação principal"><button onClick={() => { window.location.hash = 'projetos' }}>Projetos</button>
+      <nav className="actions" aria-label="Navegação principal"><button onClick={() => { window.location.hash = 'painel' }}>Painel</button><button onClick={() => { window.location.hash = 'projetos' }}>Projetos</button>
         <button onClick={() => { window.location.hash = 'tarefas' }}>Tarefas</button></nav>
-      {tasksPage ? <TasksWorkspace userId={user.id} onSessionExpired={sessionExpired} /> : <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} />}
+      {route.startsWith('#tarefas') ? <TasksWorkspace userId={user.id} onSessionExpired={sessionExpired} /> : route.startsWith('#projetos') ? <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} /> : <Dashboard onSessionExpired={sessionExpired} />}
     </section> : <LoginForm message={message} onLogin={profile => { setUser(profile); setMessage('') }} />}
   </main>
 }

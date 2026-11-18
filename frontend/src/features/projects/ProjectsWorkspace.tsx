@@ -6,6 +6,7 @@ import type { Project } from './types'
 import ProjectForm from './ProjectForm'
 import DeleteProjectDialog from './DeleteProjectDialog'
 import TasksWorkspace from '../tasks/TasksWorkspace'
+import ProjectMembers from './ProjectMembers'
 
 function selectedId() { return window.location.hash.startsWith('#projetos/') ? window.location.hash.slice('#projetos/'.length) : null }
 
@@ -23,6 +24,7 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [accessRevision, setAccessRevision] = useState(0)
   const inFlight = useRef(false)
   const tasksChanged = useCallback(() => {
     if (!id) return
@@ -98,7 +100,8 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
           <button disabled={busy} onClick={changeArchive}>{selected.arquivado ? 'Restaurar projeto' : 'Arquivar projeto'}</button>
           <button disabled={busy} onClick={() => { setError(''); setSuccess(''); setConfirmDelete(true) }}>Eliminar projeto</button></div>
           : <p>Tens acesso de colaboração a este projeto.</p>}
-        <TasksWorkspace key={selected.id} userId={user.id} projectId={selected.id} readOnly={selected.arquivado}
+        <ProjectMembers key={selected.id} projectId={selected.id} owner={owner} onChanged={() => setAccessRevision(n => n + 1)} onSessionExpired={onSessionExpired} />
+        <TasksWorkspace key={`${selected.id}-${accessRevision}`} userId={user.id} projectId={selected.id} readOnly={selected.arquivado}
           onChanged={tasksChanged} onSessionExpired={onSessionExpired} />
       </article> : <>
         <h2>Projetos</h2><button onClick={() => { setSuccess(''); setForm('create') }}>Criar projeto</button>

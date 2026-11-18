@@ -4,7 +4,7 @@ Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso
 
 ## Estado atual
 
-Exercícios 1–6 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. Responsáveis e comentários integrados no Exercício 6. **Gestão de colaboradores, painel, Kanban e calendário continuam pendentes.** Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
+Exercícios 1–7 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. Responsáveis e comentários integrados no Exercício 6. Gestão de colaboradores, painel e vistas Lista/Kanban/Calendário integrados no Exercício 7; verificação final/CI/entrega continuam por concluir. Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
 
 ## Tecnologias aprovadas
 
@@ -35,11 +35,12 @@ Sem gestão global de organizações/equipas, convites, registo público, recupe
 | [Reconciliação](docs/scope-reconciliation.md) | Diferenças entre fichas e decisões substituídas. |
 | [Arquitetura](docs/architecture.md) | Monólito modular e responsabilidades. |
 | [Modelo e ER](docs/database.md) | Seis entidades, relações e regras. |
-| [OpenAPI](openapi.yaml) | API em /api; 20 operações implementadas e restantes marcadas como planeadas. |
+| [OpenAPI](openapi.yaml) | API em /api; 24 operações implementadas, com contratos e estados por operação. |
 | [Wireframes](docs/ui/wireframe-tarefas.md) | Tarefas colaborativas e início de sessão. |
 | [Revisão](docs/architecture-review.md) | Rastreabilidade e limitações da base colaborativa. |
 | [Plano](docs/implementation-plan.md) | Incrementos e verificações do Exercício 1 da ficha 03. |
 | [Verificação](docs/verification.md) | Resultados de infraestrutura e cenários funcionais ainda pendentes. |
+| [Frontend e integração](docs/frontend-integration.md) | Painel, colaboradores, Kanban/calendário, decisões PAINEL-01/COL-07 e evidências do Exercício 7. |
 | [Responsáveis e comentários](docs/task-collaboration.md) | Plano aprovado, contratos, COM-01, regras e verificação incremental do Exercício 6. |
 | [Tarefas](docs/tasks.md) | CRUD, filtros PESQ-02, estados TAR-01, migração V2 e transferências COL-06. |
 | [Projetos](docs/projects.md) | CRUD, pesquisa PESQ-01, permissões, transações e limites do Exercício 4. |
@@ -71,7 +72,7 @@ docker compose up -d app --wait
 Invoke-RestMethod http://127.0.0.1:8080/actuator/health
 ```
 
-Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout, gestão de projetos e tarefas em lista estão disponíveis; painel integral, Kanban/calendário e gestão de colaboradores continuam por implementar. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
+Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout, gestão de projetos e tarefas em lista estão disponíveis; painel, Kanban/calendário e gestão de colaboradores estão integrados no Exercício 7. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
 
 As migrations correm no arranque antes do seed. Para aplicar apenas o esquema, omitir o comando seed e iniciar app. Para carregar a demonstração mais tarde, executar explicitamente o mesmo comando seed. Uma nova execução não repõe dados editados/eliminados nem altera palavras-passe. Falhas/colisões fazem rollback; consultar os logs sem apagar dados para contornar o problema.
 
@@ -157,7 +158,7 @@ APP_ALLOWED_ORIGINS tem valores locais de exemplo em .env.example. O Compose enc
 - Públicas: GET /api/sessao/csrf e POST /api/sessao (login exige CSRF).
 - Com sessão: GET/DELETE /api/sessao.
 - Com sessão e autorização por recurso: GET /api/projetos/{id}, GET /api/tarefas/{id}, GET /api/tarefas/{id}/comentarios e GET /api/tarefas/{id}/responsaveis.
-- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. CRUD/listagem de tarefas foram acrescentados no Exercício 5. Responsáveis/elegíveis e criação de comentários foram acrescentados no Exercício 6. Gestão de colaboradores e painel continuam bloqueados.
+- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. CRUD/listagem de tarefas foram acrescentados no Exercício 5. Responsáveis/elegíveis e criação de comentários foram acrescentados no Exercício 6. Gestão de colaboradores e painel foram acrescentados no Exercício 7.
 
 O OpenAPI tem servidor relativo /api e x-implementation-status por operação. [security.md](docs/security.md) documenta a matriz e a distinção entre ator autenticado e responsável selecionado entre elegíveis.
 
@@ -251,7 +252,7 @@ O comando normal ignora por desenho os testes de expiração curta e de reiníci
 
 Após login, escolher Tarefas ou abrir um projeto ativo. Nova tarefa permite indicar título obrigatório, descrição, projeto (ou pessoal), estado, prioridade e prazo. Guardar confirma a persistência antes de atualizar a lista/progresso; abrir uma tarefa permite editar ou eliminar com confirmação. Cancelar a eliminação não envia pedidos.
 
-Aplicar filtros combina título sem maiúsculas/acentos, projeto/Sem projeto, estado, prioridade/Sem prioridade e datas inclusivas. Limpar filtros repõe o conjunto autorizado. As contagens identificam apenas essa lista filtrada; não representam o painel ainda pendente. As listas excluem projetos arquivados; leitura autorizada por ID continua possível.
+Aplicar filtros combina título sem maiúsculas/acentos, projeto/Sem projeto, estado, prioridade/Sem prioridade e datas inclusivas. Limpar filtros repõe o conjunto autorizado. As contagens identificam apenas essa lista filtrada; não representam o conjunto global do painel. As listas excluem projetos arquivados; leitura autorizada por ID continua possível.
 
 A V2 corre no arranque: conserva IDs, relações e prioridades null existentes; converte os estados/prioridades anteriores segundo TAR-01. Não editar V1 nem apagar o volume. Novas tarefas sem prioridade enviada assumem MEDIUM; enviar null mantém Sem prioridade. Transferências conservam criador/comentários e removem atribuições inelegíveis atomicamente. Ao desassociar uma tarefa criada por outro utilizador pode perder-se acesso; a UI informa essa consequência.
 
@@ -294,4 +295,19 @@ npm.cmd --prefix e2e run test:collaboration-restart
 Remove-Item Env:MATRIZ_COLLAB_RESTART_TEST
 ```
 
-Regressão normal: `npm.cmd --prefix e2e test`; backend: `./backend/mvnw.cmd -f backend/pom.xml verify`; frontend: lint/build documentados acima. O teste de reinício fica ignorado no comando normal. [Issue #7](https://github.com/TiagoLeiteDev/Matriz/issues/7); resultados efetivamente executados em [verification.md](docs/verification.md). Gestão de colaboradores não foi incluída automaticamente neste exercício.
+Regressão normal: `npm.cmd --prefix e2e test`; backend: `./backend/mvnw.cmd -f backend/pom.xml verify`; frontend: lint/build documentados acima. O teste de reinício fica ignorado no comando normal. [Issue #7](https://github.com/TiagoLeiteDev/Matriz/issues/7); resultados efetivamente executados em [verification.md](docs/verification.md). Gestão de colaboradores foi acrescentada posteriormente no Exercício 7.
+
+
+## Frontend integrado — Exercício 7
+
+Após iniciar sessão, o Painel inicial apresenta projetos ativos acessíveis e contagens TODO/IN_PROGRESS/DONE (rótulos portugueses). PAINEL-01 inclui tarefas pessoais e de projetos ativos acessíveis, exclui arquivados e não depende dos filtros da lista. A interface pede `GET /api/painel?incluirIndependentes=true`; o contrato suporta também false explicitamente. Voltar ao Painel consulta o estado atual; Atualizar painel permite renovar sem polling. Abrir um projeto leva ao detalhe e às tarefas.
+
+Em Projetos → detalhe, o proprietário pode adicionar uma conta existente pelo email exato e remover colaboradores. A lista pode ser consultada por quem tem acesso. COL-07 permite gerir colaboradores também em projetos arquivados. Remover revoga o acesso por essa relação e remove as atribuições desse utilizador nas tarefas do projeto na mesma transação (COL-06), conservando comentários/autoria/contas. Adicionar o proprietário ou duplicar participação devolve 409; email inexistente/participação inexistente devolve 404. As tarefas arquivadas continuam sem escritas.
+
+Em Tarefas, alternar Lista/Kanban/Calendário conserva os filtros e usa o mesmo conjunto autorizado. Cartões abrem o detalhe existente. Kanban agrupa pelos três estados; o calendário usa prazos, inicia no mês local atual e permite escolher mês/anterior/seguinte/atual, com segunda-feira primeiro. Tarefas sem prazo continuam na lista/Kanban. No telemóvel, a grelha mostra contagens e uma agenda abaixo apresenta títulos/prazos legíveis. Datas são tratadas como datas de calendário, sem conversão UTC. Alterar estado/prazo ou eliminar atualiza os resultados confirmados; voltar ao painel consulta as contagens atualizadas.
+
+Não existem novos mocks funcionais, tabelas ou migrations. API centralizada em frontend/src/api/client.ts (`/api`); Vite encaminha para o backend em desenvolvimento e a imagem final serve React/Spring na mesma origem. Sem novos endpoints para cada vista.
+
+Testes manuais: entrar como Ana, criar projeto/tarefas, alternar vistas e filtros; editar prazo/estado e voltar ao painel; adicionar Bruno por email, atribuí-lo e registar comentário; remover a colaboração e confirmar revogação/limpeza sem apagar autoria; testar gestão em arquivo pelo proprietário; consultar a interface a 360 px. Os testes automatizados usam apenas fixtures próprias e não eliminam dados do seed.
+
+Comandos de regressão mantidos: backend verify, frontend lint/build e `npm.cmd --prefix e2e test`. [Issue #8](https://github.com/TiagoLeiteDev/Matriz/issues/8); resultados e limites em [verification.md](docs/verification.md). Nenhuma publicação pública ou commit/push deste incremento implícitos.

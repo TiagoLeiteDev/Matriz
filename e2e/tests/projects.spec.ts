@@ -27,6 +27,7 @@ async function enter(page: Page, email = 'ana@example.test', navigate = true) {
   await page.getByLabel('Palavra-passe').fill(password!)
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Terminar sessão' })).toBeVisible()
+  if (!page.url().includes('#projetos/')) await page.getByRole('button', { name: 'Projetos', exact: true }).click()
 }
 async function createUi(page: Page, name: string, description = '') {
   await page.getByRole('button', { name: 'Criar projeto', exact: true }).click()

@@ -23,7 +23,7 @@ public class ProjectCommands {
         jdbc.update("INSERT INTO projeto (id, nome, descricao, proprietario_id) VALUES (?, ?, ?, ?)", id, input.nome(), input.descricao(), owner);
         return queries.get(id);
     }
-    private void lockOwner(UUID id) {
+    void lockOwner(UUID id) {
         identity.id();
         if (jdbc.query("SELECT id FROM projeto WHERE id = ? FOR UPDATE", (rs, n) -> rs.getObject(1, UUID.class), id).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);

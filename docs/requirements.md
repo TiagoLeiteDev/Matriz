@@ -1,6 +1,6 @@
 ﻿# Matriz — Requisitos do MVP colaborativo
 
-**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; Responsáveis e comentários integrados no Exercício 6; gestão de colaboradores e restante MVP ainda por concluir.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; Responsáveis e comentários integrados no Exercício 6; Frontend integrado no Exercício 7, incluindo colaboradores, painel e vistas; verificação final e entrega ainda por concluir.
 
 ## Visão e objetivos
 
@@ -71,7 +71,7 @@ Comentário: conteúdo obrigatório, não apenas espaços; autor e instante de c
 
 ### Arquivo
 
-Arquivo conserva dados, estados, colaboradores, comentários e atribuições. Exclui projeto/tarefas das vistas principais. Consulta separada só de projetos arquivados acessíveis; restauro apenas pelo proprietário. Impede novas tarefas/associações e alterações às tarefas, incluindo edição, estado, eliminação, transferência/desassociação, comentários e atribuições. A consulta autorizada de dados existentes pode manter-se em modo de leitura. O restauro repõe visibilidade conforme filtros e prazo.
+Arquivar, por si só, conserva dados, estados, colaboradores, comentários e atribuições. COL-07 permite ao proprietário gerir colaboradores mesmo arquivado; remover colaboração aplica a limpeza COL-06 das atribuições, conservando comentários/autoria. Exclui projeto/tarefas das vistas principais. Consulta separada só de projetos arquivados acessíveis; restauro apenas pelo proprietário. Impede novas tarefas/associações e alterações às tarefas, incluindo edição, estado, eliminação, transferência/desassociação, comentários e atribuições. A consulta autorizada de dados existentes pode manter-se em modo de leitura. O restauro repõe visibilidade conforme filtros e prazo.
 
 ### Consultas, progresso e painel
 
@@ -81,7 +81,7 @@ Pesquisa de projetos pelo nome sem devolver projetos sem acesso; PESQ-01 confirm
 
 Progresso = tarefas DONE/total das tarefas do projeto × 100, arredondado a uma casa decimal; sem tarefas, 0% e Sem tarefas. Tarefas independentes não entram no progresso de projetos. Alterações e eliminações atualizam resultados confirmados.
 
-Painel mostra utilizador, projetos acessíveis e contagens por estado do conjunto autorizado relevante, não apenas da página visível. Filtros e contagens não podem revelar dados sem acesso. A inclusão de tarefas independentes/arquivadas nas contagens do painel deve ser explícita no contrato antes da implementação.
+Painel mostra utilizador, projetos acessíveis e contagens por estado do conjunto autorizado relevante, não apenas da página visível. Filtros e contagens não podem revelar dados sem acesso. PAINEL-01 confirma pessoais + projetos ativos acessíveis na UI, excluindo arquivados e independentemente dos filtros da lista. O contrato mantém incluirIndependentes explícito; UI usa true.
 
 ### Interface, falhas e sessão
 
