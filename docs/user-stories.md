@@ -783,4 +783,4 @@ Como utilizador autenticado, quero ver os meus projetos acessíveis e contagens 
 
 ## Estado dos cenários
 
-São especificações, não resultados de testes. Biblioteca/duração de sessão e âmbito exato das contagens devem estar fechados antes de implementar os cenários dependentes. Mantêm-se limites de texto e detalhes de pesquisa por decidir. A base individual anterior foi preservada em history/mvp-individual-v1; não constitui especificação ativa.
+São especificações, não resultados de testes. Spring Security e SEG-01 (60 minutos de inatividade, sem lembrar-me, reinício/logout exigem login) concretizados no Exercício 3. Âmbito das contagens continua pendente; resultados de acesso/leitura em verification.md. CRUD ainda por implementar. Mantêm-se limites de texto e detalhes de pesquisa por decidir. A base individual anterior foi preservada em history/mvp-individual-v1; não constitui especificação ativa.

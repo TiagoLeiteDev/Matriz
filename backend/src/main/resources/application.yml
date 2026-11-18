@@ -13,9 +13,23 @@ spring:
     enabled: true
     clean-disabled: true
     validate-on-migrate: true
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
 server:
   address: ${APP_BIND_ADDRESS:127.0.0.1}
   port: ${APP_PORT:8080}
+  servlet:
+    session:
+      timeout: 60m
+      persistent: false
+      tracking-modes: cookie
+      cookie:
+        name: matriz_session
+        path: /
+        http-only: true
+        same-site: lax
+        secure: false
   error:
     include-message: never
     include-stacktrace: never
@@ -28,6 +42,8 @@ management:
     health:
       show-details: never
 matriz:
+  security:
+    allowed-origins: ${APP_ALLOWED_ORIGINS:http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:5173,http://localhost:5173}
   demo:
     seed-only: false
     password: ${DEMO_PASSWORD:}

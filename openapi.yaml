@@ -1,26 +1,13 @@
 openapi: 3.1.0
 info:
   title: Matriz API colaborativa
-  version: 0.2.0
-  description: 'Revisao documental para COL-01 e ficha 03; nao e uma API implementada.
-
-    Requisitos colaborativos e sessao no servidor/cookie aprovados. Naming, DTOs, nome do cookie, CSRF
-    e respostas HTTP sao proposta tecnica para revisao antes de implementar.
-
-    Sem paginacao definida; listagens devolvem o conjunto autorizado completo, sem ordem garantida. Completar
-    antes de adotar outro contrato.
-
-    Campos omitidos em PATCH mantem valor; null limpa apenas campos opcionais. Campos de identidade sao
-    do servidor.
-
-    Projeto arquivado bloqueia alteracoes a tarefas, comentarios e atribuicoes.
-
-    Confirmar eliminacoes na interface antes de enviar DELETE; cancelar nao envia pedido.
-
-    Sem exposicao publica aprovada. Configurar cookie HttpOnly, SameSite e Secure em HTTPS, invalidar/rodar
-    sessao e validar CSRF/origem com biblioteca adequada.
-
-    As duas criacoes da ficha 2 foram preservadas no historico; este e o contrato ativo colaborativo.'
+  version: 0.3.0
+  description: 'Matriz colaborativa: sessão/CSRF e consultas protegidas de projeto, tarefa, comentários
+    e responsáveis implementadas no Exercício 3. Restantes operações planeadas e bloqueadas. Sessão em
+    memória: 60 minutos de inatividade, sem lembrar-me; reinício/logout exigem login. Cookie HttpOnly/SameSite=Lax/Secure
+    no perfil HTTPS. CSRF também no login/logout; renovar após autenticação. Sem paginação ou correspondência
+    de pesquisa de projetos aprovada nesta versão. Identidade vem do backend; UUIDs opacos. Sem exposição
+    pública.'
 security:
 - Sessao: []
 paths:
@@ -28,8 +15,9 @@ paths:
     get:
       operationId: obterCsrf
       summary: Preparar protecao CSRF
-      description: Pode criar sessao anonima para login. Obter token, enviar em X-CSRF-Token e manter
-        cookie; voltar a obter apos login/rotacao.
+      description: Pode criar sessão anónima. Devolve token CSRF mascarado associado à sessão; enviar
+        em X-CSRF-Token e manter cookie. Obter novamente após login/rotação e logout. Não guardar em armazenamento
+        persistente nem logs; respostas sem cache.
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -40,12 +28,15 @@ paths:
         '500':
           $ref: '#/components/responses/500'
       security: []
+      x-implementation-status: implemented
   /sessao:
     post:
       operationId: iniciarSessao
       summary: Iniciar sessao
-      description: Credenciais de conta ficticia com hash no servidor. Validar CSRF/origem tambem no login,
-        rodar sessao ao autenticar e nunca devolver palavra-passe/hash.
+      description: Autenticação local por email exato e BCrypt; mensagem genérica para email inexistente/palavra-passe
+        errada. Validar CSRF e Origin quando presente. Rodar ID da sessão, apagar CSRF anterior e guardar
+        explicitamente contexto no servidor. Devolver apenas perfil; nunca credenciais/hash. Sessão com
+        60 minutos de inatividade, sem lembrar-me.
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -78,6 +69,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Credenciais'
+      x-implementation-status: implemented
     get:
       operationId: consultarSessao
       summary: Consultar utilizador autenticado
@@ -93,11 +85,13 @@ paths:
           $ref: '#/components/responses/401'
         '500':
           $ref: '#/components/responses/500'
+      x-implementation-status: implemented
     delete:
       operationId: terminarSessao
       summary: Terminar sessao
-      description: Invalidar sessao no servidor e expirar cookie; token CSRF invalido tambem deve ser
-        rejeitado.
+      description: Exige sessão válida e CSRF atual. Invalida sessão no servidor, limpa contexto e expira
+        cookie matriz_session. Cookie anterior deixa de autenticar. Obter novo CSRF para novo login; não
+        repetir automaticamente escritas falhadas.
       responses:
         '204':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -114,12 +108,13 @@ paths:
           $ref: '#/components/responses/500'
       parameters:
       - $ref: '#/components/parameters/Csrf'
+      x-implementation-status: implemented
   /projetos:
     get:
       operationId: listarProjetos
       summary: Listar e pesquisar projetos acessiveis
-      description: Apenas proprietario ou colaborador. Filtro arquivado separa ativos/arquivo. Pesquisa
-        por nome; correspondencia parcial/acentos ainda por confirmar. Nunca devolver projetos alheios.
+      description: 'Apenas proprietário ou colaborador atual. Filtro de arquivo separa ativos/arquivo.
+        Pesquisa por nome: correspondência e acentos ainda pendentes. Sem paginação.'
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -141,16 +136,17 @@ paths:
       - name: q
         in: query
         required: false
-        description: Pesquisa por nome; detalhes de correspondencia pendentes.
+        description: Pesquisa por nome; correspondência pendente.
         schema:
           type: string
       - name: arquivado
         in: query
         required: false
-        description: ''
+        description: 'false (predefinido): ativos; true: arquivo. Apenas valores literais true/false.'
         schema:
           type: boolean
           default: false
+      x-implementation-status: planned
     post:
       operationId: criarProjeto
       summary: Criar projeto
@@ -163,12 +159,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Projeto'
               example:
-                id: p-demo
+                id: 00000000-0000-4000-8000-000000000011
                 nome: Demonstracao
                 descricao: null
                 arquivado: false
                 proprietario:
-                  id: u-ana
+                  id: 00000000-0000-4000-8000-000000000001
                   nome: Ana Demo
                   email: ana@example.test
                 progresso:
@@ -201,6 +197,7 @@ paths:
               $ref: '#/components/schemas/CriarProjeto'
             example:
               nome: Demonstracao
+      x-implementation-status: planned
   /projetos/{projetoId}:
     parameters:
     - $ref: '#/components/parameters/ProjetoId'
@@ -224,10 +221,14 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
+      x-implementation-status: implemented
     patch:
       operationId: atualizarProjeto
       summary: Editar, arquivar ou restaurar projeto
-      description: So proprietario. arquivado=true arquiva, false restaura; nao apaga dependentes.
+      description: Só proprietário; arquivado=true arquiva, false restaura. Omitidos conservam; null limpa
+        apenas descricao. Proprietário imutável; operação ainda não implementada.
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -255,11 +256,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AtualizarProjeto'
+      x-implementation-status: planned
     delete:
       operationId: eliminarProjeto
       summary: Eliminar projeto e dependentes
-      description: So proprietario. Confirmacao explicita na UI. Remover atomicamente projeto, tarefas,
-        comentarios, atribuicoes e colaboracoes, sem eliminar utilizadores/outros projetos.
+      description: Só proprietário; confirmação explícita na UI; cascata atómica de dependentes sem eliminar
+        contas. Operação ainda não implementada.
       responses:
         '204':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -271,8 +273,11 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       parameters:
       - $ref: '#/components/parameters/Csrf'
+      x-implementation-status: planned
   /projetos/{projetoId}/colaboradores:
     parameters:
     - $ref: '#/components/parameters/ProjetoId'
@@ -298,6 +303,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+      x-implementation-status: planned
     post:
       operationId: adicionarColaborador
       summary: Adicionar colaborador existente
@@ -338,6 +344,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ColaboradorRequest'
+      x-implementation-status: planned
   /projetos/{projetoId}/colaboradores/{utilizadorId}:
     parameters:
     - $ref: '#/components/parameters/ProjetoId'
@@ -362,6 +369,7 @@ paths:
           $ref: '#/components/responses/500'
       parameters:
       - $ref: '#/components/parameters/Csrf'
+      x-implementation-status: planned
   /tarefas:
     get:
       operationId: listarTarefas
@@ -440,6 +448,7 @@ paths:
         schema:
           type: string
           format: date
+      x-implementation-status: planned
     post:
       operationId: criarTarefa
       summary: Criar tarefa
@@ -453,14 +462,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Tarefa'
               example:
-                id: t-demo
+                id: 00000000-0000-4000-8000-000000000021
                 titulo: Preparar dados
                 descricao: null
                 estado: Por Fazer
                 prioridade: null
                 prazo: null
-                projetoId: p-demo
-                criadorId: u-ana
+                projetoId: 00000000-0000-4000-8000-000000000011
+                criadorId: 00000000-0000-4000-8000-000000000001
           headers:
             Location:
               description: URI do recurso criado.
@@ -496,9 +505,10 @@ paths:
               associada:
                 value:
                   titulo: Preparar dados
-                  projetoId: p-demo
+                  projetoId: 00000000-0000-4000-8000-000000000011
                   prioridade: Alta
                   prazo: '2026-11-19'
+      x-implementation-status: planned
   /tarefas/{tarefaId}:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -522,6 +532,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+      x-implementation-status: implemented
     patch:
       operationId: atualizarTarefa
       summary: Editar tarefa, estado e associacao
@@ -561,6 +572,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AtualizarTarefa'
+      x-implementation-status: planned
     delete:
       operationId: eliminarTarefa
       summary: Eliminar tarefa e dependentes
@@ -581,6 +593,7 @@ paths:
           $ref: '#/components/responses/500'
       parameters:
       - $ref: '#/components/parameters/Csrf'
+      x-implementation-status: planned
   /tarefas/{tarefaId}/utilizadores-elegiveis:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -606,6 +619,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+      x-implementation-status: planned
   /tarefas/{tarefaId}/responsaveis:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -630,6 +644,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+      x-implementation-status: implemented
     post:
       operationId: atribuirResponsavel
       summary: Associar responsavel elegivel
@@ -669,6 +684,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ResponsavelRequest'
+      x-implementation-status: planned
   /tarefas/{tarefaId}/responsaveis/{utilizadorId}:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -692,6 +708,7 @@ paths:
           $ref: '#/components/responses/500'
       parameters:
       - $ref: '#/components/parameters/Csrf'
+      x-implementation-status: planned
   /tarefas/{tarefaId}/comentarios:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -716,6 +733,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+      x-implementation-status: implemented
     post:
       operationId: adicionarComentario
       summary: Adicionar comentario
@@ -756,6 +774,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComentarioRequest'
+      x-implementation-status: planned
   /painel:
     get:
       operationId: consultarPainel
@@ -785,13 +804,16 @@ paths:
         description: Escolha explicita do conjunto; sem valor assumido.
         schema:
           type: boolean
+      x-implementation-status: planned
 components:
   securitySchemes:
     Sessao:
       type: apiKey
       in: cookie
       name: matriz_session
-      description: Sessao no servidor aprovada; nome de cookie proposto. Sem token JWT.
+      description: Sessão em memória no servidor, por cookie HttpOnly/SameSite=Lax; Secure no perfil HTTPS.
+        Expira após 60 minutos de inatividade, logout ou reinício do backend. Sem JWT ou lembrar-me. Identificador
+        rodado no login; cookie sem Max-Age persistente.
   parameters:
     ProjetoId:
       name: projetoId
@@ -823,7 +845,9 @@ components:
     Id:
       type: string
       minLength: 1
-      description: String opaca na API; tipo fisico nao imposto.
+      description: UUID concretizado na persistência no Exercício 2; string opaca para o cliente. Receber
+        e reenviar IDs devolvidos pelo servidor, sem os construir. Formato inválido devolve 400.
+      format: uuid
     Texto:
       type: string
       minLength: 1
@@ -996,16 +1020,16 @@ components:
           $ref: '#/components/schemas/Estado'
           default: Por Fazer
         prioridade:
-          anyOf: &id001
+          anyOf:
           - $ref: '#/components/schemas/Prioridade'
           - type: 'null'
         prazo:
-          type: &id002
+          type:
           - string
           - 'null'
           format: date
         projetoId:
-          anyOf: &id003
+          anyOf:
           - $ref: '#/components/schemas/Id'
           - type: 'null'
       required:
@@ -1021,12 +1045,18 @@ components:
         estado:
           $ref: '#/components/schemas/Estado'
         prioridade:
-          anyOf: *id001
+          anyOf:
+          - $ref: '#/components/schemas/Prioridade'
+          - type: 'null'
         prazo:
-          type: *id002
+          type:
+          - string
+          - 'null'
           format: date
         projetoId:
-          anyOf: *id003
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
       minProperties: 1
     Projeto:
       type: object
@@ -1064,12 +1094,18 @@ components:
         estado:
           $ref: '#/components/schemas/Estado'
         prioridade:
-          anyOf: *id001
+          anyOf:
+          - $ref: '#/components/schemas/Prioridade'
+          - type: 'null'
         prazo:
-          type: *id002
+          type:
+          - string
+          - 'null'
           format: date
         projetoId:
-          anyOf: *id003
+          anyOf:
+          - $ref: '#/components/schemas/Id'
+          - type: 'null'
         criadorId:
           $ref: '#/components/schemas/Id'
       required:
@@ -1225,3 +1261,6 @@ components:
             title: Falha interna/de gravacao; nao expor detalhes internos nem confirmar alteracoes parciais
             status: 500
             codigo: ERRO_INTERNO
+servers:
+- url: /api
+  description: API da mesma origem; desenvolvimento com proxy Vite.

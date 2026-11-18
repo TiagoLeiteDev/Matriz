@@ -1,6 +1,6 @@
 ﻿# Ficha Prática 03 — Registo de trabalho e decisões
 
-**Início:** 18/11/2026. **Ferramenta:** Codex. **Estado:** Exercício 1 concluído; Exercício 2 implementado e verificado na base técnica. Funcionalidades de negócio ainda não implementadas. As secções anteriores mantêm o estado histórico de cada etapa.
+**Início:** 18/11/2026. **Ferramenta:** Codex. **Estado:** Exercícios 1/2 concluídos; acesso do Exercício 3 verificado. CRUD ainda por implementar.
 
 ## 1. Análise do enunciado
 
@@ -317,3 +317,242 @@ Após rever o incremento, o utilizador autorizou criar a issue, fazer commit/pus
 Criada a [issue #3](https://github.com/TiagoLeiteDev/Matriz/issues/3) para a base técnica e persistência. A criação é posterior à implementação e anterior ao commit. Este incremento fica num commit com `Refs #3`, incluindo código, migrations, configuração fictícia, testes e documentação. .env, dependências, builds e relatórios temporários ficam excluídos.
 
 Antes deste commit, foi confirmado diretamente no remoto que main apontava para e01a32e, contendo também dbfb2e0 e ca85963. As issues #1/#2 já têm os commits publicados. O resultado do push deste incremento e o fecho das issues serão registados no GitHub após confirmação, sem antecipar sucesso neste registo.
+
+## Exercício 3 — autenticação e autorização
+
+**Data:** 18/11/2026. **Ferramenta:** Codex/ChatGPT. **Issue:** [#4](https://github.com/TiagoLeiteDev/Matriz/issues/4), aberta após análise/decisão e antes da implementação do incremento.
+
+### Pedido, análise e controlo humano
+
+O utilizador forneceu o prompt de Senior Backend Engineer/Security Engineer para definir e implementar acesso seguro, identidade no backend, sessão, permissões, interface, testes e documentação. Revistos requisitos, histórias, restrições, modelo, arquitetura, contrato, README, AGENTS e código do Exercício 2. Foi preparado docs/security.md com plano, matriz, endpoints e casos de teste antes da implementação.
+
+A política temporal estava explicitamente pendente. O utilizador rejeitou a proposta inicial de 30 minutos (resposta “Quero definir outros prazos ou comportamento”) e escolheu: **“60 minutos de inatividade, sem «lembrar-me»; reinício e logout exigem novo login”**. Registada como SEG-01 e implementada sem persistência de sessões. Não se atribui aprovação à proposta rejeitada.
+
+Foi explicitada uma ambiguidade do prompt: responsáveis não podem ser sempre inferidos como o próprio ator, porque COL-02 permite selecionar vários elegíveis. Mantém-se o responsável selecionado e verifica-se elegibilidade; quem executa a operação vem exclusivamente da sessão. Proprietário/criador/autor serão inferidos nos respetivos casos de uso de escrita, ainda por implementar nos exercícios seguintes.
+
+### Implementação
+
+- Spring Security/DaoAuthenticationProvider/BCrypt e consulta parametrizada de contas; perfil DTO id/nome/email. Credenciais são apagadas do principal autenticado e não entram em respostas/logs.
+- Sessão em memória, timeout=60m, sem lembrar-me/URL rewriting/persistência. Identificador rodado no login e contexto guardado explicitamente; logout invalida sessão e expira cookie.
+- CSRF por sessão com token mascarado, inclusive login/logout; token anterior limpo após login. Origin explícito validado em escritas; sem CORS permissivo. Cookie HttpOnly/SameSite=Lax; perfil prod exige origens e ativa Secure.
+- CurrentIdentity, ProjectAccess/TaskAccess e quatro consultas mínimas reais de projeto/tarefa/comentários/responsáveis. Leituras autorizadas na mesma transação REPEATABLE_READ. Sem alterações à V1 ou entidades novas. Guardas de proprietário, arquivo, elegibilidade e destino para reutilização futura.
+- Interface React real: formulário, perfil/reload, logout, mensagens de erro e regresso ao login no 401. Sem tokens em localStorage/sessionStorage nem repetição automática de escritas.
+- OpenAPI 0.3.0: servidor /api, oito operações implementadas e dezasseis planeadas, IDs UUID coerentes com a persistência e exemplos corrigidos. A alteração de exemplos/formato é alinhamento técnico, não novo requisito funcional.
+- README, security, constraints, architecture, database, requirements, plano, verification e AGENTS atualizados. Dependência Playwright 1.65.1 fixada em e2e com lockfile; sem segredos novos.
+
+### Provas e revisão
+
+**21 testes Java passaram** (9 de infraestrutura + 12 de segurança), sem falhas/erros/ignorados. Incluem Tomcat real com política efetiva=60 minutos, rotação/credenciais, CSRF, dois utilizadores, revogação de participação, privacidade e guardas. Lint/build frontend passaram. Build Docker e app/BD healthy.
+
+No Chrome headless: **5 testes normais passaram** e um de timeout ficou ignorado por desenho; o mesmo teste de expiração foi executado separadamente contra container temporário com prazo=1m e **passou após 65 segundos sem pedidos**. A instância principal manteve 60 minutos. Reinício real: login prévio=200 e perfil com sessão anterior=401. Perfil prod local emitiu cookie Secure/HttpOnly/SameSite=Lax; não equivale a implantação HTTPS pública.
+
+OpenAPI validado: 24 operações, 12 exemplos válidos com formatos e 7 respostas JSON reais conformes com os schemas; logout=204. Resultados detalhados e limites em verification.md. Não se afirma implementação de CRUD, criação/autoria de escritas, limpeza COL-06 ou MVP completo.
+
+### Estado e próximo passo
+
+Exercício 3 concluído no âmbito de acesso e base de autorização, com dependências de escrita explicitamente identificadas. Próximo: Exercício 4, gestão de projetos com primeiro percurso completo. A issue #4 regista o incremento; commit/push deste trabalho não foram efetuados nesta etapa de implementação.
+
+### Prompt integral fornecido
+
+<details>
+<summary>Ver pedido do Exercício 3</summary>
+
+# ROLE
+
+Atua como Senior Backend Engineer e Security Engineer, especializado em autenticação, autorização, gestão de identidades, segurança de APIs REST e controlo de acessos em aplicações web.
+
+# GOAL
+
+Definir e implementar o mecanismo de autenticação e autorização da aplicação Matriz, garantindo que a identidade do utilizador é obtida exclusivamente através do processo de autenticação e que todas as regras de acesso são aplicadas no Backend de forma segura e consistente.
+
+# CONTEXT
+
+Consulta os seguintes documentos:
+
+- docs/requirements.md
+- docs/user\-stories.md
+- docs/constraints.md
+- docs/database.md
+- docs/architecture.md
+- openapi.yaml
+- README.md
+- AGENTS.md
+
+A infraestrutura da aplicação, a persistência de dados e a arquitetura já foram definidas nos exercícios anteriores. O objetivo agora é implementar e validar o acesso à aplicação, assegurando autenticação, autorização e proteção dos recursos do MVP.
+
+# CONSTRAINTS
+
+- Considera apenas o âmbito do MVP.
+- Segue o mecanismo de autenticação previamente aprovado na arquitetura.
+- Não inventes regras de negócio ou permissões não documentadas.
+- Todas as verificações de autorização devem ser realizadas no Backend.
+- Nunca confiar em dados de identidade enviados pelo cliente para determinar proprietário, autor ou permissões.
+- Se existirem palavras\-passe locais, armazenar apenas hashes seguros utilizando bibliotecas adequadas.
+- Utilizar apenas contas e dados de demonstração fictícios.
+- Aplicar as regras de acesso tanto através da interface como por acesso direto à API.
+- Não expor credenciais, tokens ou segredos reais.
+- Manter toda a configuração de segurança compatível com ambientes de desenvolvimento e produção.
+
+# TASKS
+
+## Autenticação
+
+1. Implementar o mecanismo de início de sessão.
+2. Implementar a consulta do perfil do utilizador autenticado.
+3. Implementar o fim de sessão.
+4. Definir o ciclo de vida da sessão ou token:
+    - Criação
+    - Utilização
+    - Renovação (se aplicável)
+    - Expiração
+    - Revogação ou logout
+5. Documentar o ciclo de autenticação no contrato da API e no README.
+
+## Gestão de Credenciais
+
+1. Verificar se existem palavras\-passe locais.
+2. Garantir o armazenamento exclusivo de hashes seguros.
+3. Identificar a biblioteca ou mecanismo de hashing utilizado.
+4. Validar que nenhuma palavra\-passe é armazenada em texto simples.
+
+## Identidade do Utilizador
+
+1. Obter a identidade do utilizador exclusivamente através da autenticação.
+2. Inferir automaticamente no Backend:
+    - Proprietário dos projetos
+    - Autor dos comentários
+    - Responsável pelas atribuições
+3. Impedir que estes valores sejam aceites como prova de identidade enviada pelo cliente.
+
+## Autorização
+
+1. Identificar as regras de acesso definidas para:
+    - Projetos
+    - Tarefas
+    - Comentários
+    - Atribuições
+2. Implementar mecanismos de autorização para cada operação protegida.
+3. Garantir que os mesmos controlos são aplicados:
+    - Na interface da aplicação
+    - Na API REST
+    - Em pedidos diretos à API
+
+## Validação
+
+1. Definir cenários de teste para:
+    - Credenciais válidas
+    - Credenciais inválidas
+    - Pedidos sem autenticação
+    - Acesso por utilizadores distintos
+    - Recursos autorizados
+    - Recursos não autorizados
+
+## Interface
+
+1. Verificar o comportamento da interface quando:
+    - O utilizador não está autenticado
+    - A sessão expira
+    - O token deixa de ser válido
+2. Garantir que o utilizador é encaminhado para o início de sessão quando necessário.
+3. Garantir que são apresentadas mensagens de erro compreensíveis.
+
+# OUTPUT
+
+## Estratégia de Autenticação
+
+Descrever:
+
+- Mecanismo utilizado
+- Fluxo de autenticação
+- Fluxo de logout
+- Gestão de sessões ou tokens
+- Justificação da solução
+
+## Gestão de Credenciais
+
+Apresentar:
+
+- Estratégia de hashing
+- Biblioteca utilizada
+- Medidas de proteção adotadas
+
+## Fluxo de Identidade
+
+Explicar:
+
+- Como a identidade é obtida
+- Como é propagada no Backend
+- Como é utilizada para determinar:
+    - Proprietários
+    - Autores
+    - Responsáveis
+
+## Matriz de Autorização
+
+Tabela contendo:
+
+- Recurso
+- Operação
+- Quem pode executar
+- Regra aplicada
+- Local da validação
+
+## Endpoints Protegidos
+
+Para cada endpoint:
+
+- Requer autenticação?
+- Requer autorização?
+- Validações aplicadas
+
+## Casos de Teste
+
+Listar cenários para:
+
+- Sucesso
+- Falha de autenticação
+- Falha de autorização
+- Expiração de sessão
+- Utilizadores distintos
+
+## Atualizações ao README
+
+Gerar os conteúdos necessários para documentar:
+
+- Configuração da autenticação
+- Processo de login
+- Processo de logout
+- Gestão de tokens ou sessões
+- Execução dos testes de segurança
+
+## Riscos e Recomendações
+
+Identificar:
+
+- Riscos de segurança
+- Limitações do MVP
+- Melhorias futuras recomendadas
+
+# VALIDATION
+
+Antes de concluir:
+
+- Verifica que a identidade do utilizador nunca depende de dados enviados pelo cliente.
+- Confirma que proprietários, autores e responsáveis são inferidos a partir da autenticação.
+- Verifica que todas as operações protegidas possuem controlo de autorização.
+- Confirma que a proteção funciona para acessos via interface e via API.
+- Verifica que palavras\-passe locais são armazenadas apenas sob a forma de hash.
+- Confirma que não existem credenciais ou segredos expostos.
+- Verifica que os cenários de teste cobrem autenticação e autorização.
+- Confirma que a interface trata corretamente sessões inválidas ou expiradas.
+- Identifica qualquer requisito sem implementação ou validação correspondente.
+
+## Critério de Aceitação
+
+O resultado será considerado válido apenas se permitir identificar de forma segura os utilizadores, aplicar corretamente as regras de acesso do MVP, proteger todos os recursos relevantes da aplicação e disponibilizar documentação clara sobre autenticação, autorização e gestão de sessão.
+
+</details>
+
+## Separação Git do Exercício 3
+
+O utilizador autorizou separar os exercícios 3/4 em dois commits e fazer push. Este commit referencia a issue #4 e contém apenas o acesso, consultas protegidas, interface de sessão, testes e documentação correspondente. A versão intermédia foi preparada para validação numa pasta isolada, preservando a pasta final. A publicação e o fecho serão confirmados no GitHub após o push.

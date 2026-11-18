@@ -1,3 +1,12 @@
 :root { font-family: system-ui, sans-serif; color: #202020; background: #f7f7f7; }
 body { margin: 0; }
 main { max-width: 48rem; margin: 10vh auto; padding: 2rem; background: white; border: 1px solid #ddd; }
+form { display: grid; gap: .75rem; max-width: 26rem; }
+input, button { font: inherit; padding: .7rem; }
+input { border: 1px solid #777; border-radius: .25rem; min-width: 0; }
+button { cursor: pointer; border: 1px solid #444; border-radius: .25rem; background: #f2f2f2; }
+button:disabled { cursor: wait; opacity: .65; }
+:focus-visible { outline: 3px solid #245ca6; outline-offset: 2px; }
+[role=alert] { color: #9c2020; }
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; }
+@media (max-width: 40rem) { main { margin: 1rem; padding: 1.25rem; } }

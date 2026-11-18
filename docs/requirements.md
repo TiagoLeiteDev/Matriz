@@ -1,6 +1,6 @@
 ﻿# Matriz — Requisitos do MVP colaborativo
 
-**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; funcionalidades de negócio ainda não implementadas.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; Exercício 3 implementa acesso e consultas protegidas com SEG-01; CRUD e restante MVP ainda por implementar.
 
 ## Visão e objetivos
 
@@ -87,7 +87,7 @@ Painel mostra utilizador, projetos acessíveis e contagens por estado do conjunt
 
 Formulários com validação, carregamento, vazio, sucesso e erro. Preservar entradas quando uma submissão falha; evitar submissões repetidas durante pedido em curso. Atualizar listagens, filtros e contagens com resposta confirmada da API, sem recarregar a página nem duplicar registos. Remover mocks das funcionalidades concluídas.
 
-Sem sucesso antes da gravação; em falha conservar dados confirmados e permitir nova tentativa após corrigir a causa. Sessão inválida encaminha para início de sessão e apresenta mensagem compreensível. Sessão no servidor e cookie aprovados em COL-05; biblioteca, duração e detalhes de proteção continuam por definir.
+Sem sucesso antes da gravação; em falha conservar dados confirmados e permitir nova tentativa após corrigir a causa. Sessão inválida encaminha para início de sessão e apresenta mensagem compreensível. Sessão no servidor e cookie aprovados em COL-05; Spring Security e SEG-01 concretizam sessão em memória com 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Ver security.md.
 
 ## Qualidade, verificação e entrega
 

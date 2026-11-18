@@ -1,0 +1,9 @@
+# TLS terminates at the deployment boundary; configure exact browser origins.
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+matriz:
+  security:
+    allowed-origins: ${APP_ALLOWED_ORIGINS}

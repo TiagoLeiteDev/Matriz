@@ -145,7 +145,7 @@ class InfrastructureTest {
     @Test void publicHealthHasNoDetailsAndBusinessApiRemainsBlocked() throws Exception {
         mvc.perform(get("/actuator/health")).andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP")).andExpect(jsonPath("$.components").doesNotExist());
-        mvc.perform(get("/api/projetos")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/projetos")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/projetos").contentType("application/json").content("{}"))
             .andExpect(status().isForbidden());
     }

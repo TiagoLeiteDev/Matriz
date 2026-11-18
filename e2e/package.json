@@ -1,0 +1,13 @@
+{
+  "name": "matriz-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:expiry": "playwright test --grep @expiry",
+    "test:restart": "node scripts/restart-session.cjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  }
+}

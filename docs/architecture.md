@@ -95,7 +95,7 @@ Versões exatas de dependências/imagens, tipos físicos, política temporal da 
 
 ## Evolução e pendências
 
-TEC-01 resolve stack, biblioteca de segurança e tecnologias de persistência/migrations. Continuam pendentes versões exatas, tipos físicos dos IDs, configuração/arranque verificados e duração da sessão. Não há aprovação de JWT, microservices ou gestão de organizações.
+TEC-01 resolve stack, biblioteca de segurança e tecnologias de persistência/migrations. Tipos/versões e arranque concretizados no Exercício 2; sessão SEG-01 concretizada no Exercício 3. CRUD e entrega integral continuam pendentes. Não há aprovação de JWT, microservices ou gestão de organizações.
 
 O OpenAPI e o desenho de interface são revistos para colaboração e marcados segundo o seu estado de aprovação. O modelo individual anterior fica em history/mvp-individual-v1. Não usar essa versão para segurança ou regras atuais.
 
@@ -115,3 +115,7 @@ O OpenAPI e o desenho de interface são revistos para colaboração e marcados s
 Estrutura modular materializada em backend/src/main/java/pt/matriz (identity, projects, tasks e bootstrap), frontend React e execução Compose. [setup.md](setup.md) regista versões fixadas, dependências, configuração, esquema e seed. Actuator expõe apenas health sem detalhes para diagnóstico/healthcheck; não é um módulo de negócio nem uma operação adicional do contrato funcional. Docker compila React e serve os ficheiros pelo Spring Boot, como previsto em TEC-01.
 
 O seed é um processo temporário da mesma aplicação, ativado explicitamente, com transação e lock de inicialização. Não corre no arranque normal. Não foram implementados login, autorização por recurso ou CRUD; a superfície de negócio fica bloqueada até aos incrementos correspondentes.
+
+## Acesso implementado — Exercício 3
+
+SEG-01 foi escolhida pelo utilizador: sessão em memória, 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Cookie/CSRF, identidade autenticada, matriz de autorização e fronteiras de leitura constam de [security.md](security.md). Não foram acrescentados JWT, serviços ou tabelas de sessão. Leituras parametrizadas reutilizam PostgreSQL e transações; DTOs não expõem entidades JPA. Oito operações disponíveis, restantes bloqueadas até ao respetivo incremento. A criação de proprietário/criador/autor e as escritas colaborativas permanecem nos casos de uso seguintes.

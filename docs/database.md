@@ -117,3 +117,7 @@ Modelo anterior preservado em history/mvp-individual-v1. O modelo expandido est�
 Implementada em [V1__initial_schema.sql](../backend/src/main/resources/db/migration/V1__initial_schema.sql): seis tabelas de negócio, UUIDs, textos sem limites arbitrários, boolean, date e timestamptz, PKs/FKs, unicidade, CHECKs e índices. A seleção dos tipos é uma decisão técnica de implementação deste exercício, sem alterar as cardinalidades ou valores funcionais. Flyway gere o esquema e Hibernate valida-o; seeds ficam separados das migrations.
 
 [Base técnica](setup.md) descreve todos os tipos, relações, dados fictícios e limites. Autorização por recurso, arquivo e limpeza de atribuições inelegíveis continuam a exigir implementação nos casos de uso: não são garantidas pela existência das tabelas. A API de negócio permanece bloqueada.
+
+## Acesso — Exercício 3
+
+Sem alteração ao esquema V1. Sessões em memória do servidor, não entidades funcionais novas. Consultas autorizam participação atual/privacidade pessoal antes de devolver dados, numa transação consistente; ver security.md. Hashes BCrypt permanecem apenas na BD e no processo de verificação de credenciais, nunca nos DTOs. Criação de recursos e limpeza COL-06 continuam por implementar nos casos de uso de escrita.

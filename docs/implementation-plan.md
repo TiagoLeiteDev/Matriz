@@ -1,6 +1,6 @@
 ﻿# Matriz — Plano de implementação colaborativa
 
-**Data:** 18/11/2026. **Estado:** Exercício 1 da ficha 03 concluído ao nível de análise e planeamento, com stack TEC-01 aprovada pelo utilizador. Incremento 1 (Exercício 2) implementado e verificado: estrutura, persistência, migrations, seed e arranque. Funcionalidades de negócio ainda por implementar. Decisões específicas ainda abertas são verificadas antes do incremento dependente; não estão implicitamente aprovadas.
+**Data:** 18/11/2026. **Estado:** Exercícios 1/2 concluídos; acesso do Exercício 3 implementado/verificado com SEG-01. CRUD ainda por implementar.
 
 ## Base validada
 
@@ -41,7 +41,7 @@ Não há obrigação de criar uma biblioteca ou projeto por módulo. O frontend 
 |---|---|---|---|---|
 | 0 — Consolidar base | Documentação, reconciliação, contrato, stack e este plano. | Decisões COL/ARQ/TEC. | Revisão documental, 24 operações válidas, rastreabilidade e pendências explícitas. | Concluído: Exercício 1 |
 | 1 — Estrutura e persistência | pom/Wrapper, estrutura backend/frontend, configuração, migrations, seed e BD de desenvolvimento. | Docker disponível; fixar versões e tipos físicos antes do esquema. | Exercício 2: build/arranque, ligação PostgreSQL, migrations repetíveis, dois utilizadores e projetos com acessos distintos; segundo arranque não apaga/duplica dados. Registar comandos reais no README. | Concluído: Exercício 2; evidências em verification.md |
-| 2 — Acesso | identity, segurança, perfil/logout, CSRF, login e testes. | Incremento 1; validar nomes do cookie/cabeçalho, duração e configurações por ambiente. | US-15/16: credenciais válidas/inválidas, sessão ausente/expirada, perfil sem hash, logout invalidante e CSRF. Testes com duas identidades. | Não iniciado |
+| 2 — Acesso | identity, segurança, perfil/logout, CSRF, login e testes. | Incremento 1; validar nomes do cookie/cabeçalho, duração e configurações por ambiente. | US-15/16: credenciais válidas/inválidas, sessão ausente/expirada, perfil sem hash, logout invalidante e CSRF. Testes com duas identidades. | Concluído: Exercício 3; limites em security.md |
 | 3 — Primeiro fluxo completo de projetos | projects, controllers/DTOs, listagem/formulário, colaboradores básicos e testes. | 1/2; definir correspondência da pesquisa antes de testes detalhados. | US-01/02/17/21: autenticar, criar projeto, listar e consultar após recarregar/reiniciar backend. Sem acesso alheio; proprietário inferido. | Não iniciado |
 | 4 — Tarefas e consultas | tasks, forms/lista, estado, associação e integração. | 3; validar limites de texto e detalhes de DTO. | US-03–14: criar e consultar sem recarregar, campos válidos/inválidos, privacidade e autorização, transferência com limpeza atómica, filtros e persistência real. | Não iniciado |
 | 5 — Colaboração e operações destrutivas | Elegíveis/responsáveis, comentários, arquivo/restauro e cascata. | 3/4; política COL-02/03/06 aprovada. | US-12/13/17–20: sem duplicados, autor/data do backend, perda de acesso imediata, arquivo bloqueia alterações, cascata sem órfãos, cancelamento e rollback. | Não iniciado |
@@ -71,7 +71,7 @@ Registar comandos, esperado/observado/evidências e limitações em verification
 | Antes de | Decisão restante |
 |---|---|
 | 1 | Resolvido no Exercício 2: versões fixadas, UUID/text/date/timestamptz, V1 Flyway e seed explícito transacional. Ver setup.md. |
-| 2 | Biblioteca Spring Security já aprovada; concretizar cookie/CSRF, política temporal e configuração local/HTTPS. |
+| 2 | Resolvido: SEG-01, cookie/CSRF e perfil prod; evidências em verification.md. HTTPS público não executado. |
 | 3/4 | Limites de texto e pesquisa por nome/acentos; não importar automaticamente limites pedagógicos. |
 | 6 | Composição das contagens, formato/navegação do calendário e ordem inicial. |
 | 7 | Comandos efetivos, portas, imagens fixadas e evidência de execução noutro ambiente/CI. |
@@ -89,3 +89,9 @@ Entrega em 19/11/2026 às 17h, hora de Lisboa. No fecho original do plano não e
 Incremento 1 concluído: build Java e frontend, BD PostgreSQL, seis tabelas/mapeamentos JPA, V1 Flyway, demonstração explícita e arranque integrado. Nove testes de infraestrutura passaram; imagem construída sem usar target/node_modules do host; health, assets e reinício com conservação dos dados verificados. README/setup/verification registam os comandos e os limites reais.
 
 Próximo: incremento 2, identidade/acesso. Antes de o disponibilizar, resolver a política de duração de sessão e as convenções de cookie/CSRF; depois implementar login/perfil/logout e testes com duas identidades. Em seguida, primeiro fluxo completo de projetos (incremento 3), e só depois tarefas/colaboração/vistas. Não interpretar o bloqueio total atual da API como autorização por recurso implementada.
+
+## Revisão após Exercício 3
+
+Acesso implementado com SEG-01 e oito operações do contrato: quatro de sessão/CSRF e quatro consultas de recursos existentes para verificar autorização. Identidade atual e políticas de proprietário, participação, privacidade pessoal, arquivo e elegibilidade no backend. Ecrã de login/perfil/logout e tratamento de sessão inválida integrados. Resultados de Java/browser, expiração e reinício em verification.md.
+
+Próximo: Exercício 4 / incremento 3 — criação, listagem, consulta, edição e eliminação de projetos, com pesquisa e confirmações. A consulta por ID já tem uma base protegida; ainda é necessário o fluxo completo e as restantes operações. Antes da pesquisa, fechar correspondência por nome; não impor limites de texto arbitrários. Escritas futuras reutilizam identidade e políticas em casos de uso transacionais, com testes de autorização e persistência por operação.

@@ -76,3 +76,7 @@ Distingue claramente trabalho implementado, trabalho verificado e trabalho ainda
 ## Base técnica — Exercício 2
 
 Consultar docs/setup.md e README.md para a configuração e os comandos reais. Esquema exclusivamente por Flyway; Hibernate apenas validate. Não editar migrations aplicadas nem executar clean/reset do volume. Seed só por comando explícito --matriz.demo.seed-only=true; não o ligar ao arranque normal. Os testes de infraestrutura usam PostgreSQL descartável via Testcontainers, nunca o volume da demonstração. Não confundir esses testes com autorização funcional, CRUD ou E2E concluídos.
+
+## Acesso — Exercício 3
+
+SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem novo login. Consultar docs/security.md. Usar CurrentIdentity e as políticas ProjectAccess/TaskAccess em cada novo caso de uso. O ator não é um ID do pedido; o responsável selecionado exige elegibilidade. Não desativar CSRF nem permitir genericamente /api/**. Contexto deve ser guardado explicitamente após autenticação e a sessão/token CSRF rodados; não guardar credenciais ou tokens no frontend persistente. Leituras protegidas não comprovam que CRUD/limpeza COL-06 estejam implementados. Novas escritas exigem transação e testes próprios. E2E de expiração curta só contra instância isolada; não reduzir a política real da demonstração.

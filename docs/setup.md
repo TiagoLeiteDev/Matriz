@@ -1,5 +1,7 @@
 # Matriz — Base técnica e persistência (Ficha 03, Exercício 2)
 
+Este documento descreve a base entregue no Exercício 2. O acesso implementado posteriormente no Exercício 3 é documentado em [security.md](security.md); consultar o [README](../README.md) para o estado atual. As referências abaixo a autenticação futura pertencem à etapa da base técnica.
+
 ## Estrutura e responsabilidades
 
 ```text
