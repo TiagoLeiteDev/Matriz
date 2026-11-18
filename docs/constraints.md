@@ -43,9 +43,9 @@ Referências técnicas consultadas para sessão e CSRF: https://cheatsheetseries
 
 | ID | Tema | Estado |
 |---|---|---|
-| DT-01 | Linguagem/frameworks e stack. | Resolvido em TEC-01. Versões exatas serão fixadas no incremento 1. |
-| DT-02 | Persistência, tipos físicos, migrations, sessão e seed. | PostgreSQL/JPA/Flyway e Spring Security aprovados; tipos físicos, esquema/seed e configuração de sessão por concretizar no código. |
-| DT-03 | Instalação, arranque, ambiente de execução e distribuição. | Estratégia aprovada: desenvolvimento local e entrega Compose com aplicação (React compilado no Spring Boot) + PostgreSQL; comandos/configuração ainda não implementados ou testados. |
+| DT-01 | Linguagem/frameworks e stack. | Resolvido em TEC-01; versões concretizadas em pom.xml, package-lock.json e imagens Docker fixadas no Exercício 2. |
+| DT-02 | Persistência, tipos físicos, migrations, sessão e seed. | Tipos físicos UUID/text/date/timestamptz, migration V1, mapeamentos JPA e seed explícito implementados no Exercício 2; configuração de sessão continua no incremento de acesso. |
+| DT-03 | Instalação, arranque, ambiente de execução e distribuição. | Base local/Compose implementada com React compilado no Spring Boot e PostgreSQL; comandos e evidências em README/setup/verification. Entrega funcional, CI e validação noutro computador continuam pendentes. |
 | DT-04 | Contrato API colaborativo. | 24 operações documentadas e validadas. Base de planeamento concluída; rever convenções pendentes antes do incremento dependente e manter contrato alinhado com a implementação. |
 | PD-01 | Limites de texto. | Não definidos; limites dos exemplos da aula não são automaticamente requisitos deste projeto. |
 | PD-02 | Falhas de gravação. | Regra aprovada: erro explícito, conservar dados confirmados e formulário; atomicidade e solução concreta ainda por implementar. |

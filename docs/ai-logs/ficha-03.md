@@ -1,6 +1,6 @@
 ﻿# Ficha Prática 03 — Registo de trabalho e decisões
 
-**Início:** 18/11/2026. **Ferramenta:** Codex. **Estado:** Exercício 1 concluído em análise/planeamento com TEC-01 aprovada; Exercício 2 não iniciado.
+**Início:** 18/11/2026. **Ferramenta:** Codex. **Estado:** Exercício 1 concluído; Exercício 2 implementado e verificado na base técnica. Funcionalidades de negócio ainda não implementadas. As secções anteriores mantêm o estado histórico de cada etapa.
 
 ## 1. Análise do enunciado
 
@@ -92,3 +92,228 @@ A pedido do utilizador, foram criadas retroativamente duas issues para organizar
 - [Issue #2](https://github.com/TiagoLeiteDev/Matriz/issues/2): documentação ativa do MVP colaborativo e planeamento do Exercício 1 da ficha 03. O commit deste registo referencia esta issue.
 
 Não foi reescrito o histórico existente. A criação destas issues é posterior ao trabalho documental; não demonstra planeamento prévio. Os novos commits ficam locais, pendentes de push. A implementação da aplicação e os seus testes continuam por executar.
+
+## Exercício 2 — estrutura, configuração e persistência
+
+**Data:** 18/11/2026. **Ferramenta:** Codex/ChatGPT.
+
+### Pedido e análise
+
+O utilizador forneceu o prompt Senior Software Engineer/DevOps Engineer para preparar um projeto executável com estrutura, persistência, configuração externalizada, migrations, seed seguro, dois utilizadores/projetos, validação de arranque e documentação. Foram consultados AGENTS, README, requisitos, histórias, restrições, modelo, arquitetura, OpenAPI, reconciliação e plano.
+
+A implementação mantém TEC-01 e as seis entidades aprovadas, incluindo COLABORACAO_PROJETO além da lista resumida no prompt. Não acrescenta regras funcionais, limites de texto ou APIs de negócio. UUIDs, tipos PostgreSQL, versões exatas e health são escolhas técnicas deste exercício; não se atribui uma nova aprovação humana específica a estes detalhes.
+
+### Trabalho realizado
+
+- Backend Java 21/Spring Boot 3.5.16, Maven Wrapper 3.9.16, módulos identity/projects/tasks e bootstrap.
+- Seis mapeamentos JPA e migration V1 com UUID/text/boolean/date/timestamptz, PKs, FKs, CHECKs, unicidade e cascatas. Hibernate validate; Flyway clean desativado.
+- .env.example fictício, configuração por ambiente, helper PowerShell que não executa conteúdo do .env, Compose e Dockerfile multi-stage com imagens fixadas por digest e utilizador não root.
+- Frontend React/TypeScript/Vite, lockfile, ESLint e página técnica com diagnóstico real, sem mocks de negócio.
+- Seed explícito, transacional, serializado por lock: duas contas BCrypt, dois projetos com acessos distintos, tarefa partilhada/privada/pessoal, responsáveis e comentário. Repetição conserva edições/remoções e não repõe palavras-passe.
+- Spring Security bloqueia operações de negócio; apenas página/assets/health disponíveis. Não há bypass temporário nem utilizador gerado exposto.
+- Nove testes com PostgreSQL descartável, documentação setup/README e atualização das referências/estados em modelo, arquitetura, restrições, plano, requisitos e AGENTS.
+
+### Evidências e revisão humana
+
+Build Java e 9 testes passaram; frontend lint/build passou; Wrapper verificado da raiz. Arranque local aplicou V1 sem seed automático (0 contas). Seed explícito gerou contagens 2/2/3/1/2/1. Build Docker passou; seed na imagem final terminou com código 0 sem duplicar. App/BD healthy, página e assets HTTP 200. Reinício de app/BD conservou as contagens e health UP. Evidências detalhadas em verification.md e dependências/variáveis/relações/riscos em setup.md.
+
+Na revisão final foi corrigido um risco de colisão de ID de projeto no seed, com rollback e teste de regressão, sem alterar dados existentes. Durante a verificação, foi simplificado o build Docker para evitar um download geral de dependências; foi resolvido um aviso de Fast Refresh e fixado ESLint suportado. Não se declara revisão/aprovação humana posterior da implementação: esta versão fica disponível para análise do utilizador.
+
+### Estado e próximo passo
+
+Exercício 2 concluído quanto à base executável/persistência/configuração/migrations/seed. Login, autorização funcional, CRUD e UI de negócio ficam nos próximos incrementos. Duração de sessão, pormenores cookie/CSRF, pesquisa e contagens continuam pendentes antes dos respetivos fluxos. Não foram criadas issues novas, feitos commits ou push nesta atividade. Os commits das issues #1/#2 pertencem à etapa anterior, cujo push o utilizador já confirmou.
+
+### Prompt integral fornecido
+
+<details>
+<summary>Ver pedido do Exercício 2</summary>
+
+# ROLE
+
+Atua como Senior Software Engineer e DevOps Engineer, especializado em preparação de projetos, persistência de dados, gestão de configurações, migrações de bases de dados e definição de planos de implementação para MVPs.
+
+# GOAL
+
+Preparar a base técnica da aplicação Matriz, garantindo que a estrutura do projeto, persistência de dados, configurações de ambiente, migrações e dados de demonstração estão corretamente definidos e documentados, de acordo com a arquitetura aprovada.
+
+# CONTEXT
+
+Consulta os seguintes documentos:
+
+- docs/requirements.md
+- docs/user\-stories.md
+- docs/constraints.md
+- docs/database.md
+- docs/architecture.md
+- openapi.yaml
+- AGENTS.md
+- README.md
+
+A arquitetura da solução já foi definida e aprovada. O objetivo é preparar a infraestrutura mínima necessária para suportar o desenvolvimento do MVP, assegurando que o projeto pode ser configurado, executado e reproduzido por qualquer membro da equipa.
+
+# CONSTRAINTS
+
+- Considera apenas o âmbito do MVP.
+- Segue rigorosamente a arquitetura aprovada.
+- Não introduzas novas tecnologias sem justificação.
+- Não alteres requisitos funcionais.
+- Não utilizes credenciais reais.
+- Todas as configurações sensíveis devem ser externalizadas através de variáveis de ambiente.
+- Deve existir um ficheiro de exemplo (.env.example ou equivalente) com valores fictícios.
+- O processo de inicialização deve ser reproduzível.
+- Os dados de demonstração não devem ser recriados nem apagar dados existentes a cada arranque.
+- Mantém as decisões compatíveis com ambientes de desenvolvimento e produção.
+- Não assumes comportamentos não documentados.
+
+# TASKS
+
+1. Analisar a arquitetura aprovada e identificar a estrutura adequada para o projeto.
+2. Definir a organização de diretórios e módulos da aplicação.
+3. Identificar e listar as dependências necessárias.
+4. Definir a estratégia de configuração:
+    - Variáveis de ambiente
+    - Gestão de segredos
+    - Configuração da base de dados
+5. Definir a configuração da persistência de dados.
+6. Criar o esquema inicial da base de dados ou equivalente reproduzível para:
+    - Utilizadores
+    - Projetos
+    - Tarefas
+    - Comentários
+    - Atribuições
+7. Definir as migrations necessárias para criar o esquema.
+8. Especificar um mecanismo de inicialização (seed) com dados de demonstração reproduzíveis.
+9. Garantir que os dados de demonstração incluem:
+    - Pelo menos dois utilizadores
+    - Pelo menos dois projetos
+    - Cenários de acesso distintos
+10. Validar que a aplicação consegue:
+    - Arrancar corretamente
+    - Estabelecer ligação à base de dados
+    - Executar migrations
+    - Carregar dados de demonstração
+11. Definir os comandos necessários para documentação no README.md.
+12. Rever criticamente a proposta e identificar riscos ou lacunas de implementação.
+
+# OUTPUT
+
+## Estrutura do Projeto
+
+Apresentar a árvore de diretórios proposta, incluindo:
+
+- Aplicação
+- Configuração
+- Persistência
+- Migrações
+- Seeds
+- Testes
+- Documentação
+
+## Dependências
+
+Listar:
+
+- Dependências obrigatórias
+- Dependências de desenvolvimento
+- Justificação de cada dependência
+
+## Configuração
+
+### Variáveis de Ambiente
+
+Apresentar:
+
+- Nome
+- Descrição
+- Exemplo de valor
+
+### Exemplo de Ficheiro
+
+Gerar o conteúdo de:
+
+- .env.example
+
+utilizando apenas valores fictícios.
+
+## Persistência
+
+### Modelo de Dados
+
+Descrever:
+
+- Utilizadores
+- Projetos
+- Tarefas
+- Comentários
+- Atribuições
+
+### Relações
+
+Identificar todas as relações entre entidades.
+
+## Migrações
+
+Definir:
+
+- Estratégia de migrations
+- Ordem de execução
+- Dependências entre migrations
+
+## Dados de Demonstração
+
+Descrever:
+
+- Utilizadores criados
+- Projetos criados
+- Relações estabelecidas
+- Cenários de teste suportados
+
+Garantir que os dados podem ser carregados de forma segura sem eliminar dados existentes.
+
+## Comandos README
+
+Gerar os comandos necessários para:
+
+- Instalar dependências
+- Configurar ambiente
+- Executar migrations
+- Carregar dados de demonstração
+- Iniciar a aplicação
+- Confirmar a ligação à base de dados
+
+## Plano de Implementação Revisto
+
+Apresentar:
+
+- Etapas de implementação
+- Dependências entre etapas
+- Riscos identificados
+- Mitigações sugeridas
+
+# VALIDATION
+
+Antes de concluir:
+
+- Verifica que a estrutura respeita a arquitetura aprovada.
+- Confirma que todas as entidades definidas no modelo de dados estão representadas.
+- Verifica que o esquema suporta as User Stories do MVP.
+- Confirma que a configuração não expõe credenciais reais.
+- Verifica que existe um processo reproduzível de migrations.
+- Confirma que os dados de demonstração permitem validar diferentes níveis de acesso.
+- Verifica que os dados de demonstração não são recriados automaticamente em cada arranque.
+- Confirma que todos os comandos necessários estão documentados para inclusão no README.md.
+- Identifica qualquer informação em falta que impeça uma implementação segura.
+
+## Critério de Aceitação
+
+O resultado será considerado válido apenas se permitir obter um projeto executável, com persistência configurada, esquema criado, dados de demonstração reproduzíveis e um plano de implementação tecnicamente consistente com a arquitetura do MVP.
+
+</details>
+
+## Registo Git do Exercício 2 — 18/11/2026
+
+Após rever o incremento, o utilizador autorizou criar a issue, fazer commit/push e fechar as issues com critérios cumpridos: “faz isso então”.
+
+Criada a [issue #3](https://github.com/TiagoLeiteDev/Matriz/issues/3) para a base técnica e persistência. A criação é posterior à implementação e anterior ao commit. Este incremento fica num commit com `Refs #3`, incluindo código, migrations, configuração fictícia, testes e documentação. .env, dependências, builds e relatórios temporários ficam excluídos.
+
+Antes deste commit, foi confirmado diretamente no remoto que main apontava para e01a32e, contendo também dbfb2e0 e ca85963. As issues #1/#2 já têm os commits publicados. O resultado do push deste incremento e o fecho das issues serão registados no GitHub após confirmação, sem antecipar sucesso neste registo.

@@ -91,7 +91,7 @@ Na entrega, React compilado é servido pelo Spring Boot: uma imagem de aplicaç�
 
 A revisão dos 14 PDFs, 28 anexos e AI.txt confirmou que FastAPI/Python nos exemplos de DevOps não é obrigatório. Dockerfiles e CI serão adaptados para Java/Maven; não copiar comandos Pytest. AI.txt descreve um percurso separado e não acrescenta IA/RAG à Matriz.
 
-Versões exatas de dependências/imagens, tipos físicos, política temporal da sessão e detalhes de configuração ficam fixados e verificados nos incrementos apropriados. Não foram instaladas dependências da aplicação nem produzidos builds nesta decisão.
+Versões exatas de dependências/imagens, tipos físicos, política temporal da sessão e detalhes de configuração ficam fixados e verificados nos incrementos apropriados. Na data desta decisão não tinham sido instaladas dependências nem produzidos builds; a execução posterior do Exercício 2 consta de setup.md e verification.md.
 
 ## Evolução e pendências
 
@@ -109,3 +109,9 @@ O OpenAPI e o desenho de interface são revistos para colaboração e marcados s
 - [OpenAPI](../openapi.yaml)
 - [Plano](implementation-plan.md)
 - [Registo da ficha 3](ai-logs/ficha-03.md)
+
+## Implementação da base — Exercício 2
+
+Estrutura modular materializada em backend/src/main/java/pt/matriz (identity, projects, tasks e bootstrap), frontend React e execução Compose. [setup.md](setup.md) regista versões fixadas, dependências, configuração, esquema e seed. Actuator expõe apenas health sem detalhes para diagnóstico/healthcheck; não é um módulo de negócio nem uma operação adicional do contrato funcional. Docker compila React e serve os ficheiros pelo Spring Boot, como previsto em TEC-01.
+
+O seed é um processo temporário da mesma aplicação, ativado explicitamente, com transação e lock de inicialização. Não corre no arranque normal. Não foram implementados login, autorização por recurso ou CRUD; a superfície de negócio fica bloqueada até aos incrementos correspondentes.

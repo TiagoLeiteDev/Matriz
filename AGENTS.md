@@ -72,3 +72,7 @@ Ao terminar, apresenta:
 - Limitações ou impedimentos encontrados.
 
 Distingue claramente trabalho implementado, trabalho verificado e trabalho ainda pendente.
+
+## Base técnica — Exercício 2
+
+Consultar docs/setup.md e README.md para a configuração e os comandos reais. Esquema exclusivamente por Flyway; Hibernate apenas validate. Não editar migrations aplicadas nem executar clean/reset do volume. Seed só por comando explícito --matriz.demo.seed-only=true; não o ligar ao arranque normal. Os testes de infraestrutura usam PostgreSQL descartável via Testcontainers, nunca o volume da demonstração. Não confundir esses testes com autorização funcional, CRUD ou E2E concluídos.

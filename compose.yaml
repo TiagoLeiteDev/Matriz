@@ -1,0 +1,43 @@
+name: matriz
+services:
+  db:
+    image: postgres:17.9-alpine@sha256:c7526c0f6c3f30260a563d7bcf8ad778effac59a44f8ffa86678c35418338609
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Configure POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Configure POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:${DB_PORT:-55432}:5432"
+    volumes:
+      - matriz-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?Configure POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER:?Configure POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD}
+      APP_BIND_ADDRESS: 0.0.0.0
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+  seed:
+    profiles: ["tools"]
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?Configure POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER:?Configure POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+    command: ["--matriz.demo.seed-only=true"]
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  matriz-data:

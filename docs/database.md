@@ -1,6 +1,6 @@
 ﻿# Matriz — Modelo conceptual colaborativo
 
-**Versão:** 2.0, 18/11/2026. DADOS-02: revisão documental por COL-01, baseada nas decisões de colaboração confirmadas. Tipos físicos, limites de texto e armazenamento de sessões continuam pendentes; sem SQL/migrations ou aplicação.
+**Versão:** 2.0, 18/11/2026. DADOS-02: revisão documental por COL-01, baseada nas decisões de colaboração confirmadas. Modelo conceptual preservado. A concretização física do Exercício 2, com migration e mapeamentos JPA, está em setup.md; limites de negócio e armazenamento/política de sessões continuam pendentes.
 
 ## Entidades e atributos
 
@@ -108,6 +108,12 @@ PROJETO e TAREFA mantêm F01–F11. UTILIZADOR suporta F12/F13; propriedade e CO
 
 ## Validação e pendências
 
-Modelo anterior preservado em history/mvp-individual-v1. O modelo expandido está preparado para revisão técnica, usando o âmbito e a política autorizados; isso não equivale à aprovação de tipos físicos. SVG e PNG regenerados com Mermaid CLI 12.2.0 e Chrome headless, comandos terminados com código 0; PNG inspecionado: seis entidades e relações legíveis, sem cortes. Mecanismo de sessão, cookie e CSRF ficam no contrato/arquitetura; Spring Security, PostgreSQL/JPA e Flyway foram escolhidos em TEC-01; configuração concreta, tipos físicos e esquema versionado serão definidos na implementação.
+Modelo anterior preservado em history/mvp-individual-v1. O modelo expandido está preparado para revisão técnica, usando o âmbito e a política autorizados; isso não equivale à aprovação de tipos físicos. SVG e PNG regenerados com Mermaid CLI 12.2.0 e Chrome headless, comandos terminados com código 0; PNG inspecionado: seis entidades e relações legíveis, sem cortes. Mecanismo de sessão, cookie e CSRF ficam no contrato/arquitetura; Spring Security, PostgreSQL/JPA e Flyway foram escolhidos em TEC-01; tipos físicos e esquema versionado concretizados no Exercício 2 (setup.md); configuração da sessão fica no incremento de acesso.
 
 [Requisitos](requirements.md) · [Reconciliação](scope-reconciliation.md) · [Restrições](constraints.md) · [Plano](implementation-plan.md)
+
+## Concretização física — Exercício 2
+
+Implementada em [V1__initial_schema.sql](../backend/src/main/resources/db/migration/V1__initial_schema.sql): seis tabelas de negócio, UUIDs, textos sem limites arbitrários, boolean, date e timestamptz, PKs/FKs, unicidade, CHECKs e índices. A seleção dos tipos é uma decisão técnica de implementação deste exercício, sem alterar as cardinalidades ou valores funcionais. Flyway gere o esquema e Hibernate valida-o; seeds ficam separados das migrations.
+
+[Base técnica](setup.md) descreve todos os tipos, relações, dados fictícios e limites. Autorização por recurso, arquivo e limpeza de atribuições inelegíveis continuam a exigir implementação nos casos de uso: não são garantidas pela existência das tabelas. A API de negócio permanece bloqueada.

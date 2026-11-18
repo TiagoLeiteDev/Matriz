@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: matriz
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    clean-disabled: true
+    validate-on-migrate: true
+server:
+  address: ${APP_BIND_ADDRESS:127.0.0.1}
+  port: ${APP_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+matriz:
+  demo:
+    seed-only: false
+    password: ${DEMO_PASSWORD:}
