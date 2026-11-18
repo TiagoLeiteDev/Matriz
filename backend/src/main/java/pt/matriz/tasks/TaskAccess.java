@@ -2,6 +2,8 @@ package pt.matriz.tasks;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,12 +22,14 @@ public class TaskAccess {
     }
     public record Task(UUID id, String titulo, String descricao, String estado, String prioridade,
                        LocalDate prazo, UUID projetoId, UUID criadorId) {}
+    static Task row(ResultSet rs, int n) throws SQLException {
+        return new Task(rs.getObject("id", UUID.class), rs.getString("titulo"), rs.getString("descricao"),
+            rs.getString("estado"), rs.getString("prioridade"), rs.getObject("prazo", LocalDate.class),
+            rs.getObject("projeto_id", UUID.class), rs.getObject("criador_id", UUID.class));
+    }
     public Task requireView(UUID id) {
         UUID actor = identity.id();
-        Task task = jdbc.query("SELECT * FROM tarefa WHERE id = ?", (rs, n) -> new Task(
-            rs.getObject("id", UUID.class), rs.getString("titulo"), rs.getString("descricao"),
-            rs.getString("estado"), rs.getString("prioridade"), rs.getObject("prazo", LocalDate.class),
-            rs.getObject("projeto_id", UUID.class), rs.getObject("criador_id", UUID.class)), id)
+        Task task = jdbc.query("SELECT * FROM tarefa WHERE id = ?", TaskAccess::row, id)
             .stream().findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (task.projetoId() == null) {
             if (!actor.equals(task.criadorId())) throw new AccessDeniedException("Tarefa pessoal privada");
@@ -49,6 +53,6 @@ public class TaskAccess {
     public void requireTransfer(UUID taskId, UUID destinationProject) {
         requireManage(taskId);
         if (destinationProject != null) projects.requireActive(destinationProject);
-        // Future write use case must perform COL-06 cleanup in the same transaction.
+        // TaskCommands performs COL-06 cleanup atomically; this helper only validates access.
     }
 }

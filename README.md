@@ -4,7 +4,7 @@ Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso
 
 ## Estado atual
 
-Exercícios 1–4 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. **CRUD de tarefas, colaboração de escrita, painel e vistas integrais continuam nos exercícios seguintes.** Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
+Exercícios 1–5 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. **Colaboração de escrita, painel, Kanban e calendário continuam nos exercícios seguintes.** Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
 
 ## Tecnologias aprovadas
 
@@ -17,7 +17,7 @@ Entrega prevista: React compilado servido pelo Spring Boot, com PostgreSQL num s
 - Sessão no servidor com cookie, consulta do utilizador autenticado e logout.
 - Projetos com proprietário/colaboradores, pesquisa por nome, arquivo/restauro e eliminação confirmada em cascata.
 - Tarefas de projetos autorizados e tarefas pessoais independentes privadas do criador.
-- Estados Por Fazer, Em Curso, Em Revisão e Concluída; prioridades/prazos opcionais.
+- Estados TODO/IN_PROGRESS/DONE (Por fazer/Em curso/Concluída); prioridades LOW/MEDIUM/HIGH ou null, MEDIUM por omissão em novas tarefas; prazos opcionais.
 - Lista, Kanban e calendário; pesquisa/filtros; progresso por projeto e painel com contagens autorizadas.
 - Vários responsáveis elegíveis por tarefa, sem duplicação, e comentários com autor/data definidos no backend.
 - Privacidade verificada no backend; remoção de acesso/transferência remove atribuições inelegíveis na mesma operação.
@@ -35,11 +35,12 @@ Sem gestão global de organizações/equipas, convites, registo público, recupe
 | [Reconciliação](docs/scope-reconciliation.md) | Diferenças entre fichas e decisões substituídas. |
 | [Arquitetura](docs/architecture.md) | Monólito modular e responsabilidades. |
 | [Modelo e ER](docs/database.md) | Seis entidades, relações e regras. |
-| [OpenAPI](openapi.yaml) | API em /api; 12 operações implementadas e restantes marcadas como planeadas. |
+| [OpenAPI](openapi.yaml) | API em /api; 16 operações implementadas e restantes marcadas como planeadas. |
 | [Wireframes](docs/ui/wireframe-tarefas.md) | Tarefas colaborativas e início de sessão. |
 | [Revisão](docs/architecture-review.md) | Rastreabilidade e limitações da base colaborativa. |
 | [Plano](docs/implementation-plan.md) | Incrementos e verificações do Exercício 1 da ficha 03. |
 | [Verificação](docs/verification.md) | Resultados de infraestrutura e cenários funcionais ainda pendentes. |
+| [Tarefas](docs/tasks.md) | CRUD, filtros PESQ-02, estados TAR-01, migração V2 e transferências COL-06. |
 | [Projetos](docs/projects.md) | CRUD, pesquisa PESQ-01, permissões, transações e limites do Exercício 4. |
 | [Segurança](docs/security.md) | Política SEG-01, ciclo de sessão, identidade, matriz de autorização e limites. |
 | [Base técnica](docs/setup.md) | Estrutura, dependências, variáveis, persistência, migrations, seed e riscos. |
@@ -69,7 +70,7 @@ docker compose up -d app --wait
 Invoke-RestMethod http://127.0.0.1:8080/actuator/health
 ```
 
-Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout e gestão de projetos estão disponíveis; tarefas e painel integral continuam por implementar. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
+Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout, gestão de projetos e tarefas em lista estão disponíveis; painel integral, Kanban/calendário e colaboração de escrita continuam por implementar. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
 
 As migrations correm no arranque antes do seed. Para aplicar apenas o esquema, omitir o comando seed e iniciar app. Para carregar a demonstração mais tarde, executar explicitamente o mesmo comando seed. Uma nova execução não repõe dados editados/eliminados nem altera palavras-passe. Falhas/colisões fazem rollback; consultar os logs sem apagar dados para contornar o problema.
 
@@ -155,7 +156,7 @@ APP_ALLOWED_ORIGINS tem valores locais de exemplo em .env.example. O Compose enc
 - Públicas: GET /api/sessao/csrf e POST /api/sessao (login exige CSRF).
 - Com sessão: GET/DELETE /api/sessao.
 - Com sessão e autorização por recurso: GET /api/projetos/{id}, GET /api/tarefas/{id}, GET /api/tarefas/{id}/comentarios e GET /api/tarefas/{id}/responsaveis.
-- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. Restantes operações de tarefas/colaboração/painel continuam bloqueadas.
+- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. CRUD/listagem de tarefas foram acrescentados no Exercício 5. Restantes operações de colaboração/painel continuam bloqueadas.
 
 O OpenAPI tem servidor relativo /api e x-implementation-status por operação. [security.md](docs/security.md) documenta a matriz e a distinção entre ator autenticado e responsável selecionado entre elegíveis.
 
@@ -244,3 +245,23 @@ O comando normal ignora por desenho os testes de expiração curta e de reiníci
 ## Entrega
 
 19/11/2026 às 17h, hora de Lisboa. Incluir frontend/backend, testes, dependências, esquema/migrations, seed, configuração de exemplo sem segredos, documentação atualizada e URL GitHub acessível ao formador. Demonstração de 1–2 fluxos em até cinco minutos, com tecnologias, metodologia/IA, desafio e aprendizagem.
+
+## Gestão de tarefas — Exercício 5
+
+Após login, escolher Tarefas ou abrir um projeto ativo. Nova tarefa permite indicar título obrigatório, descrição, projeto (ou pessoal), estado, prioridade e prazo. Guardar confirma a persistência antes de atualizar a lista/progresso; abrir uma tarefa permite editar ou eliminar com confirmação. Cancelar a eliminação não envia pedidos.
+
+Aplicar filtros combina título sem maiúsculas/acentos, projeto/Sem projeto, estado, prioridade/Sem prioridade e datas inclusivas. Limpar filtros repõe o conjunto autorizado. As contagens identificam apenas essa lista filtrada; não representam o painel ainda pendente. As listas excluem projetos arquivados; leitura autorizada por ID continua possível.
+
+A V2 corre no arranque: conserva IDs, relações e prioridades null existentes; converte os estados/prioridades anteriores segundo TAR-01. Não editar V1 nem apagar o volume. Novas tarefas sem prioridade enviada assumem MEDIUM; enviar null mantém Sem prioridade. Transferências conservam criador/comentários e removem atribuições inelegíveis atomicamente. Ao desassociar uma tarefa criada por outro utilizador pode perder-se acesso; a UI informa essa consequência.
+
+Teste separado de persistência de tarefas, com reinício explícito de app (sessão anterior invalida-se):
+
+```powershell
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+$env:MATRIZ_TASK_RESTART_TEST = '1'
+npm.cmd --prefix e2e run test:tasks-restart
+Remove-Item Env:MATRIZ_TASK_RESTART_TEST
+```
+
+Issue do incremento: [#6](https://github.com/TiagoLeiteDev/Matriz/issues/6). Ver [contratos e limites](docs/tasks.md) e [evidências](docs/verification.md).

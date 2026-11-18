@@ -217,8 +217,8 @@ class SecurityTest {
 
     @Test void authenticatedUsersStillCannotCallUnimplementedWrites() throws Exception {
         var session = login("ana@example.test");
-        mvc.perform(post("/api/tarefas").session(session).header("X-CSRF-Token", token(session))
-            .contentType("application/json").content("{\"titulo\":\"Não implementar neste exercício\"}"))
+        mvc.perform(post("/api/tarefas/" + TAREFA_PARTILHADA + "/comentarios").session(session).header("X-CSRF-Token", token(session))
+            .contentType("application/json").content("{\"conteudo\":\"Não implementar neste exercício\"}"))
             .andExpect(status().isForbidden());
     }
 }

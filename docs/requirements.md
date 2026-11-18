@@ -1,6 +1,6 @@
 ﻿# Matriz — Requisitos do MVP colaborativo
 
-**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; tarefas/colaboração de escrita e restante MVP ainda por concluir.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; colaboração de escrita e restante MVP ainda por concluir.
 
 ## Visão e objetivos
 
@@ -57,7 +57,7 @@ Eliminação: confirmação clara de que serão removidos projeto, tarefas, come
 
 ### Tarefas
 
-Título obrigatório e não apenas espaços; descrição, projeto, prazo e prioridade opcionais. Estado inicial Por Fazer, salvo escolha válida. Estados: Por Fazer, Em Curso, Em Revisão, Concluída; transições livres, incluindo reabertura. Prioridades: Baixa, Média, Alta, Crítica ou ausência de valor. Prazos passados são permitidos.
+Título obrigatório e não apenas espaços; descrição, projeto, prazo e prioridade opcionais. TAR-01: estado inicial TODO, salvo escolha válida. Estados técnicos: TODO, IN_PROGRESS, DONE; apresentação Por fazer, Em curso, Concluída. Transições livres, incluindo reabertura. Prioridades técnicas: LOW, MEDIUM, HIGH ou ausência; apresentação Baixa, Média, Alta. Em novas tarefas, prioridade omitida assume MEDIUM; null explícito significa Sem prioridade. Prioridades vazias preexistentes mantêm-se vazias. Prazos passados são permitidos.
 
 O criador é inferido no backend. Sem projeto, apenas o criador pode consultar ou alterar a tarefa. Numa tarefa de projeto, o acesso decorre da participação atual no projeto, não apenas da autoria histórica.
 
@@ -75,11 +75,11 @@ Arquivo conserva dados, estados, colaboradores, comentários e atribuições. Ex
 
 ### Consultas, progresso e painel
 
-Pesquisa de tarefas por parte do título sem distinguir maiúsculas/minúsculas; filtros por projeto, estado e prioridade combinados por interseção nas três vistas. Opções Sem projeto e Sem prioridade; pesquisa vazia não restringe. Todas as consultas começam pelo conjunto autorizado, nunca pelos dados globais.
+PESQ-02: pesquisa de tarefas por parte literal do título sem distinguir maiúsculas/minúsculas nem acentos; filtros por projeto, estado e prioridade combinados por interseção nas três vistas. Opções Sem projeto e Sem prioridade; pesquisa vazia não restringe. Todas as consultas começam pelo conjunto autorizado, nunca pelos dados globais.
 
 Pesquisa de projetos pelo nome sem devolver projetos sem acesso; PESQ-01 confirma correspondência por parte do nome sem distinguir maiúsculas ou acentos; texto literal, vazio não restringe. Sem paginação definida. O calendário usa prazo previsto; tarefas sem prazo permanecem na lista/Kanban. Arrastar cartões não é obrigatório.
 
-Progresso = concluídas/total das tarefas do projeto × 100, arredondado a uma casa decimal; sem tarefas, 0% e Sem tarefas. Tarefas independentes não entram no progresso de projetos. Alterações e eliminações atualizam resultados confirmados.
+Progresso = tarefas DONE/total das tarefas do projeto × 100, arredondado a uma casa decimal; sem tarefas, 0% e Sem tarefas. Tarefas independentes não entram no progresso de projetos. Alterações e eliminações atualizam resultados confirmados.
 
 Painel mostra utilizador, projetos acessíveis e contagens por estado do conjunto autorizado relevante, não apenas da página visível. Filtros e contagens não podem revelar dados sem acesso. A inclusão de tarefas independentes/arquivadas nas contagens do painel deve ser explícita no contrato antes da implementação.
 

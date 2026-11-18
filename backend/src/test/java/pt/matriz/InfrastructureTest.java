@@ -59,7 +59,7 @@ class InfrastructureTest {
     int count(String table) { return jdbc.queryForObject("SELECT count(*) FROM " + table, Integer.class); }
 
     @Test void migrationsAreVersionedAndNormalStartupDoesNotSeed() {
-        assertThat(flyway.info().applied()).hasSize(1);
+        assertThat(flyway.info().applied()).hasSize(2);
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(count("utilizador")).isZero();
     }

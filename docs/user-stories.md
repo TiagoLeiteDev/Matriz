@@ -8,7 +8,7 @@
 - O proprietário gere projeto e colaboradores, arquivo/restauro e eliminação do projeto. Proprietário e colaboradores gerem tarefas, atribuições e comentários.
 - Tarefas independentes são privadas do criador, definido pelo backend. Participação num projeto não dá acesso às tarefas pessoais de outros utilizadores.
 - Arquivo impede alterações a tarefas/dependentes e exclui-os das vistas principais; restauro mantém filtros e prazo.
-- Estados: Por Fazer (inicial), Em Curso, Em Revisão, Concluída. Prioridades opcionais: Baixa, Média, Alta, Crítica. Prazos opcionais, incluindo passados.
+- Estados: TODO (inicial), IN_PROGRESS, DONE. Prioridades: LOW, MEDIUM, HIGH ou null; omitida na criação = MEDIUM, null explícito = Sem prioridade (TAR-01). Prazos opcionais, incluindo passados.
 - Textos obrigatórios não podem ser só espaços. Progresso arredondado a uma casa decimal; sem tarefas 0% e Sem tarefas.
 - Campos omitidos, pesquisa/filtros e Sem projeto/Sem prioridade conservam as regras aprovadas. As consultas operam apenas no conjunto autorizado.
 - Conservar dados confirmados nas falhas, preservar entradas do formulário, não anunciar sucesso e impedir submissão repetida em curso.
@@ -20,7 +20,7 @@ As referências PV/DEC nos critérios existentes mantêm rastreabilidade ao hist
 
 | Regra | Conteúdo atual |
 |---|---|
-| PV-01 | Estado inicial Por Fazer quando não escolhido outro. |
+| PV-01 | Estado inicial TODO quando não escolhido outro. |
 | PV-02 | Nome/título apenas com espaços é inválido. |
 | PV-03 | Progresso com uma casa decimal. |
 | PV-04 | Pesquisa por parte do título sem distinguir maiúsculas; vazio não restringe. |
@@ -123,7 +123,7 @@ Como utilizador autenticado, quero criar tarefas com ou sem projeto, para regist
 
 - **Given:** introduzi um título válido sem escolher estado.
 - **When:** guardo a tarefa.
-- **Then:** o estado inicial é Por Fazer, conforme PV-01.
+- **Then:** o estado inicial é TODO, conforme PV-01.
 
 ### US-04 — Consultar e editar tarefas
 
@@ -142,7 +142,7 @@ Como utilizador autenticado, quero consultar e editar os dados das tarefas, para
 **CA-US-04-02**
 
 - **Given:** existe uma tarefa.
-- **When:** defino prazo e prioridade Baixa, Média, Alta ou Crítica e guardo.
+- **When:** defino prazo e prioridade LOW, MEDIUM ou HIGH e guardo.
 - **Then:** os valores são guardados e a tarefa aparece no calendário na data do prazo.
 
 **CA-US-04-03**
@@ -174,13 +174,13 @@ Como utilizador autenticado, quero alterar o estado das tarefas, para acompanhar
 **CA-US-05-01**
 
 - **Given:** uma tarefa está num dos estados aprovados.
-- **When:** escolho qualquer outro entre Por Fazer, Em Curso, Em Revisão e Concluída e guardo.
+- **When:** escolho qualquer outro entre TODO, IN_PROGRESS e DONE e guardo.
 - **Then:** a lista mostra o novo estado e o Kanban a coluna correspondente; verificar todas as transições.
 
 **CA-US-05-02**
 
 - **Given:** um projeto tem duas tarefas concluídas e progresso 100%.
-- **When:** altero uma para Em Curso.
+- **When:** altero uma para IN_PROGRESS.
 - **Then:** a tarefa é reaberta e o progresso passa a 50%.
 
 ### US-06 — Consultar tarefas em lista
@@ -784,3 +784,11 @@ Como utilizador autenticado, quero ver os meus projetos acessíveis e contagens 
 ## Estado dos cenários
 
 São especificações, não resultados de testes. Spring Security e a política SEG-01 (60 minutos de inatividade, sem lembrar-me, reinício/logout exigem login) foram concretizados no Exercício 3. Âmbito exato das contagens continua por fechar antes do painel. PESQ-01 de projetos foi confirmada e implementada no Exercício 4. Resultados reais de acesso/leitura em verification.md; CRUD e escritas ainda pendentes. Mantêm-se limites de texto e detalhes de pesquisa por decidir. A base individual anterior foi preservada em history/mvp-individual-v1; não constitui especificação ativa.
+
+## Atualização aprovada — Exercício 5 (TAR-01/PESQ-02)
+
+Os estados técnicos ativos passam a TODO/IN_PROGRESS/DONE (rótulos Por fazer/Em curso/Concluída), com inicial TODO; prioridades LOW/MEDIUM/HIGH (Baixa/Média/Alta) ou null. Em novas tarefas prioridade omitida = MEDIUM; null explícito = Sem prioridade. As referências anteriores aos quatro estados/prioridades ficam superadas por esta decisão humana, sem alterar cardinalidades nem remover tarefas pessoais COL-04.
+
+A V2 incremental converte Por Fazer→TODO, Em Curso/Em Revisão→IN_PROGRESS, Concluída→DONE, Baixa→LOW, Média→MEDIUM, Alta/Crítica→HIGH; conserva prioridades null preexistentes, IDs, criador, comentários e atribuições. PESQ-02 confirma pesquisa literal parcial de tarefas ignorando maiúsculas e acentos.
+
+Lista/CRUD/filtros e transferências de tarefas implementados com autorização, CSRF e transações; COL-06 remove atribuições inelegíveis na mesma operação. Progresso calcula tarefas DONE/total. Escrita de comentários/responsáveis, gestão de colaboradores, painel, Kanban e calendário continuam pendentes. Ver [tarefas](tasks.md), OpenAPI 0.5.0 e verification.md para o estado observado.

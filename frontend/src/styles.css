@@ -25,3 +25,12 @@ dialog::backdrop { background: #0006; }
 
 .project-list a { overflow-wrap: anywhere; min-width: 0; flex: 1 1 16rem; }
 h2, dd { overflow-wrap: anywhere; }
+select { font: inherit; padding: .7rem; min-width: 0; }
+.tasks { margin-top: 1.5rem; border-top: 1px solid #ddd; padding-top: 1rem; }
+.task-filters { margin: 1rem 0; }
+.task-list { padding: 0; list-style: none; }
+.task-list li { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; border-bottom: 1px solid #ddd; padding: .75rem 0; }
+.task-open { overflow-wrap: anywhere; min-width: 0; text-align: left; flex: 1 1 15rem; }
+.task-list span { color: #555; }
+h3 { overflow-wrap: anywhere; }
+nav.actions { margin-top: 1rem; }

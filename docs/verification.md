@@ -185,3 +185,41 @@ Permanecem limitações documentadas: sem paginação/garantias para grandes vol
 A pedido do utilizador, o acesso e os projetos foram separados em dois commits. A versão intermédia de acesso foi materializada numa pasta isolada a partir da base do Exercício 2, sem alterar os ficheiros finais: 21 testes backend passaram, lint/build do frontend passaram e OpenAPI com oito operações implementadas foi validado. Os links locais dessa versão também foram verificados. O commit 0c1351e referencia #4.
 
 As fontes finais foram comparadas por SHA-256 com a cópia anterior à separação e conservaram o conteúdo verificado no Exercício 4 (33 testes backend e cenários de browser documentados). O commit seguinte contém apenas a evolução de projetos/documentação, com Refs #5. Nenhum teste foi apresentado como execução nova da versão final nesta operação de Git; usou-se a evidência existente e a igualdade dos ficheiros de código. Credenciais/padrões e ficheiros gerados foram revistos antes dos commits. A confirmação de publicação é registada nas issues após o push.
+
+
+## Exercício 5 — Gestão de tarefas — 18/11/2026
+
+### Resultados executados
+
+| Verificação | Esperado | Observado |
+|---|---|---|
+| backend/mvnw.cmd -f backend/pom.xml verify | Regressão e casos de tarefas com PostgreSQL descartável. | 50 testes, 0 falhas/erros/ignorados: InfrastructureTest 9, SecurityTest 12, ProjectCrudTest 12, TaskCrudTest 16, TaskMigrationTest 1. |
+| npm.cmd --prefix frontend run lint / run build | ESLint, TypeScript e bundle válidos. | Ambos código 0. |
+| docker compose build app seed | Imagens com frontend/backend e V2. | Build concluído. Seed não executado para repor dados. |
+| docker compose up -d app --wait | Aplicar V2 sem apagar o volume. | app/db saudáveis; Flyway V1 e V2 success=true. |
+| npm.cmd --prefix e2e test, Chrome | Regressão e novos percursos, com fixtures próprias. | 14 passaram; 3 ignorados por desenho (expiração/reinício de projetos/reinício de tarefas). |
+| MATRIZ_TASK_RESTART_TEST=1, npm.cmd --prefix e2e run test:tasks-restart | Tarefa persiste, sessão antiga invalida-se e novo login consulta campos. | 1 passou; estado IN_PROGRESS, prioridade HIGH e prazo 2026-11-19 conservados após reinício. |
+| OpenAPIV31SpecValidator + JSON Schema 2020-12 | Contrato válido; exemplos e respostas reais conformes. | OpenAPI 0.5.0 válido, 5 exemplos válidos; listagem real da Ana e os seus 2 detalhes autorizados válidos. 16/24 operações implementadas. |
+| Contagens da demonstração antes/depois | Preservar tarefas preexistentes e nulls, sem resíduos dos testes. | Antes: 3 tarefas, 3 prioridades null, V1. Depois: 3 tarefas TODO, 3 prioridades null, 1 comentário e 2 atribuições; V1/V2 aplicadas. |
+
+O comando de validação local da API precisou de execução autorizada fora do sandbox devido a WinError 10013; repetido com sucesso. Docker também precisou de acesso ao motor local. Não foi necessário desativar segurança da aplicação.
+
+### Cobertura backend acrescentada
+
+TaskCrudTest: criação/defaults/Location e leitura noutra sessão; privacidade pessoal; validações estritas/sem máximos arbitrários; omissão/null em PATCH; nove transições livres e progresso; listagem autorizada/revogação; filtros combinados literais/sem acentos e datas inclusivas; filtros inválidos; referências/acesso/arquivo; transferência e limpeza de atribuições; desassociação com resposta JSON literal null; rollback numa falha induzida da limpeza; cascata sem apagar projeto/contas; CSRF/ausência de sessão/IDs inexistentes.
+
+TaskMigrationTest: cria V1 numa BD descartável, insere 20 combinações de quatro estados antigos por quatro prioridades mais null, e uma tarefa pessoal adicional. Conserva IDs/relações/criador/autoria/comentário/atribuições, verifica o mapeamento humano, nulls, defaults novos, CHECKs e segunda execução sem reaplicar V2. Não usa o volume da demonstração.
+
+### Percursos reais de navegador acrescentados
+
+1. Criar tarefa pessoal (TODO/MEDIUM), pesquisar APRESENTACAO, filtrar Sem projeto, editar para DONE/Sem prioridade, reload, cancelar eliminação sem DELETE e confirmar com um só DELETE.
+2. Criar projeto/tarefa e concluir; progresso muda para 100% na interface sem reload.
+3. Bruno desassocia tarefa criada pela Ana no projeto partilhado: PATCH 200 com JSON null, mensagem compreensível, tarefa desaparece e GET de Bruno passa a 403; Ana mantém acesso.
+4. Título só com espaços não envia pedido. Falha de comunicação conserva título/descrição, sem falso sucesso; nova tentativa explícita guarda a tarefa.
+5. Percurso separado de reinício e reautenticação, descrito na tabela.
+
+Os testes E2E removem apenas os IDs próprios registados; não eliminam tarefas/projetos do seed ou dados arbitrários. O teste de expiração curta e o reinício específico de projetos não foram repetidos neste incremento: a política de sessão não mudou, o teste normal de projetos passou e o reinício foi exercitado com tarefas. Não somar ignorados como passados.
+
+### Limites atuais
+
+Ainda não concluídos: gestão de colaboradores, escrita de comentários/responsáveis, Kanban/calendário, painel integral/PD-06, CI e validação de entrega noutro computador. Sem paginação, sem desempenho medido para grandes volumes, pesquisa normalizada em memória no conjunto autorizado e sem ETag para edições com formulário antigo. Não foi publicada a aplicação na Internet. O registo Git foi posteriormente autorizado; a confirmação de publicação fica na issue #6.

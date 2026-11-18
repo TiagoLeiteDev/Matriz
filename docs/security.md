@@ -123,3 +123,8 @@ Referências técnicas: [sessão e persistência do contexto — Spring Security
 - O cliente React guarda a palavra-passe só no estado do formulário e limpa-a no sucesso; CSRF apenas em memória durante o pedido. Não usa localStorage/sessionStorage. Trata 401 no arranque e na consulta/logout; cada novo fluxo de negócio deve reutilizar o tratamento de sessão e nunca repetir escritas automaticamente.
 
 O exercício 3 não conclui os exercícios 4–6: criação de projetos com proprietário, criação de tarefas com criador, comentários com autor/data e seleção/persistência de responsáveis continuam por implementar nos respetivos casos de uso. As regras/guardas já existem; não é atribuída evidência de escrita real inexistente. Não existe registo público, recuperação de palavra-passe, rate limiting ou exposição externa implementada.
+
+
+## Atualização — Exercício 5
+
+CRUD/listagem de tarefas implementados com CurrentIdentity, TaskAccess e CSRF; 16 de 24 operações disponíveis. Transferência/desassociação aplicam COL-06 transacionalmente. Arquivo bloqueia todas as escritas. Comentários/responsáveis mantêm apenas leitura; gestão de colaboradores e painel continuam bloqueados. Ver tasks.md e verification.md.

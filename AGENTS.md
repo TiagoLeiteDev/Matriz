@@ -84,3 +84,7 @@ SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício e logout exigem nov
 ## Projetos — Exercício 4
 
 PESQ-01: pesquisa por parte do nome, ignorando maiúsculas e acentos, sobre conjunto autorizado/arquivo. Consultar docs/projects.md. Projetos não têm máximos de texto nem paginação no contrato atual. Proprietário vem de CurrentIdentity; PATCH conserva omitidos e null só limpa descrição. Não retirar locks/transações/cascata nem abrir gestão a colaboradores. E2E limpa só IDs criados pelos próprios testes; nunca apagar dados do seed ou o volume para fazer passar testes.
+
+## Tarefas — Exercício 5
+
+TAR-01 e PESQ-02 substituem as enumerações antigas: TODO/IN_PROGRESS/DONE; LOW/MEDIUM/HIGH ou null. Na criação, omissão da prioridade = MEDIUM; null explícito preserva ausência. V2 conserva nulls preexistentes; não editar V1. Consultar docs/tasks.md. Pesquisa parcial ignora maiúsculas/acentos depois de limitar acesso. Sem máximos arbitrários ou paginação. Transferências bloqueiam projetos antes da tarefa, revalidam associação/acesso e removem atribuições inelegíveis na mesma transação; comentários/criador preservados. PATCH de desassociação por outro ator pode devolver JSON null, nunca DTO sem acesso. Arquivo bloqueia todas as escritas de tarefas. Testes E2E limpam apenas fixtures próprias; migration/rollback em BD descartável.

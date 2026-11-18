@@ -33,7 +33,7 @@ public class ProjectQueries {
         return jdbc.query("""
             SELECT p.id, p.nome, p.descricao, p.arquivado, u.id AS owner_id, u.nome AS owner_name,
                 u.email AS owner_email, count(t.id) AS total,
-                count(t.id) FILTER (WHERE t.estado = 'Concluída') AS done
+                count(t.id) FILTER (WHERE t.estado = 'DONE') AS done
             FROM projeto p JOIN utilizador u ON u.id = p.proprietario_id
             LEFT JOIN tarefa t ON t.projeto_id = p.id
             WHERE p.arquivado = ? AND (p.proprietario_id = ? OR EXISTS (
@@ -51,7 +51,7 @@ public class ProjectQueries {
     public ProjectView get(UUID id) {
         var project = access.requireView(id);
         var progress = jdbc.queryForObject("""
-            SELECT count(*) AS total, count(*) FILTER (WHERE estado = 'Concluída') AS done
+            SELECT count(*) AS total, count(*) FILTER (WHERE estado = 'DONE') AS done
             FROM tarefa WHERE projeto_id = ?
             """, (rs, n) -> {
                 long total = rs.getLong("total"), done = rs.getLong("done");

@@ -1,6 +1,6 @@
 ﻿# Matriz — Plano de implementação colaborativa
 
-**Data:** 18/11/2026. **Estado:** Exercício 1 da ficha 03 concluído ao nível de análise e planeamento, com stack TEC-01 aprovada pelo utilizador. Incremento 1 (Exercício 2) implementado e verificado: estrutura, persistência, migrations, seed e arranque. Incremento 2 (Exercício 3) implementa acesso e consultas protegidas; Incremento 3 (Exercício 4) integra CRUD de projetos; tarefas/colaboração de escrita e restante MVP ainda por implementar. Decisões específicas ainda abertas são verificadas antes do incremento dependente; não estão implicitamente aprovadas.
+**Data:** 18/11/2026. **Estado:** Exercício 1 da ficha 03 concluído ao nível de análise e planeamento, com stack TEC-01 aprovada pelo utilizador. Incremento 1 (Exercício 2) implementado e verificado: estrutura, persistência, migrations, seed e arranque. Incremento 2 (Exercício 3) implementa acesso e consultas protegidas; Incremento 3 (Exercício 4) integra CRUD de projetos; Incremento 4 (Exercício 5) implementa tarefas, filtros e transferências; colaboração de escrita e restante MVP ainda por implementar. Decisões específicas ainda abertas são verificadas antes do incremento dependente; não estão implicitamente aprovadas.
 
 ## Base validada
 
@@ -43,7 +43,7 @@ Não há obrigação de criar uma biblioteca ou projeto por módulo. O frontend 
 | 1 — Estrutura e persistência | pom/Wrapper, estrutura backend/frontend, configuração, migrations, seed e BD de desenvolvimento. | Docker disponível; fixar versões e tipos físicos antes do esquema. | Exercício 2: build/arranque, ligação PostgreSQL, migrations repetíveis, dois utilizadores e projetos com acessos distintos; segundo arranque não apaga/duplica dados. Registar comandos reais no README. | Concluído: Exercício 2; evidências em verification.md |
 | 2 — Acesso | identity, segurança, perfil/logout, CSRF, login e testes. | Incremento 1; validar nomes do cookie/cabeçalho, duração e configurações por ambiente. | US-15/16: credenciais válidas/inválidas, sessão ausente/expirada, perfil sem hash, logout invalidante e CSRF. Testes com duas identidades. | Implementado e verificado: Exercício 3; limites em security.md |
 | 3 — Primeiro fluxo completo de projetos | projects, controllers/DTOs, listagem/formulário, colaboradores básicos e testes. | 1/2; definir correspondência da pesquisa antes de testes detalhados. | US-01/02/17/21: autenticar, criar projeto, listar e consultar após recarregar/reiniciar backend. Sem acesso alheio; proprietário inferido. | Concluído para projetos: Exercício 4; gestão de colaboradores permanece no incremento próprio |
-| 4 — Tarefas e consultas | tasks, forms/lista, estado, associação e integração. | 3; validar limites de texto e detalhes de DTO. | US-03–14: criar e consultar sem recarregar, campos válidos/inválidos, privacidade e autorização, transferência com limpeza atómica, filtros e persistência real. | Não iniciado |
+| 4 — Tarefas e consultas | tasks, forms/lista, estado, associação e integração. | 3; validar limites de texto e detalhes de DTO. | US-03–14: criar e consultar sem recarregar, campos válidos/inválidos, privacidade e autorização, transferência com limpeza atómica, filtros e persistência real. | Implementado e verificado no Exercício 5: lista/CRUD/filtros/transferência/progresso; Kanban/calendário no incremento 6 |
 | 5 — Colaboração e operações destrutivas | Elegíveis/responsáveis, comentários, arquivo/restauro e cascata. | 3/4; política COL-02/03/06 aprovada. | US-12/13/17–20: sem duplicados, autor/data do backend, perda de acesso imediata, arquivo bloqueia alterações, cascata sem órfãos, cancelamento e rollback. | Não iniciado |
 | 6 — Interface e painel completos | Lista/Kanban/calendário, progresso, contagens, erros e estados. | 3–5; confirmar âmbito das contagens e navegação do calendário. | US-06–09/14/22: mesmas tarefas nas vistas, contagens autorizadas não limitadas à página, atualização após gravação, formulário preservado e prevenção de submissão repetida. | Não iniciado |
 | 7 — Qualidade e entrega reproduzível | Testes, E2E, Docker/Compose, CI, docs e revisão. | Incrementos anteriores com verificações reais. | Três testes mínimos e fluxo Playwright; cópia limpa, persistência após recriar container, pipeline falha com teste controlado e volta a passar; revisão de segredos e demonstração até 5 min. | Não iniciado |
@@ -72,7 +72,7 @@ Registar comandos, esperado/observado/evidências e limitações em verification
 |---|---|
 | 1 | Resolvido no Exercício 2: versões fixadas, UUID/text/date/timestamptz, V1 Flyway e seed explícito transacional. Ver setup.md. |
 | 2 | Resolvido: SEG-01 (60 minutos), cookie/CSRF e perfil prod; evidências em verification.md. HTTPS real/publicação não executados. |
-| 3/4 | Projetos resolvidos: contrato sem máximos e PESQ-01. Para tarefas, manter pendências e não importar limites pedagógicos. |
+| 3/4 | Projetos resolvidos: contrato sem máximos e PESQ-01. Tarefas resolvidas em TAR-01/PESQ-02; sem máximos de texto, sem importar limites pedagógicos. |
 | 6 | Composição das contagens, formato/navegação do calendário e ordem inicial. |
 | 7 | Comandos efetivos, portas, imagens fixadas e evidência de execução noutro ambiente/CI. |
 
@@ -101,3 +101,10 @@ Próximo: Exercício 4 / incremento 3 — criação, listagem, consulta, ediçã
 CRUD de projetos, arquivo/restauro, pesquisa PESQ-01 e interface integrados. Primeiro percurso completo confirmado: login → criar → listar/consultar/editar → reload → reinício de app → novo login → mesmo projeto/descrição. Cancelamento sem DELETE, cascata e rollback testados. Resultados em verification.md.
 
 Próximo: Exercício 5, gestão de tarefas. Reutilizar CurrentIdentity e guardas, implementar estados/prioridade/filtros/persistência e aplicar acesso/arquivo nos casos de uso. Não confundir leitura de tarefas existente com CRUD concluído. Gestão de colaboradores, responsáveis/comentários de escrita e limpeza COL-06 permanecem nos incrementos dependentes. Exercícios 3/4 separados em commits associados às issues #4/#5; publicação verificável nesses registos.
+
+
+## Revisão após Exercício 5
+
+Incremento 4 concluído para lista/CRUD/filtros de tarefas, estados TAR-01, pesquisa PESQ-02, transferência/desassociação com limpeza COL-06 e progresso integrado. V2 aplicada sem substituir V1 nem preencher prioridades null preexistentes. 50 testes backend, lint/build, 14 cenários normais de browser e 1 teste separado de reinício passaram. OpenAPI 0.5.0 válido com 16/24 operações implementadas.
+
+Próximo incremento: colaboração de escrita (colaboradores, responsáveis e comentários), conforme o exercício seguinte. Kanban/calendário e painel/PD-06 permanecem no incremento 6; não declarar US-07/08/17/18/19/22 concluídas com este trabalho. Registo Git autorizado pelo utilizador; commit e confirmação de publicação na issue #6.

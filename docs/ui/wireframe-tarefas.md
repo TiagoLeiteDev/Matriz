@@ -51,3 +51,11 @@ Layout, mensagens, adaptação móvel, teclado, limites de texto, ordem inicial 
 - [Reconciliação](../scope-reconciliation.md), [Log da ficha 3](../ai-logs/ficha-03.md).
 
 Imagens monocromáticas de baixa fidelidade, sem identidade visual final, ligação à API ou dados reais. PNGs de tarefas e login abertos e inspecionados: texto legível, sem cortes/sobreposições relevantes; seleção, projeto e progresso coerentes com os dados fictícios. Não são testes de usabilidade ou de aplicação.
+
+## Atualização aprovada — Exercício 5 (TAR-01/PESQ-02)
+
+Os estados técnicos ativos passam a TODO/IN_PROGRESS/DONE (rótulos Por fazer/Em curso/Concluída), com inicial TODO; prioridades LOW/MEDIUM/HIGH (Baixa/Média/Alta) ou null. Em novas tarefas prioridade omitida = MEDIUM; null explícito = Sem prioridade. As referências anteriores aos quatro estados/prioridades ficam superadas por esta decisão humana, sem alterar cardinalidades nem remover tarefas pessoais COL-04.
+
+A V2 incremental converte Por Fazer→TODO, Em Curso/Em Revisão→IN_PROGRESS, Concluída→DONE, Baixa→LOW, Média→MEDIUM, Alta/Crítica→HIGH; conserva prioridades null preexistentes, IDs, criador, comentários e atribuições. PESQ-02 confirma pesquisa literal parcial de tarefas ignorando maiúsculas e acentos.
+
+Lista/CRUD/filtros e transferências de tarefas implementados com autorização, CSRF e transações; COL-06 remove atribuições inelegíveis na mesma operação. Progresso calcula tarefas DONE/total. Escrita de comentários/responsáveis, gestão de colaboradores, painel, Kanban e calendário continuam pendentes. Ver [tarefas](../tasks.md), OpenAPI 0.5.0 e verification.md para o estado observado.

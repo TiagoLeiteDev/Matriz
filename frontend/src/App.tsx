@@ -3,12 +3,19 @@ import { api, ApiError, logout } from './api/client'
 import type { UserProfile } from './api/client'
 import LoginForm from './features/auth/LoginForm'
 import ProjectsWorkspace from './features/projects/ProjectsWorkspace'
+import TasksWorkspace from './features/tasks/TasksWorkspace'
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
+  const [tasksPage, setTasksPage] = useState(() => window.location.hash.startsWith('#tarefas'))
+  useEffect(() => {
+    const change = () => setTasksPage(window.location.hash.startsWith('#tarefas'))
+    window.addEventListener('hashchange', change)
+    return () => window.removeEventListener('hashchange', change)
+  }, [])
   const sessionExpired = useCallback(() => {
     setUser(null); setMessage('A tua sessão terminou. Inicia sessão novamente.')
   }, [])
@@ -51,7 +58,9 @@ export default function App() {
       {message && <p role="status">{message}</p>}
       <div className="actions"><button onClick={refresh} disabled={busy}>Atualizar perfil</button>
         <button onClick={exit} disabled={busy}>Terminar sessão</button></div>
-      <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} />
+      <nav className="actions" aria-label="Navegação principal"><button onClick={() => { window.location.hash = 'projetos' }}>Projetos</button>
+        <button onClick={() => { window.location.hash = 'tarefas' }}>Tarefas</button></nav>
+      {tasksPage ? <TasksWorkspace userId={user.id} onSessionExpired={sessionExpired} /> : <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} />}
     </section> : <LoginForm message={message} onLogin={profile => { setUser(profile); setMessage('') }} />}
   </main>
 }

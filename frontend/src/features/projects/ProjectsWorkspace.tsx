@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import { api, ApiError, mutate } from '../../api/client'
 import type { UserProfile } from '../../api/client'
 import type { Project } from './types'
 import ProjectForm from './ProjectForm'
 import DeleteProjectDialog from './DeleteProjectDialog'
+import TasksWorkspace from '../tasks/TasksWorkspace'
 
 function selectedId() { return window.location.hash.startsWith('#projetos/') ? window.location.hash.slice('#projetos/'.length) : null }
 
@@ -23,6 +24,13 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const inFlight = useRef(false)
+  const tasksChanged = useCallback(() => {
+    if (!id) return
+    api<Project>(`/projetos/${encodeURIComponent(id)}`).then(setSelected).catch((failure: unknown) => {
+      if (failure instanceof ApiError && failure.status === 401) onSessionExpired()
+      else setError('A tarefa foi guardada, mas não foi possível atualizar o progresso. Consulta novamente o projeto.')
+    })
+  }, [id, onSessionExpired])
   useEffect(() => {
     const change = () => { setId(selectedId()); setLoading(true); setRevision(value => value + 1); setForm(null); setConfirmDelete(false); setError('') }
     window.addEventListener('hashchange', change)
@@ -90,6 +98,8 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
           <button disabled={busy} onClick={changeArchive}>{selected.arquivado ? 'Restaurar projeto' : 'Arquivar projeto'}</button>
           <button disabled={busy} onClick={() => { setError(''); setSuccess(''); setConfirmDelete(true) }}>Eliminar projeto</button></div>
           : <p>Tens acesso de colaboração a este projeto.</p>}
+        <TasksWorkspace key={selected.id} userId={user.id} projectId={selected.id} readOnly={selected.arquivado}
+          onChanged={tasksChanged} onSessionExpired={onSessionExpired} />
       </article> : <>
         <h2>Projetos</h2><button onClick={() => { setSuccess(''); setForm('create') }}>Criar projeto</button>
         <form className="project-search" onSubmit={search}><label htmlFor="project-search">Pesquisar por nome</label>

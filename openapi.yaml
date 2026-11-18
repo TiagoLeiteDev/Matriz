@@ -1,19 +1,21 @@
 openapi: 3.1.0
 info:
   title: Matriz API colaborativa
-  version: 0.4.0
+  version: 0.5.0
   description: 'Matriz colaborativa — contrato ativo. Exercício 3 implementa sessão/CSRF e consultas protegidas;
-    Exercício 4 implementa CRUD de projetos, arquivo/restauro e pesquisa PESQ-01. As restantes operações
-    estão planeadas e continuam bloqueadas. Ver x-implementation-status em cada operação. Sessão no servidor:
-    60 minutos de inatividade, sem lembrar-me, sem persistência após reinício, revogada no logout. Cookie
-    matriz_session HttpOnly/SameSite=Lax/Secure no perfil HTTPS de produção. CSRF obrigatório em operações
-    de escrita, incluindo login/logout; token obtido por GET /sessao/csrf e novamente após autenticação/logout.
-    Cabeçalho X-CSRF-Token. Uma escrita sem CSRF pode devolver 403 antes da verificação de autenticação.
-    Listagens futuras não têm paginação definida nem ordem garantida. PATCH futuro conserva campos omitidos;
-    null limpa apenas opcionais. Identidade do ator nunca vem do pedido. UUIDs são devolvidos como strings
-    opacas. Pesquisa de projetos por parte do nome, ignorando maiúsculas e acentos, sem paginação e com
-    q literal; filtro arquivado=false por defeito. Nome não vazio/não só espaços; descrição opcional;
-    sem limites máximos de texto definidos. Não há exposição pública aprovada.'
+    Exercício 4 implementa CRUD de projetos, arquivo/restauro e pesquisa PESQ-01. Exercício 5 implementa
+    CRUD de tarefas, filtros PESQ-02 e transferências COL-06. TAR-01 altera estados e prioridades com
+    migração V2 aprovada. As restantes operações estão planeadas e continuam bloqueadas. Ver x-implementation-status
+    em cada operação. Sessão no servidor: 60 minutos de inatividade, sem lembrar-me, sem persistência
+    após reinício, revogada no logout. Cookie matriz_session HttpOnly/SameSite=Lax/Secure no perfil HTTPS
+    de produção. CSRF obrigatório em operações de escrita, incluindo login/logout; token obtido por GET
+    /sessao/csrf e novamente após autenticação/logout. Cabeçalho X-CSRF-Token. Uma escrita sem CSRF pode
+    devolver 403 antes da verificação de autenticação. Listagens não têm paginação definida nem ordem
+    garantida. PATCH conserva campos omitidos; null limpa apenas opcionais. Identidade do ator nunca vem
+    do pedido. UUIDs são devolvidos como strings opacas. Pesquisa de projetos por parte do nome, ignorando
+    maiúsculas e acentos, sem paginação e com q literal; filtro arquivado=false por defeito. Nome não
+    vazio/não só espaços; descrição opcional; sem limites máximos de texto definidos. Não há exposição
+    pública aprovada.'
 security:
 - Sessao: []
 paths:
@@ -389,7 +391,9 @@ paths:
       description: Projetos acessiveis nao arquivados e tarefas independentes do criador. Intersecao de
         filtros; projetoId+semProjeto=true ou prioridade+semPrioridade=true invalidos. Limites de prazo
         inclusivos excluem tarefas sem prazo; intervalo invertido=400. Lista/Kanban/calendario reutilizam
-        dados; contagens nao se limitam a pagina visivel.
+        dados; contagens nao se limitam a pagina visivel. Não inclui projetos arquivados. Sem paginação
+        ou ordem garantida. Projeto sem acesso no filtro resulta em lista vazia. Pesquisa aplicada ao
+        conjunto autorizado.
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -411,7 +415,7 @@ paths:
       - name: q
         in: query
         required: false
-        description: Parte do titulo, sem distinguir maiusculas; vazio nao restringe. Acentos pendentes.
+        description: 'PESQ-02: parte literal do título, ignorando maiúsculas e acentos; vazio não restringe.'
         schema:
           type: string
       - name: projetoId
@@ -460,12 +464,14 @@ paths:
         schema:
           type: string
           format: date
-      x-implementation-status: planned
+      x-implementation-status: implemented
     post:
       operationId: criarTarefa
       summary: Criar tarefa
       description: Criador inferido da sessao. Projeto opcional; independente e privada do criador. Projeto
-        preenchido exige acesso e nao arquivado. Estado omitido=Por Fazer. Prazo passado permitido.
+        preenchido exige acesso e nao arquivado. Estado omitido=TODO. Prazo passado permitido. Prioridade
+        omitida=MEDIUM; null explícito conserva ausência de prioridade. Título não vazio/não só espaços,
+        sem máximos arbitrários.
       responses:
         '201':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -477,8 +483,8 @@ paths:
                 id: 00000000-0000-4000-8000-000000000021
                 titulo: Preparar dados
                 descricao: null
-                estado: Por Fazer
-                prioridade: null
+                estado: TODO
+                prioridade: MEDIUM
                 prazo: null
                 projetoId: 00000000-0000-4000-8000-000000000011
                 criadorId: 00000000-0000-4000-8000-000000000001
@@ -518,9 +524,9 @@ paths:
                 value:
                   titulo: Preparar dados
                   projetoId: 00000000-0000-4000-8000-000000000011
-                  prioridade: Alta
+                  prioridade: HIGH
                   prazo: '2026-11-19'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /tarefas/{tarefaId}:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -544,6 +550,8 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       x-implementation-status: implemented
     patch:
       operationId: atualizarTarefa
@@ -551,7 +559,8 @@ paths:
       description: Verificar acesso a origem e destino. Criador imutavel. projetoId=null torna privada
         do criador original; ator diferente pode perder acesso apos a operacao. Remover atribuicoes inelegiveis
         na mesma transacao. Bloquear qualquer alteracao se origem ou destino estiver arquivado. Transicoes
-        de estado livres.
+        de estado livres. Campos omitidos conservados; null apenas nos opcionais. Conflito concorrente
+        de associação devolve 409 sem alteração parcial.
       responses:
         '200':
           description: Atualizacao concluida. Corpo JSON null se o ator perdeu acesso devido a desassociacao;
@@ -584,7 +593,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AtualizarTarefa'
-      x-implementation-status: planned
+      x-implementation-status: implemented
     delete:
       operationId: eliminarTarefa
       summary: Eliminar tarefa e dependentes
@@ -603,9 +612,11 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       parameters:
       - $ref: '#/components/parameters/Csrf'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /tarefas/{tarefaId}/utilizadores-elegiveis:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -871,17 +882,15 @@ components:
     Estado:
       type: string
       enum:
-      - Por Fazer
-      - Em Curso
-      - Em Revisão
-      - Concluída
+      - TODO
+      - IN_PROGRESS
+      - DONE
     Prioridade:
       type: string
       enum:
-      - Baixa
-      - Média
-      - Alta
-      - Crítica
+      - LOW
+      - MEDIUM
+      - HIGH
     Utilizador:
       type: object
       additionalProperties: false
@@ -1030,11 +1039,14 @@ components:
           $ref: '#/components/schemas/TextoOpcional'
         estado:
           $ref: '#/components/schemas/Estado'
-          default: Por Fazer
+          default: TODO
         prioridade:
           anyOf:
           - $ref: '#/components/schemas/Prioridade'
           - type: 'null'
+          default: MEDIUM
+          description: 'Omitida: MEDIUM; null explícito: Sem prioridade. Valores vazios preexistentes
+            mantidos por V2.'
         prazo:
           type:
           - string
@@ -1159,23 +1171,19 @@ components:
       type: object
       additionalProperties: false
       properties:
-        Por Fazer:
+        TODO:
           type: integer
           minimum: 0
-        Em Curso:
+        IN_PROGRESS:
           type: integer
           minimum: 0
-        Em Revisão:
-          type: integer
-          minimum: 0
-        Concluída:
+        DONE:
           type: integer
           minimum: 0
       required:
-      - Por Fazer
-      - Em Curso
-      - Em Revisão
-      - Concluída
+      - TODO
+      - IN_PROGRESS
+      - DONE
     Painel:
       type: object
       additionalProperties: false

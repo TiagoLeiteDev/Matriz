@@ -806,3 +806,301 @@ Após recomendar dois commits por incremento, o utilizador autorizou: **“faz i
 Como os ficheiros partilhados continham alterações de ambos os exercícios, foi preparada e validada uma versão autónoma do exercício 3 numa pasta temporária ignorada pelo Git. Passaram 21 testes backend e lint/build; OpenAPI e links locais válidos. O conteúdo final da pasta de trabalho foi preservado e comparado por hash antes de registar a evolução do exercício 4. Não foi reescrito o histórico anterior.
 
 .env, node_modules, target, relatórios e cópias temporárias ficam excluídos. As confirmações de push e fecho das issues são registadas no GitHub após a publicação dos dois commits. Não foi publicada a aplicação na Internet nem alterada a base de dados por esta operação Git.
+
+
+## Exercício 5 — Gestão de tarefas — 18/11/2026
+
+**Ferramenta:** ChatGPT/Codex. **Issue:** [#6](https://github.com/TiagoLeiteDev/Matriz/issues/6), aberta antes da implementação.
+
+### Pedido integral recebido
+
+<details>
+<summary>Prompt do utilizador</summary>
+
+# ROLE
+
+Atua como Senior Full\-Stack Engineer, especializado em desenvolvimento de aplicações web, APIs REST, modelação de domínios de negócio, persistência de dados, experiência de utilizador e integração entre Frontend, Backend e Base de Dados.
+
+# GOAL
+
+Implementar a gestão de tarefas da aplicação Matriz, permitindo criar, listar, consultar, editar e eliminar tarefas associadas a projetos autorizados, garantindo conformidade com o contrato OpenAPI, validação de dados, atualização dinâmica da interface e persistência real.
+
+# CONTEXT
+
+Consulta os seguintes documentos:
+
+- docs/requirements.md
+- docs/user\-stories.md
+- docs/constraints.md
+- docs/database.md
+- docs/architecture.md
+- openapi.yaml
+- README.md
+- docs/ui/
+- AGENTS.md
+
+A autenticação, autorização e a gestão de projetos já foram implementadas nos exercícios anteriores.
+
+O objetivo deste exercício é disponibilizar a gestão operacional do trabalho dentro de cada projeto através de tarefas persistidas na base de dados, acessíveis através da API e totalmente integradas com a interface da aplicação.
+
+# CONSTRAINTS
+
+- Considera apenas o âmbito do MVP.
+- Respeita rigorosamente o contrato OpenAPI aprovado.
+- Não introduzas novas funcionalidades sem suporte documental.
+- Todas as operações devem respeitar os pedidos, respostas e códigos HTTP definidos.
+- As tarefas devem estar sempre associadas a um projeto existente.
+- O acesso às tarefas deve respeitar as regras de autorização definidas para o respetivo projeto.
+- Todas as validações devem ser realizadas no Backend.
+- A interface deve apresentar mensagens de erro claras e compreensíveis.
+- Rejeitar valores constituídos apenas por espaços em branco.
+- Implementar filtros apenas para os campos definidos no contrato.
+- Implementar paginação apenas se estiver prevista no OpenAPI.
+- Após qualquer operação, a interface deve refletir imediatamente o estado atualizado dos dados, sem exigir recarregamento manual da página.
+- Os valores técnicos da API devem ser preservados:
+    - Estado: TODO, IN\_PROGRESS, DONE
+    - Prioridade: LOW, MEDIUM, HIGH
+- A interface pode apresentar traduções destes valores para português.
+
+# TASKS
+
+## Gestão de Tarefas
+
+1. Implementar a criação de tarefas associadas a um projeto autorizado.
+2. Implementar a listagem de tarefas.
+3. Implementar a consulta de uma tarefa específica.
+4. Implementar a edição de tarefas.
+5. Implementar a eliminação de tarefas.
+6. Garantir que todas as operações respeitam o contrato OpenAPI.
+
+## Associação a Projetos
+
+1. Garantir que cada tarefa está associada a um projeto válido.
+2. Impedir a criação de tarefas para projetos inexistentes.
+3. Impedir o acesso a tarefas pertencentes a projetos não autorizados.
+4. Garantir que a autorização é validada em todas as operações.
+
+## Validações
+
+1. Aplicar as regras de validação definidas para os campos da tarefa.
+
+Campos de referência:
+
+### Título
+
+- Obrigatório.
+- Entre 3 e 150 caracteres.
+
+### Descrição
+
+- Até 2000 caracteres.
+
+### Estado
+
+- TODO
+- IN\_PROGRESS
+- DONE
+
+Valor inicial:
+
+- TODO
+
+### Prioridade
+
+- LOW
+- MEDIUM
+- HIGH
+
+Valor inicial:
+
+- MEDIUM
+1. Rejeitar valores compostos apenas por espaços em branco.
+2. Garantir consistência entre validações do Backend e contrato OpenAPI.
+
+## Estados e Prioridades
+
+1. Implementar alteração de estado.
+2. Implementar alteração de prioridade.
+3. Garantir que apenas os valores permitidos são aceites.
+4. Garantir persistência correta das alterações.
+
+## Pesquisa, Filtros e Paginação
+
+1. Implementar filtragem por estado.
+2. Implementar filtragem por prioridade.
+3. Permitir combinação dos filtros caso esteja prevista no contrato.
+4. Implementar paginação, se definida no OpenAPI.
+5. Garantir consistência entre API e interface.
+
+## Atualização Dinâmica da Interface
+
+1. Atualizar automaticamente a listagem após:
+- Criação
+- Edição
+- Alteração de estado
+- Alteração de prioridade
+- Eliminação
+1. Atualizar contagens, indicadores ou métricas apresentadas na interface.
+2. Garantir que o utilizador não necessita de recarregar a página para visualizar as alterações.
+
+## Tratamento de Erros
+
+1. Apresentar mensagens adequadas para:
+- Dados inválidos
+- Projeto inexistente
+- Tarefa inexistente
+- Falha de autorização
+- Falha de autenticação
+- Erros inesperados
+1. Garantir alinhamento entre erros da API e mensagens da interface.
+
+# OUTPUT
+
+## Análise de Implementação
+
+Descrever:
+
+- Funcionalidades implementadas
+- User Stories suportadas
+- Fluxos de negócio cobertos
+
+## Operações Implementadas
+
+Para cada operação:
+
+- Método HTTP
+- Endpoint
+- Permissões exigidas
+- Validações aplicadas
+- Status codes suportados
+
+## Modelo de Tarefa
+
+Apresentar:
+
+- Campos
+- Tipos de dados
+- Restrições
+- Valores por defeito
+
+## Regras de Validação
+
+Tabela contendo:
+
+- Campo
+- Regra
+- Mensagem de erro esperada
+
+## Filtros e Paginação
+
+Documentar:
+
+- Filtros suportados
+- Parâmetros utilizados
+- Comportamento esperado
+- Paginação implementada
+
+## Regras de Autorização
+
+Tabela contendo:
+
+- Operação
+- Recurso
+- Regra aplicada
+- Comportamento esperado
+
+## Comportamento da Interface
+
+Descrever:
+
+- Criação de tarefas
+- Edição de tarefas
+- Alteração de estados
+- Alteração de prioridades
+- Atualizações automáticas
+- Tratamento de erros
+
+## Persistência
+
+Explicar:
+
+- Como as tarefas são armazenadas
+- Relação com projetos
+- Garantias de integridade dos dados
+
+## Atualizações ao README
+
+Gerar os conteúdos necessários para documentar:
+
+- Gestão de tarefas
+- Filtros
+- Atualizações de estado
+- Atualizações de prioridade
+- Testes manuais
+- Fluxos de validação
+
+## Problemas e Riscos
+
+Identificar:
+
+- Limitações conhecidas
+- Riscos técnicos
+- Melhorias futuras
+
+# VALIDATION
+
+Antes de concluir:
+
+- Verifica que todas as operações CRUD de tarefas estão implementadas.
+- Confirma que todas as tarefas pertencem a projetos válidos.
+- Verifica que apenas utilizadores autorizados podem aceder às tarefas.
+- Confirma que as validações respeitam o contrato OpenAPI.
+- Verifica que valores compostos apenas por espaços são rejeitados.
+- Confirma que os estados aceites são apenas TODO, IN\_PROGRESS e DONE.
+- Confirma que as prioridades aceites são apenas LOW, MEDIUM e HIGH.
+- Verifica que os valores por defeito são corretamente aplicados.
+- Confirma que os filtros por estado e prioridade funcionam corretamente.
+- Verifica a paginação, caso exista no contrato.
+- Confirma que a interface apresenta mensagens de erro adequadas.
+- Verifica que a listagem e as contagens são atualizadas após cada operação.
+- Confirma que não é necessário recarregar a página para observar alterações.
+- Verifica que a persistência dos dados é mantida após reinício do Backend.
+
+## Critério de Aceitação
+
+O resultado será considerado válido apenas se permitir que um utilizador autenticado crie, consulte, liste, filtre, atualize e elimine tarefas pertencentes a projetos autorizados, utilizando uma interface integrada com a API e persistência real, mantendo conformidade com o contrato OpenAPI, as regras de autorização e as validações definidas para o MVP.
+
+
+
+</details>
+
+### Análise crítica e controlo humano
+
+O prompt exigia projeto obrigatório e alterava estados/prioridades, contrariando COL-04 e o contrato anterior. A implementação dependente aguardou confirmação. Não foram importados os limites de texto exemplificativos.
+
+1. Manter tarefas pessoais além das de projetos? **Resposta:** “Manter tarefas pessoais e tarefas de projetos, conforme o contrato atual”.
+2. Manter contrato ou alterar enumerações? **Resposta:** “Alterar para TODO/IN_PROGRESS/DONE e LOW/MEDIUM/HIGH, com MEDIUM por defeito”. TAR-01.
+3. Pesquisa ignora maiúsculas/acentos como projetos? **Resposta:** “Sim, ignorar maiúsculas e acentos também nas tarefas”. PESQ-02.
+4. Converter Em Revisão→IN_PROGRESS e Crítica→HIGH, conservar prioridades vazias existentes, MEDIUM apenas por omissão numa nova tarefa e null explícito = Sem prioridade? **Resposta:** “Sim, aplicar este mapeamento e conservar os valores vazios existentes”.
+
+### Trabalho realizado
+
+- DTOs/validações estritos, criação/listagem/edição/eliminação, privacidade e filtros combinados; identidade inferida da sessão.
+- V2 incremental aprovada, sem editar V1, sem eliminar tarefas ou repor seed. Mapeamento/relações testados antes da atualização local.
+- Transações e locks coordenados com projetos; arquivo bloqueia escritas; transferência limpa atribuições inelegíveis atomicamente, conservando criador/comentários.
+- Desassociação por colaborador que perde acesso devolve JSON literal null; UI explica e retira a tarefa da lista.
+- Navegação de tarefas, formulário, filtros, detalhe, confirmação/cancelamento, erros e progresso atualizado sem reload.
+- OpenAPI 0.5.0, 16/24 operações implementadas; requisitos, histórias, modelo, arquitetura, plano, README e instruções alinhados com TAR-01/PESQ-02.
+
+### Verificação e resultado
+
+50 testes backend sem falhas; migração cobre 20 combinações antigas e uma tarefa pessoal. Lint/build passaram. 14 testes normais de browser passaram, incluindo regressão de autenticação/projetos, CRUD pessoal, pesquisa sem acentos, progresso dinâmico, null após perda de acesso e conservação do formulário em erro. Reinício/contrato com evidência detalhada em verification.md.
+
+Escrita de comentários/responsáveis, colaboradores, painel, Kanban e calendário permanecem pendentes. No fecho da implementação, as alterações estavam locais; publicação autorizada posteriormente no registo seguinte.
+
+
+## Registo Git do Exercício 5 — 18/11/2026
+
+Após o ponto de situação, o utilizador autorizou “faz isso”: criar commit com Refs #6, fazer push e fechar a issue após confirmar a publicação. O incremento inclui gestão de tarefas, V2/TAR-01/PESQ-02, interface, testes, contrato e documentação associados.
+
+Verificações funcionais já executadas: 50 testes backend, lint/build, 14 cenários normais de browser e 1 separado de reinício. Esta operação Git não os apresenta como nova execução. Foram revistos os ficheiros alterados e excluídos ficheiros de ambiente, caches, relatórios e temporários. A confirmação de SHA remoto/push e fecho é registada na issue #6 após publicação; não é reescrito histórico nem alterada a base de dados por esta operação.

@@ -3,18 +3,44 @@ package pt.matriz.tasks;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.text.Normalizer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import pt.matriz.identity.UserProfile;
+import pt.matriz.identity.CurrentIdentity;
 
 @Service
 @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
 public class TaskQueries {
     private final TaskAccess access;
     private final JdbcTemplate jdbc;
-    public TaskQueries(TaskAccess access, JdbcTemplate jdbc) { this.access = access; this.jdbc = jdbc; }
+    private final CurrentIdentity identity;
+    public TaskQueries(TaskAccess access, JdbcTemplate jdbc, CurrentIdentity identity) { this.access = access; this.jdbc = jdbc; this.identity = identity; }
+    private static String fold(String text) { return Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT); }
+    public List<TaskAccess.Task> list(TaskFilter filter) {
+        UUID actor = identity.id();
+        StringBuilder sql = new StringBuilder("""
+            SELECT t.* FROM tarefa t LEFT JOIN projeto p ON p.id = t.projeto_id
+            WHERE ((t.projeto_id IS NULL AND t.criador_id = ?) OR
+                (p.arquivado = false AND (p.proprietario_id = ? OR EXISTS (
+                    SELECT 1 FROM colaboracao_projeto c WHERE c.projeto_id = p.id AND c.utilizador_id = ?))))
+            """);
+        List<Object> values = new ArrayList<>(List.of(actor, actor, actor));
+        if (filter.projetoId() != null) { sql.append(" AND t.projeto_id = ?"); values.add(filter.projetoId()); }
+        if (filter.semProjeto()) sql.append(" AND t.projeto_id IS NULL");
+        if (filter.estado() != null) { sql.append(" AND t.estado = ?"); values.add(filter.estado()); }
+        if (filter.prioridade() != null) { sql.append(" AND t.prioridade = ?"); values.add(filter.prioridade()); }
+        if (filter.semPrioridade()) sql.append(" AND t.prioridade IS NULL");
+        if (filter.prazoDe() != null) { sql.append(" AND t.prazo >= ?"); values.add(filter.prazoDe()); }
+        if (filter.prazoAte() != null) { sql.append(" AND t.prazo <= ?"); values.add(filter.prazoAte()); }
+        String query = fold(filter.q() == null ? "" : filter.q());
+        return jdbc.query(sql.toString(), TaskAccess::row, values.toArray()).stream()
+            .filter(task -> fold(task.titulo()).contains(query)).toList();
+    }
     public TaskAccess.Task get(UUID id) { return access.requireView(id); }
     public record CommentView(UUID id, String conteudo, UserProfile autor, Instant criadoEm) {}
     public record AssignmentView(UserProfile utilizador) {}

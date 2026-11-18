@@ -123,3 +123,11 @@ SEG-01 foi escolhida pelo utilizador: sessão em memória, 60 minutos de inativi
 ## Gestão de projetos — Exercício 4
 
 Comandos transacionais ProjectCommands com identidade da sessão e lock de linha antes de editar/eliminar; listagem agregada/consulta e pesquisa PESQ-01 sobre o conjunto autorizado. FKs/cascata da V1 mantidas; sem extensões, tabelas ou tecnologias novas. UI integrada com formulários e confirmação modal. [projects.md](projects.md) descreve contrato, limites, validação e concorrência. As criações de tarefas/comentários e atribuições continuam nos exercícios seguintes; a criação de projetos já infere o proprietário no backend.
+
+## Atualização aprovada — Exercício 5 (TAR-01/PESQ-02)
+
+Os estados técnicos ativos passam a TODO/IN_PROGRESS/DONE (rótulos Por fazer/Em curso/Concluída), com inicial TODO; prioridades LOW/MEDIUM/HIGH (Baixa/Média/Alta) ou null. Em novas tarefas prioridade omitida = MEDIUM; null explícito = Sem prioridade. As referências anteriores aos quatro estados/prioridades ficam superadas por esta decisão humana, sem alterar cardinalidades nem remover tarefas pessoais COL-04.
+
+A V2 incremental converte Por Fazer→TODO, Em Curso/Em Revisão→IN_PROGRESS, Concluída→DONE, Baixa→LOW, Média→MEDIUM, Alta/Crítica→HIGH; conserva prioridades null preexistentes, IDs, criador, comentários e atribuições. PESQ-02 confirma pesquisa literal parcial de tarefas ignorando maiúsculas e acentos.
+
+Lista/CRUD/filtros e transferências de tarefas implementados com autorização, CSRF e transações; COL-06 remove atribuições inelegíveis na mesma operação. Progresso calcula tarefas DONE/total. Escrita de comentários/responsáveis, gestão de colaboradores, painel, Kanban e calendário continuam pendentes. Ver [tarefas](tasks.md), OpenAPI 0.5.0 e verification.md para o estado observado.
