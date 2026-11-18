@@ -1,0 +1,303 @@
+openapi: 3.1.0
+info:
+  title: Matriz API - Contrato simplificado
+  version: 0.1.0
+  description: |
+    Proposta do Exercicio 3 da Ficha Pratica 02, com apenas duas operacoes.
+    DTOs independentes das entidades de persistencia.
+    Identificadores JSON sao strings opacas, sem impor tipo fisico.
+    MVP individual sem autenticacao; exposicao publica nao aprovada.
+    Este documento nao representa uma API implementada.
+security: []
+paths:
+  /projetos:
+    post:
+      operationId: criarProjeto
+      summary: Criar projeto
+      description: |
+        Suporta F01 e US-01. Nome obrigatorio e descricao opcional.
+        O servidor atribui o identificador e cria arquivado=false.
+        O cliente nao define id nem arquivado.
+        So devolver sucesso depois de confirmar a gravacao.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarProjetoRequest'
+            example:
+              nome: Preparar apresentacao
+              descricao: Organizar a demonstracao da Matriz.
+      responses:
+        '201':
+          description: Projeto criado e gravacao confirmada.
+          headers:
+            Location:
+              description: URI do recurso criado; a consulta nao e documentada neste contrato.
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjetoResponse'
+              example:
+                id: projeto-123
+                nome: Preparar apresentacao
+                descricao: Organizar a demonstracao da Matriz.
+                arquivado: false
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '422':
+          description: Campos do projeto invalidos, ausentes ou desconhecidos.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problema'
+              example:
+                type: about:blank
+                title: Dados invalidos
+                status: 422
+                codigo: VALIDACAO
+                erros:
+                  - campo: nome
+                    mensagem: O nome nao pode estar vazio.
+        '500':
+          $ref: '#/components/responses/ErroInterno'
+  /tarefas:
+    post:
+      operationId: criarTarefa
+      summary: Criar tarefa associada ou independente
+      description: |
+        Suporta F02, F06 e US-03. Titulo obrigatorio.
+        Estado omitido resulta em Por Fazer.
+        projetoId omitido ou null cria uma tarefa independente.
+        Quando preenchido, o projeto deve existir e nao estar arquivado.
+        Prazo opcional aceita datas passadas.
+        Campos opcionais ausentes sao representados como null na resposta.
+        Em falha de gravacao, conservar os dados confirmados e nao anunciar sucesso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CriarTarefaRequest'
+            examples:
+              independente:
+                summary: Tarefa independente com estado inicial por omissao
+                value:
+                  titulo: Ensaiar demonstracao
+              associada:
+                summary: Tarefa de um projeto existente e nao arquivado
+                value:
+                  titulo: Preparar dados ficticios
+                  projetoId: projeto-123
+                  estado: Por Fazer
+                  prioridade: Alta
+                  prazo: '2026-11-19'
+      responses:
+        '201':
+          description: Tarefa criada e gravacao confirmada.
+          headers:
+            Location:
+              description: URI do recurso criado; a consulta nao e documentada neste contrato.
+              schema:
+                type: string
+                format: uri-reference
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TarefaResponse'
+              example:
+                id: tarefa-456
+                titulo: Ensaiar demonstracao
+                descricao: null
+                estado: Por Fazer
+                prioridade: null
+                prazo: null
+                projetoId: null
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '404':
+          description: O projeto referenciado nao existe.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problema'
+              example:
+                type: about:blank
+                title: Projeto nao encontrado
+                status: 404
+                codigo: PROJETO_NAO_ENCONTRADO
+        '409':
+          description: O projeto referenciado esta arquivado; nao e permitida a associacao.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problema'
+              example:
+                type: about:blank
+                title: Conflito com projeto arquivado
+                status: 409
+                codigo: PROJETO_ARQUIVADO
+        '422':
+          $ref: '#/components/responses/Validacao'
+        '500':
+          $ref: '#/components/responses/ErroInterno'
+components:
+  schemas:
+    Identificador:
+      type: string
+      minLength: 1
+      description: Identificador opaco atribuido pelo servidor; tipo fisico por definir.
+    TextoObrigatorio:
+      type: string
+      minLength: 1
+      pattern: '\S'
+      description: Deve conter pelo menos um caracter que nao seja espaco em branco.
+    TextoOpcional:
+      type: [string, 'null']
+    EstadoTarefa:
+      type: string
+      enum: [Por Fazer, Em Curso, Em Revisão, Concluída]
+    PrioridadeOpcional:
+      type: [string, 'null']
+      enum: [Baixa, Média, Alta, Crítica, null]
+    PrazoOpcional:
+      type: [string, 'null']
+      format: date
+      description: Data de conclusao prevista; datas passadas sao permitidas.
+    ProjetoIdOpcional:
+      anyOf:
+        - $ref: '#/components/schemas/Identificador'
+        - type: 'null'
+    CriarProjetoRequest:
+      type: object
+      additionalProperties: false
+      required: [nome]
+      properties:
+        nome:
+          $ref: '#/components/schemas/TextoObrigatorio'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+    ProjetoResponse:
+      type: object
+      additionalProperties: false
+      required: [id, nome, descricao, arquivado]
+      properties:
+        id:
+          $ref: '#/components/schemas/Identificador'
+        nome:
+          $ref: '#/components/schemas/TextoObrigatorio'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        arquivado:
+          type: boolean
+          description: false na criacao; arquivo e restauro nao fazem parte deste contrato.
+    CriarTarefaRequest:
+      type: object
+      additionalProperties: false
+      required: [titulo]
+      properties:
+        titulo:
+          $ref: '#/components/schemas/TextoObrigatorio'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        estado:
+          $ref: '#/components/schemas/EstadoTarefa'
+          default: Por Fazer
+        prioridade:
+          $ref: '#/components/schemas/PrioridadeOpcional'
+        prazo:
+          $ref: '#/components/schemas/PrazoOpcional'
+        projetoId:
+          $ref: '#/components/schemas/ProjetoIdOpcional'
+    TarefaResponse:
+      type: object
+      additionalProperties: false
+      required: [id, titulo, descricao, estado, prioridade, prazo, projetoId]
+      properties:
+        id:
+          $ref: '#/components/schemas/Identificador'
+        titulo:
+          $ref: '#/components/schemas/TextoObrigatorio'
+        descricao:
+          $ref: '#/components/schemas/TextoOpcional'
+        estado:
+          $ref: '#/components/schemas/EstadoTarefa'
+        prioridade:
+          $ref: '#/components/schemas/PrioridadeOpcional'
+        prazo:
+          $ref: '#/components/schemas/PrazoOpcional'
+        projetoId:
+          $ref: '#/components/schemas/ProjetoIdOpcional'
+    ErroCampo:
+      type: object
+      required: [campo, mensagem]
+      properties:
+        campo:
+          type: string
+        mensagem:
+          type: string
+    Problema:
+      type: object
+      required: [type, title, status, codigo]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        codigo:
+          type: string
+          description: Codigo estavel para tratamento pelo cliente.
+        erros:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErroCampo'
+  responses:
+    PedidoInvalido:
+      description: JSON malformado.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Pedido invalido
+            status: 400
+            codigo: JSON_INVALIDO
+    Validacao:
+      description: Campos invalidos, ausentes, desconhecidos ou com valores fora do contrato.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Dados invalidos
+            status: 422
+            codigo: VALIDACAO
+            erros:
+              - campo: titulo
+                mensagem: O titulo nao pode estar vazio.
+    ErroInterno:
+      description: |
+        Falha interna ou de gravacao. Conservar os ultimos dados confirmados.
+        Nao expor credenciais, stack traces ou detalhes de persistencia.
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problema'
+          example:
+            type: about:blank
+            title: Erro interno
+            status: 500
+            codigo: ERRO_INTERNO
+            detail: Nao foi possivel concluir a operacao.

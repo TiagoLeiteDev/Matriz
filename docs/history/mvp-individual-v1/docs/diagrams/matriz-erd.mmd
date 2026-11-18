@@ -1,0 +1,19 @@
+erDiagram
+    PROJETO o|..o{ TAREFA : agrupa
+
+    PROJETO {
+        identificador id PK
+        texto nome
+        texto descricao "Opcional"
+        booleano arquivado
+    }
+
+    TAREFA {
+        identificador id PK
+        texto titulo
+        texto descricao "Opcional"
+        estado_tarefa estado
+        prioridade_tarefa prioridade "Opcional"
+        data prazo "Opcional"
+        identificador projeto_id FK "Opcional"
+    }
