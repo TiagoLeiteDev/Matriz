@@ -128,3 +128,8 @@ O exercício 3 não conclui os exercícios 4–6: criação de projetos com prop
 ## Atualização — Exercício 5
 
 CRUD/listagem de tarefas implementados com CurrentIdentity, TaskAccess e CSRF; 16 de 24 operações disponíveis. Transferência/desassociação aplicam COL-06 transacionalmente. Arquivo bloqueia todas as escritas. Comentários/responsáveis mantêm apenas leitura; gestão de colaboradores e painel continuam bloqueados. Ver tasks.md e verification.md.
+
+
+## Atualização — Exercício 6
+
+20 de 24 operações implementadas: elegíveis, criação/remoção de responsáveis e criação de comentários acrescentados. Escritas verificam acesso/arquivo com locks projeto/tarefa dentro da transação; CSRF obrigatório. utilizadorId é uma seleção validada, nunca identidade do ator. Duplicado não concede acesso; apenas criador elegível em pessoais. Autor/instante de comentário exclusivamente do backend; conteúdo COM-01 (1–2000 pontos de código Unicode, não só espaços). Gestão de colaboradores continua bloqueada. Ver task-collaboration.md e verification.md.

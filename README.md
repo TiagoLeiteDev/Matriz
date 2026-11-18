@@ -4,7 +4,7 @@ Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso
 
 ## Estado atual
 
-Exercícios 1–5 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. **Colaboração de escrita, painel, Kanban e calendário continuam nos exercícios seguintes.** Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
+Exercícios 1–6 da ficha 03 implementados nos respetivos incrementos: base técnica, acesso e gestão de projetos. Já é possível iniciar sessão, criar/listar/pesquisar/consultar/editar/arquivar/restaurar/eliminar projetos pela interface, com PostgreSQL real e autorização por recurso. Tarefas: CRUD, lista, filtros, associação/transferência e progresso integrados no Exercício 5. Responsáveis e comentários integrados no Exercício 6. **Gestão de colaboradores, painel, Kanban e calendário continuam pendentes.** Sessão SEG-01: 60 minutos de inatividade, sem lembrar-me; reinício do backend e logout exigem novo login. Rastreabilidade Git: acesso na issue #4 e projetos na issue #5; publicação e commits referenciados nas próprias issues.
 
 ## Tecnologias aprovadas
 
@@ -35,11 +35,12 @@ Sem gestão global de organizações/equipas, convites, registo público, recupe
 | [Reconciliação](docs/scope-reconciliation.md) | Diferenças entre fichas e decisões substituídas. |
 | [Arquitetura](docs/architecture.md) | Monólito modular e responsabilidades. |
 | [Modelo e ER](docs/database.md) | Seis entidades, relações e regras. |
-| [OpenAPI](openapi.yaml) | API em /api; 16 operações implementadas e restantes marcadas como planeadas. |
+| [OpenAPI](openapi.yaml) | API em /api; 20 operações implementadas e restantes marcadas como planeadas. |
 | [Wireframes](docs/ui/wireframe-tarefas.md) | Tarefas colaborativas e início de sessão. |
 | [Revisão](docs/architecture-review.md) | Rastreabilidade e limitações da base colaborativa. |
 | [Plano](docs/implementation-plan.md) | Incrementos e verificações do Exercício 1 da ficha 03. |
 | [Verificação](docs/verification.md) | Resultados de infraestrutura e cenários funcionais ainda pendentes. |
+| [Responsáveis e comentários](docs/task-collaboration.md) | Plano aprovado, contratos, COM-01, regras e verificação incremental do Exercício 6. |
 | [Tarefas](docs/tasks.md) | CRUD, filtros PESQ-02, estados TAR-01, migração V2 e transferências COL-06. |
 | [Projetos](docs/projects.md) | CRUD, pesquisa PESQ-01, permissões, transações e limites do Exercício 4. |
 | [Segurança](docs/security.md) | Política SEG-01, ciclo de sessão, identidade, matriz de autorização e limites. |
@@ -70,7 +71,7 @@ docker compose up -d app --wait
 Invoke-RestMethod http://127.0.0.1:8080/actuator/health
 ```
 
-Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout, gestão de projetos e tarefas em lista estão disponíveis; painel integral, Kanban/calendário e colaboração de escrita continuam por implementar. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
+Abrir http://127.0.0.1:8080 para iniciar sessão. O health devolve `{"status":"UP"}` quando o serviço e a BD estão disponíveis. Login/perfil/logout, gestão de projetos e tarefas em lista estão disponíveis; painel integral, Kanban/calendário e gestão de colaboradores continuam por implementar. `seed` é uma ferramenta temporária, não um terceiro serviço permanente.
 
 As migrations correm no arranque antes do seed. Para aplicar apenas o esquema, omitir o comando seed e iniciar app. Para carregar a demonstração mais tarde, executar explicitamente o mesmo comando seed. Uma nova execução não repõe dados editados/eliminados nem altera palavras-passe. Falhas/colisões fazem rollback; consultar os logs sem apagar dados para contornar o problema.
 
@@ -156,7 +157,7 @@ APP_ALLOWED_ORIGINS tem valores locais de exemplo em .env.example. O Compose enc
 - Públicas: GET /api/sessao/csrf e POST /api/sessao (login exige CSRF).
 - Com sessão: GET/DELETE /api/sessao.
 - Com sessão e autorização por recurso: GET /api/projetos/{id}, GET /api/tarefas/{id}, GET /api/tarefas/{id}/comentarios e GET /api/tarefas/{id}/responsaveis.
-- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. CRUD/listagem de tarefas foram acrescentados no Exercício 5. Restantes operações de colaboração/painel continuam bloqueadas.
+- CRUD de projetos foi acrescentado no Exercício 4, conforme a secção seguinte. CRUD/listagem de tarefas foram acrescentados no Exercício 5. Responsáveis/elegíveis e criação de comentários foram acrescentados no Exercício 6. Gestão de colaboradores e painel continuam bloqueados.
 
 O OpenAPI tem servidor relativo /api e x-implementation-status por operação. [security.md](docs/security.md) documenta a matriz e a distinção entre ator autenticado e responsável selecionado entre elegíveis.
 
@@ -265,3 +266,32 @@ Remove-Item Env:MATRIZ_TASK_RESTART_TEST
 ```
 
 Issue do incremento: [#6](https://github.com/TiagoLeiteDev/Matriz/issues/6). Ver [contratos e limites](docs/tasks.md) e [evidências](docs/verification.md).
+
+
+## Responsáveis e comentários — Exercício 6
+
+Abrir uma tarefa no detalhe. Em Responsáveis, selecionar um utilizador elegível e Associar responsável; repetir para adicionar vários. A seleção contém apenas pessoas ainda não atribuídas. Remover atua só nessa atribuição, sem apagar conta/tarefa. Projeto partilhado: proprietário e colaboradores são elegíveis; tarefa pessoal: apenas o criador. Atribuir alguém não concede acesso. Duplicado devolve 409 e utilizador inexistente 404; o backend revalida elegibilidade e autorização em cada operação.
+
+Em Comentários, escrever conteúdo e Adicionar comentário. COM-01: 1–2000 pontos de código Unicode, não apenas espaços. O contador trata emojis como um carácter; não trunca texto. O autor e o instante são definidos no backend, nunca enviados como identidade pelo cliente. A lista apresenta autor/data/conteúdo, mais antigos primeiro (desempate por ID); conteúdo é apresentado como texto. Dados históricos permanecem legíveis, sem truncagem retroativa. Não existe edição/eliminação individual de comentários.
+
+Após sucesso confirmado, as listas atualizam sem reload. Em falha, conservar seleção/rascunho e apresentar erro; não repetir escritas automaticamente. Uma falha de rede após envio pode ter resultado desconhecido: atualizar/consultar antes de tentar novamente. Projeto arquivado admite leitura autorizada por ID de tarefa, mas não apresenta ações de escrita; API recusa igualmente os pedidos diretos. Reiniciar exige novo login, conservando os dados no PostgreSQL.
+
+### Verificação manual
+
+1. Entrar como Bruno e abrir uma tarefa do projeto partilhado da Ana. Associar Ana e Bruno, remover apenas uma atribuição e confirmar que a outra permanece.
+2. Adicionar um comentário e verificar Bruno como autor e a data gerada; recarregar e reabrir a tarefa.
+3. Tentar conteúdo só com espaços ou mais de 2000 caracteres: erro sem gravação. Testar um comentário de um carácter.
+4. Entrar como Ana e abrir uma tarefa pessoal: só Ana é elegível; Bruno não pode consultar os seus recursos.
+5. Numa fixture própria arquivada, abrir a tarefa por ID: responsáveis/comentários apenas em leitura. Não arquivar/eliminar o seed para executar testes.
+
+Teste separado com reinício explícito de app, dois responsáveis e comentário, seguido de novo login:
+
+```powershell
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+$env:MATRIZ_COLLAB_RESTART_TEST = '1'
+npm.cmd --prefix e2e run test:collaboration-restart
+Remove-Item Env:MATRIZ_COLLAB_RESTART_TEST
+```
+
+Regressão normal: `npm.cmd --prefix e2e test`; backend: `./backend/mvnw.cmd -f backend/pom.xml verify`; frontend: lint/build documentados acima. O teste de reinício fica ignorado no comando normal. [Issue #7](https://github.com/TiagoLeiteDev/Matriz/issues/7); resultados efetivamente executados em [verification.md](docs/verification.md). Gestão de colaboradores não foi incluída automaticamente neste exercício.

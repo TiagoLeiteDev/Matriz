@@ -44,6 +44,17 @@ public class TaskQueries {
     public TaskAccess.Task get(UUID id) { return access.requireView(id); }
     public record CommentView(UUID id, String conteudo, UserProfile autor, Instant criadoEm) {}
     public record AssignmentView(UserProfile utilizador) {}
+    public List<UserProfile> eligible(UUID taskId) {
+        var task = access.requireView(taskId);
+        return jdbc.query("""
+            SELECT u.id, u.nome, u.email FROM utilizador u WHERE
+            (?::uuid IS NULL AND u.id = ?) OR EXISTS (
+                SELECT 1 FROM projeto p WHERE p.id = ? AND (p.proprietario_id = u.id OR EXISTS (
+                    SELECT 1 FROM colaboracao_projeto c WHERE c.projeto_id = p.id AND c.utilizador_id = u.id)))
+            ORDER BY u.id
+            """, (rs, n) -> new UserProfile(rs.getObject("id", UUID.class), rs.getString("nome"), rs.getString("email")),
+            task.projetoId(), task.criadorId(), task.projetoId());
+    }
     public List<CommentView> comments(UUID task) {
         access.requireView(task);
         return jdbc.query("""

@@ -792,3 +792,13 @@ Os estados técnicos ativos passam a TODO/IN_PROGRESS/DONE (rótulos Por fazer/E
 A V2 incremental converte Por Fazer→TODO, Em Curso/Em Revisão→IN_PROGRESS, Concluída→DONE, Baixa→LOW, Média→MEDIUM, Alta/Crítica→HIGH; conserva prioridades null preexistentes, IDs, criador, comentários e atribuições. PESQ-02 confirma pesquisa literal parcial de tarefas ignorando maiúsculas e acentos.
 
 Lista/CRUD/filtros e transferências de tarefas implementados com autorização, CSRF e transações; COL-06 remove atribuições inelegíveis na mesma operação. Progresso calcula tarefas DONE/total. Escrita de comentários/responsáveis, gestão de colaboradores, painel, Kanban e calendário continuam pendentes. Ver [tarefas](tasks.md), OpenAPI 0.5.0 e verification.md para o estado observado.
+
+
+## COM-01 — Comentários (Exercício 6)
+
+Plano aprovado pelo utilizador: novos comentários têm conteúdo obrigatório de 1 a 2000 pontos de código Unicode, não apenas espaços. Autor e instante gerados pelo backend; só conteudo aceite no pedido. Sem truncar dados históricos nem limitar títulos/descrições. Ordem de consulta criadoEm/id ascendente; leitura autorizada de arquivadas, escrita bloqueada. Ver task-collaboration.md e OpenAPI 0.6.0.
+
+
+## Atualização — Exercício 6
+
+Responsáveis/elegíveis e comentários integrados na API e no detalhe da tarefa, mantendo o modelo de seis entidades e V1/V2. COM-01: novos comentários de 1–2000 pontos de código Unicode, não só espaços; autor/data do backend; ordem criadoEm/id ASC. Responsáveis múltiplos com par único, remoção individual e elegibilidade revalidada no backend. Arquivo bloqueia escritas; pessoais privadas. Contratos/limites em [task-collaboration.md](task-collaboration.md). As menções anteriores a escrita de comentários/responsáveis pendente ficam superadas por este incremento; gestão de colaboradores, painel e Kanban/calendário continuam pendentes. Ver verification.md para evidências, sem confundir plano com teste executado.

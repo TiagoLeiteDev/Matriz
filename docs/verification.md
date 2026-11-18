@@ -223,3 +223,37 @@ Os testes E2E removem apenas os IDs próprios registados; não eliminam tarefas/
 ### Limites atuais
 
 Ainda não concluídos: gestão de colaboradores, escrita de comentários/responsáveis, Kanban/calendário, painel integral/PD-06, CI e validação de entrega noutro computador. Sem paginação, sem desempenho medido para grandes volumes, pesquisa normalizada em memória no conjunto autorizado e sem ETag para edições com formulário antigo. Não foi publicada a aplicação na Internet. O registo Git foi posteriormente autorizado; a confirmação de publicação fica na issue #6.
+
+
+## Exercício 6 — Responsáveis e comentários — 18/11/2026
+
+Plano em task-collaboration.md aprovado pelo utilizador, incluindo COM-01. Issue #7 aberta antes da implementação. Sem novas tabelas, índices ou migrations; V1/V2 preservadas e seed não repetido.
+
+| Incremento/verificação | Resultado esperado | Resultado observado |
+|---|---|---|
+| 1: AssignmentTest | Múltiplos/remoção individual, existência/elegibilidade, privacidade, arquivo, CSRF e concorrência. | 8 passaram, 0 falhas/erros/ignorados; pedidos concorrentes dão 201/409 e uma só atribuição. |
+| 2: frontend lint/build e browser de responsáveis | UI real, seleção limitada, erros sem falso sucesso, reload. | Lint/build passaram; 2 testes Chrome passaram após corrigir nomes dos seletores para Ana Demo/Bruno Demo. |
+| 3: CommentTest + AssignmentTest + SecurityTest | COM-01, autor/data, permissões, ordem e regressão. | 28 passaram (8+8+12), 0 falhas/erros/ignorados. |
+| 4: backend verify completo | Regressão de infraestrutura/segurança/projetos/tarefas/migração/colaboração. | 66 passaram, 0 falhas/erros/ignorados. |
+| 4: frontend lint/build e imagem integrada | ESLint/TypeScript/bundle e Docker válidos. | Código 0; app/db healthy. |
+| 4: npm.cmd --prefix e2e test (Chrome) | Regressão normal, incluindo interface de comentários e arquivo. | 18 passaram; 4 ignorados por desenho (expiração e três percursos de reinício separados). |
+| OpenAPI 0.6.0/JSON Schema | Contrato válido; requests/responses conformes. | 20/24 operações implementadas; 5 exemplos válidos; COM-01 validada com fronteiras Unicode; 7 respostas reais de colaboração válidas em fixture própria, DELETE atribuição 204 e cleanup concluído. Listagem/detalhes de tarefas continuam válidos. |
+| Reinício de colaboração | Dois responsáveis e comentário conservados após restart e novo login. | 1 passou (18,1 s): sessão anterior 401, Atualizar perfil mostra login, novo login recupera os dois responsáveis e comentário com autor/data preservados. |
+
+### Cobertura e observações
+
+- AssignmentTest: listas elegíveis autorizadas e pessoais só do criador; múltiplos persistem noutra sessão; remover um não apaga o outro/contas/tarefa; duplicado=409; inexistente=404; inelegível/acesso cruzado/revogado=403; arquivo=409 nas escritas/leitura permitida; JSON estrito/campos forjados; CSRF; concorrência com duas sessões e um só par persistido.
+- CommentTest: UUID/autor/instante do servidor e conteúdo preservado noutra sessão; 1/2000/2001 caracteres e emojis suplementares; vazio/espaços Unicode/null/tipos/campos forjados; acesso pessoal/privado/revogado, arquivo e CSRF; ordem cronológica com desempate por ID; leitura histórica acima do limite sem truncar; trigger de falha em BD descartável comprova ausência de gravação e erro sem detalhes SQL.
+- Browser: associar dois como colaborador/remover um/reload; pessoal mostra só criador; falha preserva seleção; comentário só com espaços/2001 emojis não envia pedido; erro de rede preserva rascunho sem falso sucesso/reenvio; POST válido identifica autor/data; 2000 emojis aceites; HTML apresentado como texto sem criar imagem; reload conserva comentários; tarefa arquivada mantém leitura sem botões de escrita.
+- Cada incremento teve testes e revisão de diff antes do seguinte. Revisões verificaram rotas específicas, CSRF, identidade do backend, lock projeto/tarefa, atualização após commit, ausência de novas entidades/migrations e respeito pelo âmbito. Diff final verificado com git diff --check.
+- Correções instrumentais: seletores de nomes do seed; invocação Maven com lista de testes teve vírgulas sem aspas no PowerShell e foi repetida corretamente. O primeiro teste de reinício confirmou 401 mas ficou à espera do login ao navegar para o mesmo fragmento, sem atualizar o estado da interface; corrigido o percurso para Atualizar perfil, repetição passou. Estes erros não foram contabilizados como testes passados.
+- Os testes usam apenas contas fictícias e fixtures próprias; falhas/rollback e TRUNCATE pertencem apenas às bases Testcontainers descartáveis. Nenhum reset do volume, truncagem de comentários históricos ou alteração do seed para fazer passar testes.
+
+### Limites
+
+Gestão de colaboradores (US-17-01/02) ainda não implementada; consulta de elegíveis (US-17-03/04), responsáveis (US-18) e comentários (US-19) cobertos neste incremento. Faltam painel/PD-06, Kanban/calendário, CI e ensaio de entrega noutro computador. Sem paginação ou metas de grande volume. COM-01 limita novos pedidos na API, não apaga/limita retroativamente os comentários históricos na BD. Sem edição/eliminação autónoma de comentários. Uma falha de rede após envio pode ter resultado desconhecido: consultar antes de repetir.
+
+No fecho da implementação, o incremento estava local. O utilizador autorizou posteriormente commit/push; a confirmação de publicação fica na issue #7.
+
+
+**Conferência final do Exercício 6:** dois utilizadores, dois projetos, três tarefas, um comentário e duas atribuições preexistentes conservados após cleanup; Flyway apenas V1/V2 success=true. Links locais dos ficheiros alterados válidos; diff sem erros de whitespace; ficheiros de ambiente/gerados e migrations fora do conjunto alterado. Apenas artefactos próprios criados nos testes foram removidos.

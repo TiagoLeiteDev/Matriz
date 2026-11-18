@@ -1104,3 +1104,337 @@ Escrita de comentários/responsáveis, colaboradores, painel, Kanban e calendár
 Após o ponto de situação, o utilizador autorizou “faz isso”: criar commit com Refs #6, fazer push e fechar a issue após confirmar a publicação. O incremento inclui gestão de tarefas, V2/TAR-01/PESQ-02, interface, testes, contrato e documentação associados.
 
 Verificações funcionais já executadas: 50 testes backend, lint/build, 14 cenários normais de browser e 1 separado de reinício. Esta operação Git não os apresenta como nova execução. Foram revistos os ficheiros alterados e excluídos ficheiros de ambiente, caches, relatórios e temporários. A confirmação de SHA remoto/push e fecho é registada na issue #6 após publicação; não é reescrito histórico nem alterada a base de dados por esta operação.
+
+
+## Exercício 6 — Responsáveis e comentários: análise inicial — 18/11/2026
+
+**Ferramenta:** ChatGPT/Codex. **Estado:** plano submetido; implementação aguarda validação explícita pedida na Fase 1 do prompt.
+
+<details>
+<summary>Pedido integral do utilizador</summary>
+
+# ROLE
+
+Atua como Senior Full\-Stack Engineer, especializado em desenvolvimento de aplicações web, APIs REST, modelação de dados, segurança, persistência e implementação incremental orientada a MVPs.
+
+# GOAL
+
+Implementar a gestão de responsáveis e comentários da aplicação Matriz, permitindo atribuir utilizadores a tarefas e registar comentários persistentes, garantindo conformidade com o contrato OpenAPI, regras de acesso, validações de negócio e persistência dos dados.
+
+# CONTEXT
+
+Consulta os seguintes documentos:
+
+- docs/requirements.md
+- docs/user\-stories.md
+- docs/constraints.md
+- docs/database.md
+- docs/architecture.md
+- openapi.yaml
+- README.md
+- docs/ui/
+- AGENTS.md
+
+A gestão de projetos, tarefas, autenticação e autorização já foi implementada nos exercícios anteriores.
+
+O objetivo deste exercício é concluir a gestão operacional das tarefas, adicionando responsáveis e comentários funcionais e persistentes.
+
+O trabalho deverá seguir uma abordagem incremental:
+
+1. Análise e plano.
+2. Validação do plano.
+3. Implementação de um incremento.
+4. Execução das verificações relevantes.
+5. Revisão do diff produzido.
+6. Avanço para o incremento seguinte.
+
+# CONSTRAINTS
+
+- Considera apenas o âmbito do MVP.
+- Respeita integralmente o contrato OpenAPI aprovado.
+- Não introduzas novas funcionalidades não suportadas pelos requisitos.
+- Todas as regras de autorização devem ser aplicadas no Backend.
+- Não aceitar identidade, autor ou responsável enviados pelo cliente como fonte de verdade.
+- O autor dos comentários deve ser inferido a partir do utilizador autenticado.
+- A data dos comentários deve ser gerada pelo Backend.
+- Validar a existência do utilizador antes de criar uma atribuição.
+- Validar a elegibilidade do utilizador segundo as regras de acesso definidas.
+- Impedir atribuições duplicadas entre a mesma tarefa e o mesmo utilizador.
+- Garantir integridade referencial entre tarefas, responsáveis e comentários.
+- Rejeitar conteúdos compostos apenas por espaços.
+- Garantir persistência após reinício da aplicação.
+- Executar verificações após cada incremento antes de avançar para o seguinte.
+- Rever sempre o diff antes de continuar.
+
+# TASKS
+
+## Fase 1 – Análise e Planeamento
+
+1. Analisar os requisitos relacionados com:
+    - Responsáveis
+    - Comentários
+    - Regras de acesso
+    - Persistência
+2. Identificar as alterações necessárias em:
+    - API
+    - Backend
+    - Base de dados
+    - Frontend
+3. Definir um plano incremental de implementação.
+4. Identificar riscos, dependências e validações necessárias.
+5. Submeter o plano para validação antes da implementação.
+
+## Fase 2 – Responsáveis
+
+### Associação de Responsáveis
+
+1. Implementar a atribuição de utilizadores a tarefas.
+2. Permitir associar múltiplos responsáveis à mesma tarefa.
+3. Permitir remover cada atribuição individualmente.
+
+### Elegibilidade
+
+1. Validar que o utilizador existe.
+2. Validar que o utilizador possui acesso ao projeto da tarefa.
+3. Aplicar as regras de autorização definidas para o projeto.
+
+### Prevenção de Duplicados
+
+1. Impedir a criação de múltiplas atribuições para:
+- A mesma tarefa
+- O mesmo utilizador
+1. Garantir proteção através de:
+- Validação de negócio
+- Persistência de dados
+
+### Interface
+
+1. Disponibilizar seleção dos utilizadores elegíveis.
+2. Atualizar a lista de responsáveis após cada operação.
+
+## Fase 3 – Comentários
+
+### Criação
+
+1. Implementar a criação de comentários sobre tarefas.
+2. Associar automaticamente o comentário ao utilizador autenticado.
+3. Registar automaticamente a data de criação.
+
+### Validação
+
+1. Aplicar as regras definidas para o campo conteúdo:
+- Obrigatório.
+- Entre 1 e 2000 caracteres.
+- Não aceitar apenas espaços.
+1. Apresentar erros compreensíveis na interface.
+
+### Consulta
+
+1. Implementar a listagem de comentários de uma tarefa.
+2. Apresentar para cada comentário:
+- Autor
+- Data
+- Conteúdo
+1. Garantir ordenação consistente conforme definido no contrato.
+
+## Fase 4 – Persistência
+
+1. Garantir persistência de:
+- Responsáveis
+- Comentários
+1. Validar que os dados permanecem acessíveis após:
+- Reabrir a tarefa.
+- Recarregar a interface.
+- Reiniciar o Backend.
+
+## Fase 5 – Verificação Incremental
+
+1. Após cada incremento:
+- Executar verificações relevantes.
+- Validar regras funcionais.
+- Rever o diff gerado.
+- Registar observações.
+1. Apenas avançar para o incremento seguinte após validação do incremento atual.
+
+# OUTPUT
+
+## Análise Inicial
+
+Apresentar:
+
+- Requisitos identificados
+- User Stories suportadas
+- Dependências encontradas
+- Impacto na arquitetura
+
+## Plano de Implementação
+
+Dividir em incrementos contendo:
+
+- Objetivo
+- Alterações previstas
+- Critérios de conclusão
+- Verificações necessárias
+
+## Alterações de Dados
+
+Descrever:
+
+- Novas entidades ou relações
+- Restrições
+- Índices
+- Regras de integridade
+
+## Gestão de Responsáveis
+
+Para cada operação:
+
+- Endpoint
+- Método HTTP
+- Permissões necessárias
+- Validações aplicadas
+- Status codes suportados
+
+## Gestão de Comentários
+
+Para cada operação:
+
+- Endpoint
+- Método HTTP
+- Permissões necessárias
+- Validações aplicadas
+- Status codes suportados
+
+## Regras de Negócio
+
+Listar:
+
+- Elegibilidade dos utilizadores
+- Regras de atribuição
+- Regras de autoria
+- Regras de integridade
+
+## Comportamento da Interface
+
+Descrever:
+
+### Responsáveis
+
+- Seleção
+- Associação
+- Remoção
+- Atualização da interface
+
+### Comentários
+
+- Criação
+- Visualização
+- Mensagens de erro
+
+## Verificações
+
+Para cada incremento:
+
+- Testes executados
+- Resultado esperado
+- Resultado obtido
+
+## Revisão do Diff
+
+Após cada incremento apresentar:
+
+- Alterações realizadas
+- Impacto funcional
+- Riscos identificados
+- Próximos passos
+
+## Atualizações ao README
+
+Gerar os conteúdos necessários para documentar:
+
+- Gestão de responsáveis
+- Gestão de comentários
+- Validações
+- Testes manuais
+- Fluxos principais
+
+## Problemas e Riscos
+
+Identificar:
+
+- Limitações conhecidas
+- Riscos técnicos
+- Melhorias futuras
+
+# VALIDATION
+
+Antes de concluir:
+
+- Verifica que uma tarefa pode possuir vários responsáveis.
+- Confirma que uma atribuição pode ser removida individualmente.
+- Verifica que não podem existir atribuições duplicadas.
+- Confirma que apenas utilizadores elegíveis podem ser atribuídos.
+- Verifica que todas as regras de autorização são aplicadas no Backend.
+- Confirma que o autor do comentário é obtido através da autenticação.
+- Verifica que a data do comentário é gerada pelo Backend.
+- Confirma que comentários compostos apenas por espaços são rejeitados.
+- Verifica que o conteúdo respeita o limite de 1 a 2000 caracteres.
+- Confirma que comentários e atribuições persistem após reabrir a tarefa.
+- Verifica que os dados permanecem disponíveis após reinício do Backend.
+- Confirma que cada incremento foi analisado, validado, testado e revisto antes do seguinte.
+- Identifica quaisquer requisitos sem cobertura funcional ou técnica.
+
+## Critério de Aceitação
+
+O resultado será considerado válido apenas se permitir gerir tarefas completas com estado, prioridade, responsáveis e comentários persistentes, garantindo validação adequada, controlo de acessos, persistência real e integração consistente entre interface, API e base de dados, seguindo uma abordagem incremental com revisão contínua das alterações.
+
+
+
+</details>
+
+### Análise e proposta
+
+Foram consultados os documentos de contexto e os pontos de implementação relevantes. O esquema já suporta os recursos e as leituras autorizadas existem. Proposto plano em [task-collaboration.md](../task-collaboration.md): responsáveis/API, responsáveis/UI, comentários/API, comentários/UI/fecho, com testes e revisão do diff entre incrementos.
+
+A diferença identificada é o máximo de 2000 caracteres pedido agora, ausente do contrato anterior. Proposta COM-01 para schema específico de comentários, sem limitar outros textos ou truncar dados existentes. A ordem existente criadoEm/id ascendente será explicitada no contrato. Mantêm-se pessoais, arquivo, elegibilidade e identidade inferida da sessão; gestão de colaboradores não incluída automaticamente.
+
+Não foram alterados código, migrations, contrato nem dados da aplicação. Não foram executados novos testes funcionais nesta fase documental; não declarar o exercício concluído.
+
+
+### Aprovação e incremento 1 — API de responsáveis
+
+O utilizador respondeu **“sim”** ao plano, incluindo COM-01. Issue [#7](https://github.com/TiagoLeiteDev/Matriz/issues/7) aberta antes da implementação. Acrescentados GET de elegíveis e POST/DELETE de atribuições, JSON estrito, transações/locks partilhados com tarefas e validação de existência/elegibilidade. Duplicado protegido por PK/ON CONFLICT e 409; remoção inexistente 404. Sem novas entidades/migrations.
+
+**Verificação executada:** AssignmentTest, 8 testes PostgreSQL descartável, 0 falhas/erros/ignorados; inclui pedidos concorrentes com resultados 201/409 e uma só atribuição, privacidade, arquivo, CSRF e revogação. OpenAPI válido com 19 operações implementadas. Diff revisto: novas rotas específicas, sem permitir genericamente a API; locks mantêm ordem projeto/tarefa. Incremento 1 validado antes de avançar para a UI.
+
+
+### Incremento 2 — Interface de responsáveis
+
+Lint/build passaram. Dois testes de Chrome passaram: colaborador associa dois/remove um/reload; pessoal só mostra criador e erro de rede conserva seleção sem falso sucesso/reenvio. A primeira execução falhou porque os seletores omitiam “Demo” dos nomes do seed; seletores corrigidos, repetição 2/2 passou. Não se alterou o seed para fazer passar testes.
+
+Diff revisto antes do incremento 3: componente no detalhe com lista/seleção, loading/vazio/erro, leitura de arquivadas; identidade/CSRF no cliente existente e regras definitivas no backend. Sem gestão de colaboradores ou novas entidades.
+
+
+### Incremento 3 — API de comentários
+
+COM-01 implementada: 1–2000 pontos de código Unicode, não só espaços; JSON estrito, autor e instante do backend. Transação/locks coordenados com tarefa/projeto. Comentários históricos não truncados; nenhuma migration. Ordem existente criadoEm/id ASC explicitada no contrato.
+
+**Verificação:** 28 testes passaram (8 CommentTest, 8 AssignmentTest e 12 SecurityTest), zero falhas/erros/ignorados; limites Unicode, autoria/data, campos forjados, arquivo, privacidade, ordem/desempate, leitura histórica >2000 e falha real de BD sem exposição de detalhes. Schema COM-01 validado também com JSON Schema. Diff revisto antes da UI: rotas específicas, sem abrir gestão de colaboradores, sem alteração V1/V2; teste de rota não implementada passa a usar colaboradores. Uma invocação Maven teve erro de sintaxe PowerShell na opção com vírgulas, antes de executar; repetida com argumento devidamente entre aspas, com sucesso.
+
+
+### Incremento 4 — Interface de comentários e fecho local
+
+TaskComments integrado no detalhe: autor/data/conteúdo, ordem mais antigos primeiro, texto seguro, contador Unicode, 1–2000/não só espaços, rascunho preservado em falha, bloqueio de pedidos simultâneos e nenhuma repetição automática. Arquivadas em leitura; pessoais mantêm privacidade. README, requisitos/histórias/COM-01, modelo/arquitetura, instruções, plano, contrato e evidências atualizados.
+
+**Resultados finais:** 66 testes backend sem falhas/erros/ignorados; lint/build e Docker passaram; 18 testes normais Chrome passaram (4 especiais ignorados). Teste separado de reinício: 1 passou, com sessão anterior 401 e novo login a recuperar dois responsáveis e comentário com autoria/data. A primeira tentativa do teste ficou à espera do login sem pedir atualização à UI após navegar para o mesmo fragmento; o percurso foi corrigido para Atualizar perfil, como nos testes anteriores, e passou. Não se alterou a política de sessão para contornar a falha.
+
+OpenAPI 0.6.0 válido, 20/24 operações implementadas; cinco exemplos e sete respostas reais de colaboração validados com schemas, DELETE atribuição 204; fixtures próprias removidas. V1/V2 preservadas, sem novas migrations. Após cleanup conservam-se 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições. Diff final, links locais e exclusão de ficheiros gerados/ambiente verificados.
+
+Cada incremento foi testado e revisto antes do seguinte. Gestão de colaboradores (US-17-01/02), painel, Kanban/calendário, CI e entrega noutro computador continuam pendentes; elegíveis US-17-03/04, responsáveis US-18 e comentários US-19 implementados. Nenhum commit/push deste exercício ainda efetuado; issue #7 mantém-se aberta até registo/publicação posterior.
+
+
+## Registo Git do Exercício 6 — 18/11/2026
+
+O utilizador autorizou: “avança com o commit e push do exercicio 6”. Preparado commit com Refs #7 para responsáveis/elegíveis, comentários COM-01, interface, testes, contrato e documentação associados. A confirmação de SHA remoto/publicação e fecho da issue será registada no GitHub após push verificado.
+
+Evidência funcional existente: 66 testes backend, lint/build, 18 testes normais Chrome e 1 separado de reinício passaram; não foram apresentados como nova execução nesta operação Git. Diff e ficheiros revistos, sem incluir ambiente, gerados, caches ou temporários. Sem reescrever histórico, alterar migrations ou dados da aplicação.

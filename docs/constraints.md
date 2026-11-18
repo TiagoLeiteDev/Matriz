@@ -50,7 +50,7 @@ Referências técnicas consultadas para sessão e CSRF: https://cheatsheetseries
 | DT-01 | Linguagem/frameworks e stack. | Resolvido em TEC-01; versões concretizadas em pom.xml, package-lock.json e imagens Docker fixadas no Exercício 2. |
 | DT-02 | Persistência, tipos físicos, migrations, sessão e seed. | Tipos físicos UUID/text/date/timestamptz, migration V1, mapeamentos JPA e seed explícito implementados no Exercício 2; sessão em memória e política SEG-01 implementadas no Exercício 3. |
 | DT-03 | Instalação, arranque, ambiente de execução e distribuição. | Base local/Compose implementada com React compilado no Spring Boot e PostgreSQL; comandos e evidências em README/setup/verification. Entrega funcional, CI e validação noutro computador continuam pendentes. |
-| DT-04 | Contrato API colaborativo. | 24 operações documentadas e validadas. Base de planeamento concluída; Exercícios 3/4/5 implementam 16 operações (acesso, consultas, CRUD de projetos e tarefas), com servidor /api e estado por operação; restantes fluxos continuam planeados. Manter contrato alinhado com cada incremento. |
+| DT-04 | Contrato API colaborativo. | 24 operações documentadas e validadas. Base de planeamento concluída; Exercícios 3/4/5/6 implementam 20 operações (acesso, consultas, CRUD de projetos/tarefas, responsáveis e comentários), com servidor /api e estado por operação; restantes fluxos continuam planeados. Manter contrato alinhado com cada incremento. |
 | PD-01 | Limites de texto. | Projetos seguem exatamente o contrato: nome não vazio/não só espaços e descrição opcional, sem máximos. Não adotar 3–100/1000 dos exemplos. Restantes campos seguem o contrato de cada incremento. |
 | PD-02 | Falhas de gravação. | Regra aprovada: erro explícito, conservar dados confirmados e formulário; transações/cascata/rollback implementados e verificados para projetos no Exercício 4 e tarefas no Exercício 5; restantes escritas pendentes. |
 | PD-03 | Desempenho, acessibilidade e larguras-alvo. | Interface adaptável pedida na ficha; testes/metas ainda por definir. |
@@ -66,3 +66,8 @@ A antiga pendência de aceitação do âmbito individual deixou de ser aplicáve
 Gestão global de organizações/equipas, convites, registo público, recuperação de palavra-passe, notificações, subtarefas, recorrência, modelos, estimativas e estados próprios de projeto. As tarefas pessoais e calendário/Kanban não são retirados.
 
 [Requisitos](requirements.md) · [Modelo](database.md) · [Plano](implementation-plan.md) · [Log](ai-logs/ficha-03.md)
+
+
+## COM-01 — Comentários (Exercício 6)
+
+Plano aprovado pelo utilizador: novos comentários têm conteúdo obrigatório de 1 a 2000 pontos de código Unicode, não apenas espaços. Autor e instante gerados pelo backend; só conteudo aceite no pedido. Sem truncar dados históricos nem limitar títulos/descrições. Ordem de consulta criadoEm/id ascendente; leitura autorizada de arquivadas, escrita bloqueada. Ver task-collaboration.md e OpenAPI 0.6.0.

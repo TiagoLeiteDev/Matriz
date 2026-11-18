@@ -6,6 +6,8 @@ import type { Task } from './types'
 import { states, priorities } from './types'
 import TaskForm from './TaskForm'
 import DeleteTaskDialog from './DeleteTaskDialog'
+import TaskAssignees from './TaskAssignees'
+import TaskComments from './TaskComments'
 
 const empty = { q: '', project: '', state: '', priority: '', from: '', to: '' }
 function hashTask() { return window.location.hash.startsWith('#tarefas/') ? window.location.hash.slice('#tarefas/'.length) : null }
@@ -96,6 +98,8 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
           <dt>Prazo</dt><dd>{selected.prazo || 'Sem prazo'}</dd><dt>Projeto</dt><dd>{selected.projetoId ? projects.find(p => p.id === selected.projetoId)?.nome ?? 'Projeto arquivado' : 'Tarefa pessoal'}</dd></dl>
         {archived ? <p>Projeto arquivado: apenas consulta.</p> : <div className="actions"><button onClick={() => { setSuccess(''); setForm('edit') }}>Editar tarefa</button>
           <button onClick={() => { setError(''); setSuccess(''); setConfirm(true) }}>Eliminar tarefa</button></div>}
+        <TaskAssignees key={selected.id} taskId={selected.id} readOnly={archived} onSessionExpired={onSessionExpired} />
+        <TaskComments key={selected.id} taskId={selected.id} readOnly={archived} onSessionExpired={onSessionExpired} />
       </article> : <>
         <h3>Tarefas</h3><button onClick={() => { setSuccess(''); setForm('create') }}>Nova tarefa</button>
         <form className="task-filters" onSubmit={filter}>

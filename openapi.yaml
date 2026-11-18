@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API colaborativa
-  version: 0.5.0
+  version: 0.6.0
   description: 'Matriz colaborativa — contrato ativo. Exercício 3 implementa sessão/CSRF e consultas protegidas;
     Exercício 4 implementa CRUD de projetos, arquivo/restauro e pesquisa PESQ-01. Exercício 5 implementa
     CRUD de tarefas, filtros PESQ-02 e transferências COL-06. TAR-01 altera estados e prioridades com
@@ -15,7 +15,8 @@ info:
     do pedido. UUIDs são devolvidos como strings opacas. Pesquisa de projetos por parte do nome, ignorando
     maiúsculas e acentos, sem paginação e com q literal; filtro arquivado=false por defeito. Nome não
     vazio/não só espaços; descrição opcional; sem limites máximos de texto definidos. Não há exposição
-    pública aprovada.'
+    pública aprovada. Exercício 6 implementa elegíveis, atribuições e criação de comentários COM-01; restantes
+    operações planeadas permanecem bloqueadas.'
 security:
 - Sessao: []
 paths:
@@ -642,7 +643,9 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-      x-implementation-status: planned
+        '400':
+          $ref: '#/components/responses/400'
+      x-implementation-status: implemented
   /tarefas/{tarefaId}/responsaveis:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -667,6 +670,8 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       x-implementation-status: implemented
     post:
       operationId: atribuirResponsavel
@@ -707,7 +712,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ResponsavelRequest'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /tarefas/{tarefaId}/responsaveis/{utilizadorId}:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
@@ -716,6 +721,7 @@ paths:
       operationId: removerResponsavel
       summary: Remover atribuicao
       description: Exige acesso a tarefa e nao arquivada. Remove apenas o par, sem apagar conta/tarefa.
+        Par inexistente=404.
       responses:
         '204':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -729,16 +735,19 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       parameters:
       - $ref: '#/components/parameters/Csrf'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /tarefas/{tarefaId}/comentarios:
     parameters:
     - $ref: '#/components/parameters/TarefaId'
     get:
       operationId: listarComentarios
       summary: Consultar comentarios
-      description: Exige acesso atual a tarefa, incluindo se arquivada em leitura.
+      description: Exige acesso atual a tarefa, incluindo se arquivada em leitura. Ordem criadoEm ascendente,
+        com desempate por id ascendente. Conteúdo histórico preservado.
       responses:
         '200':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -756,12 +765,15 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
+        '400':
+          $ref: '#/components/responses/400'
       x-implementation-status: implemented
     post:
       operationId: adicionarComentario
       summary: Adicionar comentario
-      description: Conteudo nao vazio/somente espacos; autor e instante definidos pelo backend. Nao aceitar
-        autorId/criadoEm no pedido. Arquivo bloqueia.
+      description: 'Conteudo nao vazio/somente espacos; autor e instante definidos pelo backend. Nao aceitar
+        autorId/criadoEm no pedido. Arquivo bloqueia. COM-01: de 1 a 2000 pontos de código Unicode, sem
+        truncagem; só conteudo aceite.'
       responses:
         '201':
           description: Operacao concluida e, se altera dados, gravacao confirmada.
@@ -797,7 +809,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ComentarioRequest'
-      x-implementation-status: planned
+      x-implementation-status: implemented
   /painel:
     get:
       operationId: consultarPainel
@@ -991,7 +1003,7 @@ components:
       additionalProperties: false
       properties:
         conteudo:
-          $ref: '#/components/schemas/Texto'
+          $ref: '#/components/schemas/ConteudoComentario'
       required:
       - conteudo
     Problema:
@@ -1149,6 +1161,7 @@ components:
           $ref: '#/components/schemas/Id'
         conteudo:
           $ref: '#/components/schemas/Texto'
+          description: Conteúdo persistido. COM-01 limita novos pedidos; dados históricos não são truncados.
         autor:
           $ref: '#/components/schemas/Utilizador'
         criadoEm:
@@ -1203,6 +1216,13 @@ components:
       - projetos
       - contagens
       - incluiIndependentes
+    ConteudoComentario:
+      type: string
+      minLength: 1
+      maxLength: 2000
+      pattern: \S
+      description: 'COM-01: 1–2000 pontos de código Unicode, não só espaços; preservar conteúdo sem truncar.
+        Limite aplica-se a novos comentários.'
   responses:
     '400':
       description: JSON malformado ou parametros invalidos.

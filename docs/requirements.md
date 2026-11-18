@@ -1,6 +1,6 @@
 ﻿# Matriz — Requisitos do MVP colaborativo
 
-**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; colaboração de escrita e restante MVP ainda por concluir.
+**Versão:** 2.0, 18/11/2026. **Estado:** mudança para âmbito colaborativo autorizada pelo utilizador; detalhes técnicos pendentes explicitados em constraints.md. Base técnica implementada no Exercício 2; acesso e consultas protegidas implementados no Exercício 3, com limites em security.md. Gestão de projetos integrada no Exercício 4; Gestão de tarefas integrada no Exercício 5; Responsáveis e comentários integrados no Exercício 6; gestão de colaboradores e restante MVP ainda por concluir.
 
 ## Visão e objetivos
 
@@ -107,3 +107,8 @@ Organizações/equipas com gestão própria, convites, registo público, recuper
 ## Fontes e estado
 
 [Reconciliação](scope-reconciliation.md), [User Stories](user-stories.md), [restrições](constraints.md), [arquitetura](architecture.md) e [registo da ficha 3](ai-logs/ficha-03.md). A autorização de alterar o âmbito não prova implementação, aprovação de detalhes pendentes ou cumprimento de testes.
+
+
+## COM-01 — Comentários (Exercício 6)
+
+Plano aprovado pelo utilizador: novos comentários têm conteúdo obrigatório de 1 a 2000 pontos de código Unicode, não apenas espaços. Autor e instante gerados pelo backend; só conteudo aceite no pedido. Sem truncar dados históricos nem limitar títulos/descrições. Ordem de consulta criadoEm/id ascendente; leitura autorizada de arquivadas, escrita bloqueada. Ver task-collaboration.md e OpenAPI 0.6.0.

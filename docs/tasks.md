@@ -78,3 +78,8 @@ Navegação Projetos/Tarefas; lista global ou dentro do projeto, filtros, detalh
 Sem paginação ou desempenho medido para grandes volumes; pesquisa normalizada em memória no conjunto autorizado. Sem ETag para impedir edições com base em formulários antigos. Falha de rede após envio pode ter resultado desconhecido: consultar antes de repetir.
 
 Kanban, calendário, painel integral, gestão de colaboradores, escrita de comentários/responsáveis permanecem nos incrementos próprios. Contagens desta lista não resolvem PD-06 do painel. Não há novas decisões de âmbito pendentes para este incremento.
+
+
+## Atualização — Exercício 6
+
+Responsáveis/elegíveis e comentários integrados na API e no detalhe da tarefa, mantendo o modelo de seis entidades e V1/V2. COM-01: novos comentários de 1–2000 pontos de código Unicode, não só espaços; autor/data do backend; ordem criadoEm/id ASC. Responsáveis múltiplos com par único, remoção individual e elegibilidade revalidada no backend. Arquivo bloqueia escritas; pessoais privadas. Contratos/limites em [task-collaboration.md](task-collaboration.md). As menções anteriores a escrita de comentários/responsáveis pendente ficam superadas por este incremento; gestão de colaboradores, painel e Kanban/calendário continuam pendentes. Ver verification.md para evidências, sem confundir plano com teste executado.

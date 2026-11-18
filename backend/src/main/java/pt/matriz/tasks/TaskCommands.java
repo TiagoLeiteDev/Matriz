@@ -79,4 +79,10 @@ public class TaskCommands {
         lockTask(id, initial);
         jdbc.update("DELETE FROM tarefa WHERE id = ?", id);
     }
+    // Called only inside a write transaction, using the same project-before-task lock order.
+    TaskAccess.Task lockForManage(UUID id) {
+        var initial = access.requireView(id);
+        lockProjects(initial.projetoId());
+        return lockTask(id, initial);
+    }
 }
