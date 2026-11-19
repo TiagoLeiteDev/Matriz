@@ -1,9 +1,9 @@
 package pt.matriz.projects;
 
+import static pt.matriz.shared.SearchText.fold;
+
 import java.util.UUID;
 import java.util.List;
-import java.util.Locale;
-import java.text.Normalizer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -23,9 +23,6 @@ public class ProjectQueries {
     }
     public record Progress(long totalTarefas, long tarefasConcluidas, double percentagem) {}
     public record ProjectView(UUID id, String nome, String descricao, boolean arquivado, UserProfile proprietario, Progress progresso) {}
-    private static String fold(String text) {
-        return Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT);
-    }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public List<ProjectView> list(String query, boolean archived) {
         UUID actor = identity.id();

@@ -1,11 +1,11 @@
 package pt.matriz.tasks;
 
+import static pt.matriz.shared.SearchText.fold;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.text.Normalizer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -20,7 +20,6 @@ public class TaskQueries {
     private final JdbcTemplate jdbc;
     private final CurrentIdentity identity;
     public TaskQueries(TaskAccess access, JdbcTemplate jdbc, CurrentIdentity identity) { this.access = access; this.jdbc = jdbc; this.identity = identity; }
-    private static String fold(String text) { return Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}+", "").toLowerCase(Locale.ROOT); }
     public List<TaskAccess.Task> list(TaskFilter filter) {
         UUID actor = identity.id();
         StringBuilder sql = new StringBuilder("""
