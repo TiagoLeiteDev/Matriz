@@ -101,7 +101,7 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
       </> : id && selected ? <article aria-labelledby="project-title">
         <h2 id="project-title">{selected.nome}</h2><p className="description">{selected.descricao || 'Sem descrição.'}</p>
         <dl><dt>Proprietário</dt><dd>{selected.proprietario.nome}</dd><dt>Situação</dt><dd>{selected.arquivado ? 'Arquivado' : 'Ativo'}</dd>
-          <dt>Progresso</dt><dd>{selected.progresso.totalTarefas === 0 ? '0% — Sem tarefas' : `${selected.progresso.percentagem}% (${selected.progresso.tarefasConcluidas}/${selected.progresso.totalTarefas})`}</dd></dl>
+          <dt>Progresso</dt><dd>{selected.progresso.totalTarefas === 0 ? '0% — Sem tarefas' : `${selected.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}% (${selected.progresso.tarefasConcluidas}/${selected.progresso.totalTarefas})`}</dd></dl>
         {owner ? <div className="actions"><button disabled={busy} onClick={() => { setSuccess(''); setForm('edit') }}>Editar projeto</button>
           <button disabled={busy} onClick={changeArchive}>{selected.arquivado ? 'Restaurar projeto' : 'Arquivar projeto'}</button>
           <button disabled={busy} onClick={() => { setError(''); setSuccess(''); setConfirmDelete(true) }}>Eliminar projeto</button></div>
@@ -119,7 +119,7 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
         <label className="archive-filter"><input type="checkbox" checked={archived} onChange={event => { setArchived(event.target.checked); setLoading(true); setError('') }} /> Mostrar projetos arquivados</label>
         {projects.length === 0 ? <p>Nenhum projeto encontrado.</p> : <ul className="project-list">{projects.map(project => <li key={project.id}>
           <a href={`#projetos/${project.id}`} onClick={event => { event.preventDefault(); navigate(project.id) }}>{project.nome}</a>
-          <span>{project.proprietario.id === user.id ? 'Proprietário' : 'Colaborador'} · {project.progresso.percentagem}%</span>
+          <span>{project.proprietario.id === user.id ? 'Proprietário' : 'Colaborador'} · {project.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}%</span>
         </li>)}</ul>}
       </>}
     </>}

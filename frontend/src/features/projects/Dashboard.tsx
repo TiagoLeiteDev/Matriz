@@ -26,7 +26,7 @@ export default function Dashboard({ onSessionExpired }: { onSessionExpired: () =
       <p data-testid="dashboard-total">Total: {Object.values(data.contagens).reduce((a, b) => a + b, 0)} tarefas.</p>
       <a href="#tarefas">Consultar tarefas</a><h3>Projetos ativos acessíveis</h3>
       {data.projetos.length === 0 ? <p>Sem projetos ativos.</p> : <ul className="project-list">{data.projetos.map(project => <li key={project.id}>
-        <a href={`#projetos/${project.id}`}>{project.nome}</a><span>{project.progresso.percentagem}%</span>
+        <a href={`#projetos/${project.id}`}>{project.nome}</a><span>{project.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}%</span>
       </li>)}</ul>}
     </>}
   </section>
