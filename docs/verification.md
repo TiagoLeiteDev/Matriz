@@ -1,3 +1,75 @@
+# Matriz — Revisão final e evidências de entrega
+
+**Data:** 18/11/2026. **Exercício:** ficha 03, exercício 9. **Base publicada:** c9bcdcc. **Issue:** [#10](https://github.com/TiagoLeiteDev/Matriz/issues/10). Revisão local concluída; registo e publicação autorizados em 19/11/2026, com confirmação na issue #10. Relatório e critérios em [delivery-review.md](delivery-review.md). A matriz dos nove cenários do Exercício 8 está preservada no histórico abaixo.
+
+## Resultados executados nesta revisão
+
+| Verificação | Resultado real |
+|---|---|
+| Estado inicial Git | main em c9bcdcc, status/diff limpos antes da revisão. |
+| Refatoração única aprovada | SearchText.fold extraído, preservando NFD/remoção de marcas/Locale.ROOT; 75 testes backend passaram após correção de uma edição inicial incompleta. Não contabilizar a compilação inicial falhada como teste aprovado. |
+| Backend `./backend/mvnw.cmd -f backend/pom.xml verify` | 75 testes, 0 falhas/erros/ignorados, já com a refatoração. |
+| Dependências em clone limpo | frontend/e2e instalados por npm ci dos lockfiles, sem copiar node_modules; npm não reportou vulnerabilidades nessa execução. Isto não é auditoria de segurança universal. |
+| Frontend lint/build | Código 0 na cópia e após correção pontual de apresentação; imagem integrada compilada com fontes finais. |
+| Docker em cópia limpa isolada | Build, V1/V2, seed explícito e up --wait concluídos; app healthy em 18082 e DB em 55433, com rede/volume próprios. |
+| Playwright na cópia isolada | **25 passaram**, 4 especiais ignorados, 0 falhas na suite final (37,3 s). Inclui nova regressão de progresso. Não repetir o resultado do Exercício 8 como se fosse execução nova desses quatro especiais. |
+| Progresso/CA-US-09 | Verificados na API/UI 25%, 33,3%, 50%, 100%, exclusão de pessoal e transferência com origem 0%/destino 100%. |
+| Recriação de containers | down sem -v e up de db/app no projeto isolado; novo login recuperou projeto arquivado, tarefa, comentário com mesmo autor/instante e atribuição. Tarefa eliminada continuou 404; fixtures próprias removidas. |
+| Contrato | OpenAPI 0.7.0 válido; 24 mappings correspondem às 24 operações, normalizando só nomes dos parâmetros de caminho. 17 respostas reais da cópia conformes aos schemas. Sem alteração ao contrato. |
+| Integridade final da cópia | 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições; apenas V1/V2 success=true. |
+| Segredos/entrega | Scan por padrões no HEAD e em 13 commits, sem ficheiros sinalizados; .env/gerados não versionados; .gitignore/.dockerignore revistos. Limitação: deteção por padrões/inspeção não prova ausência absoluta de segredos não reconhecidos. |
+
+### Cópia limpa e comandos
+
+Obtida por `git clone --no-hardlinks https://github.com/TiagoLeiteDev/Matriz.git tmp/delivery-review-20261118`, no commit c9bcdcc. Configuração nova a partir de .env.example, apenas fictícia, com APP_PORT=18082, DB_PORT=55433, DB_URL do host ajustado e APP_ALLOWED_ORIGINS correspondentes. As fontes da refatoração e da correção ainda não publicadas foram sobrepostas explicitamente; 61 ficheiros de fontes/teste comparados com a árvore final, equivalentes após normalização de fins de linha. Não afirmar que estas alterações já pertencem ao clone remoto publicado.
+
+Na cópia, os comandos foram os do README com projeto isolado:
+
+```powershell
+docker compose -p matriz-delivery-review config --quiet
+docker compose -p matriz-delivery-review up -d db --wait
+docker compose -p matriz-delivery-review build app seed
+docker compose -p matriz-delivery-review --profile tools run --rm seed
+docker compose -p matriz-delivery-review up -d app --wait
+npm.cmd --prefix frontend ci
+npm.cmd --prefix frontend run lint
+npm.cmd --prefix frontend run build
+npm.cmd --prefix e2e ci
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+$env:MATRIZ_BASE_URL = 'http://127.0.0.1:18082'
+npm.cmd --prefix e2e test
+# Persistência, depois de preparar fixtures próprias pela API:
+docker compose -p matriz-delivery-review down
+docker compose -p matriz-delivery-review up -d db app --wait
+```
+
+As flags dos quatro testes especiais foram definidas como 0 no shell da suite normal. O backend verify foi executado na árvore principal, já com a refatoração; a imagem da cópia usa as mesmas fontes. Scripts temporários de revisão, fora da entrega, fizeram chamadas HTTP de preparação/consulta/cleanup e validação JSON Schema sem imprimir credenciais. Instalação limpa realizada **no mesmo computador**, com Docker Linux/Windows e Chrome instalado; não equivale a validar outro computador, outro SO ou download sem qualquer cache de imagens/Maven.
+
+## BUG-09-01 — Separador decimal do progresso
+
+Reproduzido antes de alterar a apresentação: uma tarefa DONE em três, API=33.3; UI mostrava 33.3%, mas CA-US-09-05 exige 33,3%. A causa era interpolação direta de Number sem locale. [Captura anterior](ui/bug-09-progress-locale-before.png). Diagnóstico/proposta apresentados ao utilizador. Correção limitada em ProjectsWorkspace/Dashboard para toLocaleString('pt-PT', máximo uma decimal), sem mudar cálculo/API. Novo delivery-review.spec.ts falhou antes e passou na suite final, cobrindo também percentagens inteiras e transferência. Não é uma segunda refatoração; é correção pontual de critério já confirmado.
+
+## Três exemplos reais de utilização da IA
+
+| Objetivo do pedido | Decisão tomada pela análise humana/IA | Sugestão ou implementação corrigida/adaptada/rejeitada | Resultado obtido e fonte |
+|---|---|---|---|
+| Fechar a regra de colaboração em projeto arquivado (Ex. 7). | O utilizador escolheu permitir ao proprietário adicionar/remover colaboradores em arquivo; aplicar COL-06 sem abrir escritas de tarefas arquivadas. | A recomendação da IA de consultar apenas e exigir restauro foi **rejeitada** pelo utilizador. | COL-07 implementada e verificada por ProjectCollaborationTest e frontend-integration.spec.ts. Pergunta/resposta em ai-logs/ficha-03.md, Ex. 7. |
+| Verificar persistência/criação noutra sessão (Ex. 8). | Tratar a falha como navegação após analisar o código e o teste, sem assumir perda de dados. | A implementação inicial gerada com apoio da IA mantinha a tarefa selecionada apenas em estado local no projeto; foi **corrigida** para URL com projeto/tarefa e restauro no reload. | BUG-08-01 reproduzido, corrigido e coberto por mvp-verification.spec.ts; o caso voltou a passar na cópia limpa desta revisão. Fonte: log e histórico de verification.md. |
+| Reduzir duplicação da pesquisa sem alterar regras (Ex. 9). | Utilizador aprovou uma única extração para SearchText.fold, em passo isolado, mantendo o algoritmo e executando regressão. | A primeira edição automática confundiu a chaveta da expressão regular com o fim do método; compilação detetou o erro. A edição foi **corrigida** com remoção delimitada pelas linhas do método, sem mudar algoritmo. | 75 testes backend passaram após correção; pesquisas de projetos/tarefas sem acentos também passaram na suite browser da cópia final. Fonte: ai-logs/ficha-03.md, Ex. 9, e diff dos três ficheiros. |
+
+Estes exemplos correspondem a interações/code paths reais desta conversa e aos registos versionados; não foram inventados pedidos ou resultados.
+
+## Critérios não aprovados por esta evidência
+
+CI/GitHub Actions e prova de pipeline falhar/recuperar: **Não cumprido** (sem workflow). Execução noutro computador, verificações funcionais manuais humanas, auditoria WCAG/carga/browsers e apresentação/validação pelo formador: **Não verificados**. As 22 histórias estão representadas e há 88 critérios documentados, mas não foi executado um cenário isolado para cada um dos 88: não marcar todos individualmente como aprovados. Exemplos de cobertura apenas parcial de variantes: CA-US-05-01 (nove transições no backend, não todas nas duas vistas UI), CA-US-12-03 (restauro nas três vistas com/sem prazo) e CA-US-14-05 (fixture exata combinada em todas as vistas). Sem falha funcional confirmada nessas variantes; falta evidência específica completa.
+
+A execução local e os artefactos obrigatórios estão preparados nos limites do ensaio. A entrega integral continua condicionada às ações do relatório, incluindo autorização de commits/push. Testes automáticos e inspeção técnica não são apresentados como testes manuais humanos.
+
+
+<details>
+<summary>Histórico preservado — verificação consolidada do Exercício 8 e anteriores</summary>
+
 # Matriz — Verificação consolidada do MVP
 
 **Data:** 18/11/2026. **Exercício:** ficha 03, exercício 8. **Base:** commit `71dbf47` (exercício 7 publicado). **Rastreabilidade:** [issue #9](https://github.com/TiagoLeiteDev/Matriz/issues/9). **Estado:** nove cenários aprovados por verificações automatizadas, incluindo reinício/expiração; BUG-08-01 corrigido com regressão. Registo Git autorizado; confirmação de publicação na issue #9.
@@ -391,3 +463,10 @@ A interface suporta as funcionalidades aprovadas, mas isto não declara encerrad
 No fecho da implementação, o Exercício 7 estava local. O utilizador autorizou posteriormente commit/push; a confirmação de publicação fica na issue #8.
 
 </details>
+
+</details>
+
+
+## Conferência operacional final do Exercício 9
+
+Imagem principal reconstruída e app atualizada com as fontes verificadas; health healthy em 8080. Seed não repetido, nenhuma migration nova; conferência por leitura conservou 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições, apenas V1/V2. Containers/rede da cópia isolada removidos por down sem -v; volume separado conservado para inspeção, pasta de ensaio ignorada. Não houve nova execução dos 25 testes na app principal: a suite foi executada na cópia com fontes equivalentes, conforme descrito. No fecho da revisão local ainda não existia commit/push; o utilizador autorizou posteriormente o registo em 19/11/2026. Confirmação de publicação na issue #10.

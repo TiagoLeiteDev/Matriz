@@ -1,6 +1,6 @@
 ﻿# Matriz — Modelo conceptual colaborativo
 
-**Versão:** 2.0, 18/11/2026. DADOS-02: revisão documental por COL-01, baseada nas decisões de colaboração confirmadas. Modelo conceptual preservado. A concretização física do Exercício 2, com migration e mapeamentos JPA, está em setup.md; limites de negócio e armazenamento/política de sessões continuam pendentes.
+**Versão:** 2.0, 18/11/2026. DADOS-02: revisão documental por COL-01, baseada nas decisões de colaboração confirmadas. Modelo conceptual preservado. A concretização física do Exercício 2, com migration e mapeamentos JPA, está em setup.md; limites e política atuais definidos em TAR-01/COM-01/SEG-01; sessões em memória do servidor, sem entidade de negócio nova.
 
 ## Entidades e atributos
 

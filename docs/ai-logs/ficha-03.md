@@ -1611,3 +1611,194 @@ Exercício 8 concluído localmente, sem commit/push. Issue #9 aberta até regist
 O utilizador autorizou “faz isso então” relativamente ao commit/push pendente. Preparado commit com Refs #9 para os três novos testes, correção BUG-08-01, evidência visual e documentação de verificação associados. Confirmação de SHA remoto/publicação e fecho na issue #9 após push verificado.
 
 Evidência funcional existente: 75 testes backend, lint/build, 24 cenários normais Playwright, três testes separados de reinício e um de expiração passaram. Não se apresenta esta operação Git como nova execução desses testes. Ficheiros/diff revistos, sem ambiente, gerados ou temporários. Sem reescrever histórico, alterar migrations ou dados da aplicação.
+
+
+## Exercício 9 — Revisão final e preparação de entrega — 18/11/2026
+
+**Ferramenta:** ChatGPT/Codex. **Base publicada:** c9bcdcc, main inicialmente limpa. **Issue:** [#10](https://github.com/TiagoLeiteDev/Matriz/issues/10), criada antes das alterações.
+
+<details>
+<summary>Pedido integral do utilizador</summary>
+
+# Goal
+
+Realizar a revisão final do MVP da plataforma Matriz, garantindo que o código, as funcionalidades implementadas, os testes e a documentação estão completos, coerentes e preparados para entrega.
+
+Identificar possíveis melhorias, confirmar o cumprimento dos critérios de aceitação e assegurar que a aplicação pode ser instalada, configurada e executada a partir de uma cópia limpa do repositório.
+
+# Context
+
+A Matriz é uma aplicação de gestão de projetos e tarefas desenvolvida no contexto de um MVP (Minimum Viable Product).
+
+Após as fases de levantamento de requisitos, definição da arquitetura, implementação e verificação, é necessário realizar uma revisão final da solução antes da entrega.
+
+Esta revisão deve considerar:
+
+- O código implementado no Frontend e Backend.
+- Os requisitos funcionais e critérios de aceitação previamente definidos.
+- A autenticação e autorização dos utilizadores.
+- A persistência dos dados.
+- O tratamento de erros, estados de carregamento e ausência de dados.
+- Os testes automatizados e os respetivos resultados.
+- A documentação técnica e funcional existente.
+- A configuração e execução da aplicação.
+- A organização e o versionamento do repositório Git.
+
+A entrega deverá incluir os seguintes artefactos:
+
+1. Código completo do Frontend e Backend, incluindo testes e ficheiros de dependências.
+2. Esquema ou migrations da base de dados, dados de demonstração e exemplo de configuração.
+3. Ficheiro `README.md` atualizado.
+4. Ficheiro `AGENTS.md` atualizado.
+5. Contrato OpenAPI consistente com a implementação.
+6. Documentação existente em `docs/implementation-plan.md`.
+7. Registos das verificações em `docs/verification.md`.
+
+A revisão deve garantir que todos estes elementos refletem a implementação real da Matriz, sem introduzir funcionalidades adicionais fora do âmbito definido para o MVP.
+
+# Constraints
+
+- Considerar exclusivamente os requisitos e funcionalidades confirmados para o MVP da Matriz.
+- Não assumir que todas as funcionalidades inicialmente previstas foram implementadas.
+- Analisar o estado atual do repositório e o `git diff` antes de propor alterações.
+- Não introduzir novas funcionalidades durante a revisão final.
+- Privilegiar correções pontuais e melhorias de baixo risco.
+- Identificar apenas uma oportunidade de refatoração prioritária, justificando o benefício esperado.
+- Não aplicar refatorações sem primeiro apresentar a análise e a proposta de alteração.
+- Caso seja aprovada uma refatoração, executá-la num passo isolado e confirmar que o comportamento anterior foi preservado.
+- Não alterar ficheiros de documentação antes de identificar as inconsistências existentes.
+- Atualizar a documentação com base na implementação real, evitando descrições de funcionalidades inexistentes.
+- Não inventar resultados de testes, comandos executados ou evidências.
+- Não considerar cumpridos critérios de aceitação que não tenham sido efetivamente verificados.
+- Não incluir credenciais reais, passwords, tokens ou outros dados sensíveis no repositório.
+- Utilizar dados e contas fictícias para demonstração.
+- Não executar operações Git destrutivas nem criar commits automaticamente sem autorização.
+- Manter a estrutura e as convenções existentes no projeto.
+- Garantir que as alterações propostas são compatíveis com o âmbito e a simplicidade do MVP.
+
+# Task
+
+1. **Rever o código e as alterações existentes**
+   - Analisar a estrutura atual do repositório.
+   - Inspecionar o `git status` e o `git diff`.
+   - Identificar alterações pendentes e ficheiros não versionados.
+   - Comparar a implementação com os requisitos e critérios de aceitação.
+   - Verificar especialmente permissões, validações, tratamento de erros e alterações fora do âmbito do MVP.
+
+2. **Identificar oportunidades de melhoria**
+   - Analisar possíveis duplicações, complexidade desnecessária ou problemas de organização do código.
+   - Selecionar uma oportunidade de refatoração com benefício concreto.
+   - Explicar o problema identificado, os ficheiros envolvidos, a melhoria proposta e os riscos.
+   - Apresentar a proposta antes de modificar o código.
+   - Caso a alteração seja autorizada, aplicá-la isoladamente e executar os testes necessários para confirmar que o comportamento foi preservado.
+
+3. **Rever e atualizar a documentação técnica**
+   - Comparar o contrato OpenAPI com os endpoints realmente implementados.
+   - Identificar eventuais diferenças entre a documentação e o comportamento da API.
+   - Rever `docs/implementation-plan.md` e confirmar a coerência com a solução desenvolvida.
+   - Rever `AGENTS.md`, incluindo os comandos de instalação, execução, testes e verificação relevantes.
+   - Propor as atualizações necessárias sem documentar funcionalidades que não existem.
+
+4. **Completar o README**
+   - Descrever brevemente o objetivo e as funcionalidades da Matriz.
+   - Identificar as tecnologias utilizadas.
+   - Documentar os pré-requisitos.
+   - Explicar a instalação das dependências.
+   - Indicar a configuração das variáveis de ambiente.
+   - Documentar a criação do esquema ou execução das migrations.
+   - Explicar a preparação dos dados de demonstração.
+   - Indicar os passos para iniciar o Frontend e o Backend.
+   - Documentar como executar os testes.
+   - Incluir contas fictícias de demonstração, caso existam.
+
+5. **Documentar exemplos de utilização da IA**
+   - Registar em `docs/verification.md` três exemplos breves de utilização da IA durante o desenvolvimento.
+   - Para cada exemplo, incluir:
+     - Objetivo do pedido.
+     - Decisão tomada com base na análise.
+     - Parte da sugestão da IA que foi corrigida, adaptada ou rejeitada.
+     - Resultado efetivamente obtido.
+   - Utilizar exemplos reais e verificáveis, sem inventar interações anteriores.
+
+6. **Verificar os critérios de conclusão**
+   - Confirmar que a aplicação arranca seguindo as instruções do README.
+   - Verificar as funcionalidades efetivamente incluídas no MVP.
+   - Confirmar o comportamento da autenticação e autorização na interface e na API.
+   - Verificar a persistência dos dados após recarregar a interface e reiniciar o Backend.
+   - Confirmar o tratamento dos estados de carregamento, ausência de dados, sucesso e erro.
+   - Verificar a consistência entre o contrato OpenAPI e a implementação real.
+   - Confirmar que os testes relevantes são executados e que os resultados estão documentados.
+   - Identificar critérios não cumpridos ou impossíveis de verificar.
+
+7. **Preparar o versionamento e a entrega**
+   - Identificar os ficheiros necessários à entrega.
+   - Confirmar que não existem ficheiros temporários, segredos ou artefactos desnecessários.
+   - Verificar a configuração do `.gitignore`.
+   - Propor uma organização dos commits com mensagens claras.
+   - Confirmar que o código e a documentação estão organizados no mesmo repositório.
+   - Verificar se os passos do README permitem executar o projeto a partir de uma cópia limpa.
+   - Apresentar o estado final do repositório e identificar eventuais ações pendentes antes da entrega.
+
+8. **Produzir um relatório final de preparação da entrega**
+   - Resumir as verificações efetuadas.
+   - Identificar os critérios de conclusão cumpridos e não cumpridos.
+   - Apresentar os problemas identificados e as melhorias propostas.
+   - Indicar os testes executados e os respetivos resultados.
+   - Listar os artefactos preparados para entrega.
+   - Identificar eventuais limitações ou tarefas pendentes.
+
+# Validation
+
+A resposta será considerada válida apenas se:
+
+- Analisar o estado real do repositório e as alterações existentes.
+- Verificar a implementação relativamente aos requisitos confirmados do MVP.
+- Identificar pelo menos uma oportunidade de melhoria do código e justificar a sua relevância.
+- Garantir que qualquer refatoração autorizada preserva o comportamento existente.
+- Verificar a consistência entre o contrato OpenAPI e os endpoints implementados.
+- Rever `README.md`, `AGENTS.md`, `docs/implementation-plan.md` e `docs/verification.md`.
+- Confirmar que as instruções de instalação, configuração e execução estão completas.
+- Incluir três exemplos reais de utilização da IA, com decisões e correções documentadas.
+- Verificar os critérios de conclusão apresentados no exercício.
+- Distinguir critérios aprovados, não cumpridos e não verificados.
+- Confirmar a persistência dos dados e o funcionamento da autenticação e autorização, quando aplicáveis.
+- Registar os testes executados e os resultados efetivamente observados.
+- Identificar todos os ficheiros necessários para a entrega.
+- Confirmar que não existem credenciais ou dados sensíveis expostos no repositório.
+- Verificar se a aplicação pode ser executada a partir de uma cópia limpa, quando o ambiente o permitir.
+- Apresentar uma proposta de organização dos commits sem executar alterações Git não autorizadas.
+- Produzir um relatório final objetivo, identificando o estado de preparação da entrega da Matriz.
+- Manter todas as recomendações consistentes com a implementação real e os objetivos do MVP.
+
+</details>
+
+### Análise anterior às alterações documentais
+
+Identificadas inconsistências: README apresentava Actions como usado sem workflow e resumos de verificações pendentes; AGENTS continha regras históricas/colaboradores pendentes; plano dizia caminhos/API não implementados e qualidade não iniciada apesar dos testes; modelo mantinha política de sessão/limites pendentes. Problemas apresentados antes de editar documentação. README/AGENTS reorganizados com estado atual, comandos e limites; plano com tabela ativa e histórico recolhido; modelo alinhado com decisões atuais.
+
+### Única refatoração proposta e aprovação humana
+
+Duplicação de normalização em ProjectQueries/TaskQueries. Proposta: SearchText.fold comum, mantendo NFD/remoção de marcas/Locale.ROOT e filtragem autorizada. Benefício e risco apresentados. **Resposta:** “Aprovar a refatoração isolada”. Aplicada primeiro só aos três ficheiros, antes dos demais passos; 75 testes backend passaram. A primeira edição automática confundiu a chaveta da expressão regular com o fim do método e falhou na compilação; edição corrigida antes da execução aprovada. Não foram alteradas regras de pesquisa ou acrescentadas outras refatorações.
+
+### Correção pontual baseada num critério existente
+
+Novo teste de progresso reproduziu BUG-09-01: API calcula 33.3 correto, mas UI mostra ponto em vez da vírgula de CA-US-09-05. Diagnóstico/proposta apresentados antes de editar a aplicação. Formatação pt-PT aplicada no detalhe/lista/painel, sem mudar cálculo/contrato. Teste falhou antes e passou depois, cobrindo 25%, 33,3%, 50%, 100%, pessoal excluída e transferência. Captura anterior em docs/ui/bug-09-progress-locale-before.png.
+
+### Cópia limpa e resultados reais
+
+Clone remoto c9bcdcc em pasta ignorada, novo .env fictício, portas 18082/55433 e projeto Compose matriz-delivery-review. Sem copiar node_modules ou .env da demonstração. Overlay explicitamente identificado da refatoração/correção ainda não publicadas; fontes finais comparadas (61 ficheiros equivalentes após normalizar fins de linha). npm ci pelos lockfiles, lint/build, imagens, migrations V1/V2, seed explícito e arranque healthy passaram.
+
+Suite final na cópia: 25 testes normais Playwright passaram, quatro especiais ignorados. Esses especiais não foram apresentados como nova execução: têm evidência no Exercício 8. Após down sem -v/up da app e BD isoladas, novo login confirmou projeto arquivado/tarefa/responsável/comentário, mesma autoria/data e tarefa eliminada ainda 404; fixtures próprias removidas. Baseline final 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário, 2 atribuições e só V1/V2.
+
+OpenAPI válido: 24 mappings correspondem às 24 operações; 17 respostas reais da cópia conformes. Scan de padrões de segredos no HEAD e em 13 commits, nenhum ficheiro sinalizado; gerados/ambiente fora do Git. Não se declara garantia universal de segredos por um scan de padrões.
+
+### Artefactos e pendências
+
+Relatório em docs/delivery-review.md; inventário em delivery-manifest.txt; três exemplos reais de uso de IA em verification.md (COL-07 rejeita recomendação de restauro prévio; BUG-08-01 corrige navegação local; refatoração aprovada/correção da extração). Propostos três commits separados, sem criar commits automaticamente.
+
+Critérios locais nos cenários executados aprovados; CI não implementada, outro computador/validação humana/apresentação e aprovação individual exaustiva dos 88 critérios não verificadas. Não se declara entrega integral concluída. Alterações locais e issue #10 aberta, sem commit/push. Containers temporários da cópia parados/removidos sem apagar o volume; demonstração local atualizada com fontes verificadas, sem repetir seed ou migrations.
+
+
+## Registo Git do Exercício 9 — 19/11/2026
+
+O utilizador autorizou explicitamente commit e push. Divisão: refatoração SearchText; correção de formatação do progresso e regressão; documentação da revisão e preparação da entrega. Todos referenciam a issue #10, onde ficam os SHAs e a confirmação efetiva de publicação. As verificações são as executadas durante a revisão, sem nova execução por alterações documentais/Git. As pendências de CI, validação humana e apresentação mantêm-se.

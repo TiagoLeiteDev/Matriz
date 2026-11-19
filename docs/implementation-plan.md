@@ -1,3 +1,45 @@
+# Matriz — Plano de implementação e estado de entrega
+
+**Data:** 18/11/2026. **Estado atual:** MVP funcional implementado e verificado; revisão do Exercício 9 em curso. A tabela abaixo é a referência ativa. O plano inicial e a evolução por exercício estão preservados no histórico recolhido, sem os tratar como pendências atuais.
+
+## Decisões e estrutura atuais
+
+COL-01–07, SEG-01, TAR-01, PESQ-01/02, COM-01, PAINEL-01, ARQ-01 e TEC-01 refletem os requisitos aprovados. Stack: Java/Spring Boot/Spring Security/PostgreSQL/JPA/Flyway e React/TypeScript/Vite/CSS. JUnit/MockMvc/Testcontainers, Playwright, ESLint e Docker/Compose implementados. GitHub Actions planeado, mas sem workflow/execução.
+
+Backend modular em identity/projects/tasks/shared/bootstrap, frontend em features/auth/projects/tasks e api, contrato openapi.yaml e esquema V1/V2. Não existe frontend/src/components genérico: os componentes são organizados por funcionalidade. React compilado servido no Spring Boot; Vite com proxy no desenvolvimento.
+
+| Incremento | Estado e evidência |
+|---|---|
+| Planeamento, reconciliação e stack | Exercício 1 concluído documentalmente; decisões em requisitos/restrições. |
+| Estrutura, migrations, seed e configuração | Exercício 2 implementado; V1/V2 e seed explícito, sem reset no arranque. |
+| Acesso e autorização | Exercício 3 implementado; SEG-01 e testes com duas identidades. |
+| Projetos e primeiro fluxo vertical | Exercício 4 implementado; pesquisa PESQ-01, arquivo/restauro/cascata. |
+| Tarefas, filtros, associações e progresso | Exercício 5 implementado; TAR-01/PESQ-02/COL-06, validações e transações. |
+| Responsáveis e comentários | Exercício 6 implementado; COM-01, autoria/instante backend, múltiplos/elegibilidade. |
+| Frontend, colaboradores, painel e vistas | Exercício 7 implementado; COL-07/PAINEL-01 e layout desktop/móvel. |
+| Verificação consolidada | Exercício 8 concluído: nove cenários aprovados por automação; BUG-08-01 corrigido. Ver verification.md. |
+| Revisão e entrega local | Exercício 9 em curso: uma refatoração aprovada de pesquisa, correção de apresentação do progresso, cópia limpa isolada e revisão documental; ver delivery-review.md. |
+| CI | Não implementada/não cumprida a parte do plano que exigia pipeline e prova de falha/recuperação. Nenhum resultado de Actions inventado. |
+| Outro computador, validação manual humana e apresentação | Não verificados/concluídos por testes neste computador. |
+
+## Verificações e alterações da revisão
+
+Refatoração única aprovada: SearchText.fold partilhado por ProjectQueries/TaskQueries, mantendo exatamente NFD/remoção de marcas/Locale.ROOT. Passo isolado com 75 testes backend passados. Uma primeira edição incompleta foi recusada pela compilação e corrigida antes desses resultados; não contabilizar essa tentativa como teste passado.
+
+Correção pontual separada: formato português do progresso, após reprodução do critério CA-US-09-05 (API 33.3 correto; UI mostrava ponto em vez de vírgula). Sem alterar cálculo/contrato. Novo teste de entrega cobre 25%, 33,3%, 50%, 100%, exclusão de pessoal e transferência.
+
+Cópia limpa: clone remoto c9bcdcc em pasta ignorada, dependências por lockfiles e projeto Compose/portas/volume próprios; fontes da refatoração e correção sobrepostas explicitamente porque ainda não publicadas. Não confundir a árvore final local com um commit já no GitHub. Resultados reais no relatório, incluindo o que ficou por executar.
+
+## Entrega e Git
+
+Artefactos: frontend/backend/testes/dependências, Wrapper, Docker/Compose, V1/V2, seed, .env.example, README, AGENTS, OpenAPI, requisitos/histórias/modelo/arquitetura/UI, este plano, verification.md e registos de IA. Excluir .env, node_modules, target/dist, relatórios, clones e temporários.
+
+Repositório único, com issues por incremento. Exercício 9 na issue #10. Divisão em três commits autorizada em 19/11/2026; confirmação de publicação na issue #10. Entrega prevista 19/11/2026 às 17h, Lisboa; não declarar apresentação/CI concluídas pela revisão local.
+
+
+<details>
+<summary>Histórico preservado — plano inicial e evolução por exercício</summary>
+
 ﻿# Matriz — Plano de implementação colaborativa
 
 **Data:** 18/11/2026. **Estado:** Exercício 1 da ficha 03 concluído ao nível de análise e planeamento, com stack TEC-01 aprovada pelo utilizador. Incremento 1 (Exercício 2) implementado e verificado: estrutura, persistência, migrations, seed e arranque. Incremento 2 (Exercício 3) implementa acesso e consultas protegidas; Incremento 3 (Exercício 4) integra CRUD de projetos; Incremento 4 (Exercício 5) implementa tarefas, filtros e transferências; Exercício 6 implementa responsáveis/comentários; Exercício 7 integra colaboradores, painel e três vistas; verificação final/entrega ainda pendentes. Decisões específicas ainda abertas são verificadas antes do incremento dependente; não estão implicitamente aprovadas.
@@ -125,3 +167,5 @@ Frontend integrado com gestão de colaboradores COL-07, painel PAINEL-01, Lista/
 Verificação consolidada realizada: nove cenários automatizados aprovados, 75 testes backend, 24 cenários normais Playwright, três reinícios e uma expiração isolada passaram; lint/build passaram. Criados três testes relevantes de validação/autorização/criação com consulta posterior. BUG-08-01 identificado, diagnóstico apresentado antes de alterar a aplicação e correção limitada à navegação do detalhe de tarefa em projeto, com regressão. Dados originais conservados; backend/contrato/migrations preservados. Detalhe em verification.md.
 
 A auditoria funcional deste exercício está concluída localmente; isto não conclui CI, cópia limpa/noutro computador, apresentação/entrega ou verificações manuais humanas. Registo Git autorizado; confirmação de publicação/fecho na issue #9. Consultar o exercício seguinte da ficha antes de alargar o trabalho.
+
+</details>
