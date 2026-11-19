@@ -623,3 +623,17 @@ Execuções reais na instância isolada matriz-ficha04-e2e (app18083/BD55434): m
 npm.cmd --prefix frontend run lint → exit 0, sem erros/avisos ESLint. Zero ficheiros sinalizados pela procura dos padrões de chaves privadas/tokens GitHub/AWS no conjunto versionado; pesquisa limitada, sem afirmar ausência universal de segredos. Q01 confirmado por código e simulação Node de loop interrompido, sem falha induzida na BD; proposta pendente. R01 potencial Unicode por validar; M01 manutenção. Zero vulnerabilidades confirmadas nos cenários executados; não é garantia integral.
 
 SQL final conserva 2 utilizadores/2 projetos/3 tarefas/1 comentário/2 atribuições. Containers/rede isolados removidos por down sem -v, volume conservado. Sem nova execução backend/unitários/suite E2E completa/timeout/reinícios neste exercício. Novo teste e docs locais, produção/contrato/dependências inalterados; sem commit/push. README e plano atualizados; propostas aguardam revisão humana.
+
+
+## Ficha 04 — Correções Q01/R01/M01 aprovadas (19/11/2026)
+
+Utilizador aceitou as propostas e confirmou que R01 conserva a definição Unicode do backend, alinhando a interface. Q01: helper de cleanup recolhe falhas, continua por todos os IDs próprios, conserva erro original e reporta falha de limpeza. Três regressões isoladas passaram; hooks existentes de tarefas usam o helper. M01: método PATCH de TaskCrudTest reorganizado em AAA com tokens de operações/asserções idênticos. R01: TaskForm usa Unicode White_Space; backend intacto; schema Texto clarificado. Acrescentadas oito variantes unitárias e um E2E Unicode com rejeição local/POST válido/consulta posterior.
+
+Resultados reais: Maven -Dtest=TaskInputTest,TaskCrudTest test → 36 passaram, zero falhas/erros/ignorados (41,633 s); lint/build frontend passaram; OpenAPI válido e sete exemplos conformes. Import yaml inicial indisponível no runtime base; validação repetida com dependências locais já existentes em tmp/openapi-validation, sem instalação. Node confirmou equivalência schema/regex UI em 1 114 112 caracteres isolados; backend validado pelos testes, sem prova exaustiva entre motores.
+
+Compose isolado matriz-ficha04-e2e reconstruído; Playwright tests/cleanup.spec.ts tests/tasks.spec.ts tests/security-review.spec.ts → 9 passaram/1 reinício ignorado (13,2 s). Inclui regressões de tarefa/persistência/segurança; sem suite completa ou reinícios/expiração. Baseline SQL conservado: 2 utilizadores/2 projetos/3 tarefas/1 comentário/2 atribuições. down sem -v removeu containers/rede, volume conservado, instância principal inalterada. Detalhes/comandos/decisões em quality-security-review.md. Sem commit/push.
+
+
+## Fecho Git da Ficha 04 — 19/11/2026
+
+O utilizador autorizou os commits finais e o push para concluir a Ficha 04. Issues #11–15 acompanham plano/unitários/AAA/integração/E2E; #16 acompanha revisão e correções aprovadas do exercício 5, em dois commits. Os checkpoints anteriores sem commit/push são históricos. Os SHAs e a confirmação efetiva do remoto ficam nas issues após o push. Não foram repetidas suites apenas para o registo Git; conservam-se os resultados reais descritos acima. Exercícios obrigatórios concluídos; CI opcional na Ficha 04 fica para a Ficha 05. Uma alteração externa de uma linha vazia em Dockerfile foi preservada fora dos commits desta ficha.

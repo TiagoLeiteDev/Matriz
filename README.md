@@ -157,3 +157,6 @@ npm.cmd --prefix frontend run lint
 ```
 
 A porta 18083 refere-se à instância de ensaio; iniciar os serviços antes dos testes. O relatório documenta Q01/R01 e decisões pendentes; não confundir verificações dirigidas com auditoria integral.
+
+
+Regressões do exercício 5: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts` não necessita de aplicação/BD. Para UI Unicode e autorização, com a instância isolada pronta e ambiente configurado: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts tests/tasks.spec.ts tests/security-review.spec.ts`. O teste de reinício continua opt-in e fica ignorado no comando normal.

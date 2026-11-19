@@ -112,3 +112,8 @@ Organizações/equipas com gestão própria, convites, registo público, recuper
 ## COM-01 — Comentários (Exercício 6)
 
 Plano aprovado pelo utilizador: novos comentários têm conteúdo obrigatório de 1 a 2000 pontos de código Unicode, não apenas espaços. Autor e instante gerados pelo backend; só conteudo aceite no pedido. Sem truncar dados históricos nem limitar títulos/descrições. Ordem de consulta criadoEm/id ascendente; leitura autorizada de arquivadas, escrita bloqueada. Ver task-collaboration.md e OpenAPI 0.6.0.
+
+
+## Clarificação R01 — título e espaços Unicode (19/11/2026)
+
+Decisão humana: conservar a definição Unicode White_Space já usada pelo backend e alinhar a interface. Títulos apenas com estes espaços, incluindo U+0085, U+00A0 e U+2003, são inválidos. Um título com conteúdo fora desse conjunto é aceite e preservado sem trim; U+FEFF não integra White_Space e mantém o comportamento existente. Sem novos limites de comprimento. Contrato Texto explicitado para não depender da interpretação de \S do motor de regex. Ver quality-security-review.md para regressões e âmbito.

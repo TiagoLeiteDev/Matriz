@@ -118,3 +118,8 @@ T14 consolidado no cenário `E2E criação em projeto: login, lista persistente 
 ## Atualização — Exercício 5 (19/11/2026)
 
 Revisão em [quality-security-review.md](quality-security-review.md). Novo security-review.spec.ts complementa T08/F13/CA-US-16-01 com GET/PATCH/DELETE em ambas as direções, erros 403 e snapshots autorizados sem alterações; dois passes com fixtures novas. Cenário existente de IDs alheios/revogação (inclui pessoais de T09 e dependentes) repetido duas vezes com sucesso. Não se aprova automaticamente toda a matriz T08–T11; sem nova execução unitária/integração neste exercício. ESLint frontend sem findings. Q01: limpeza sequencial pode parar antes dos restantes IDs se ocorrer falha; correção proposta ainda não aprovada. R01: Unicode continua pendente, sem novas regras impostas. Limites e evidências no relatório.
+
+
+## Atualização — correções aprovadas do exercício 5
+
+Q01 resolvido no hook de tarefas com helper e três regressões de falha/continuidade/preservação de erro. R01: utilizador escolheu conservar o backend Unicode e alinhar UI; T01/T03 ampliados com cinco títulos só de espaços Unicode e três válidos (create/patch), incluindo U+0085 inválido e U+FEFF válido. Novo E2E confirma quatro títulos inválidos sem POST e dois válidos com persistência. Backend selecionado: 36 passaram; Playwright selecionado: 9 passaram/1 especial ignorado. M01 aplicado localmente sem alterar operações. Restantes estados/cenários não aprovados automaticamente. Evidências em quality-security-review.md e verification.md.

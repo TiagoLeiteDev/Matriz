@@ -72,4 +72,34 @@ class TaskInputTest {
         assertThat(input.hasState()).isTrue();
         assertThat(input.estado()).isEqualTo("DONE");
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"\u0085", "\u00a0", "\u2003", "\t\n", " \u0085\u00a0"})
+    void rejectsUnicodeWhitespaceOnlyInCreateAndPatch(String title) {
+        // Arrange — conservar a definição Unicode já usada pelo backend.
+        var body = mapper.createObjectNode().put("titulo", title);
+
+        // Act & Assert — criação e edição rejeitam títulos apenas com espaços Unicode.
+        assertThatThrownBy(() -> TaskInput.create(body))
+            .isInstanceOf(RequestValidationException.class).hasMessageStartingWith("titulo:");
+        assertThatThrownBy(() -> TaskInput.patch(body))
+            .isInstanceOf(RequestValidationException.class).hasMessageStartingWith("titulo:");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"\ufeff", " \u0085X ", "\u2003Tarefa\u00a0"})
+    void preservesUnicodeTitlesWithNonWhitespaceContent(String title) {
+        // Arrange — FEFF não é White_Space na regra existente do backend.
+        var body = mapper.createObjectNode().put("titulo", title);
+
+        // Act — validar criação e edição sem normalizar o conteúdo.
+        var created = TaskInput.create(body);
+        var patched = TaskInput.patch(body);
+
+        // Assert — aceitar conteúdo não branco e preservá-lo exatamente.
+        assertThat(created.titulo()).isEqualTo(title);
+        assertThat(patched.titulo()).isEqualTo(title);
+        assertThat(patched.hasTitle()).isTrue();
+    }
+
 }

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import path from 'node:path'
+import { collectCleanupFailures, cleanupError } from '../helpers/cleanup'
 
 const password = process.env.DEMO_PASSWORD
 if (!password) throw new Error('Configura DEMO_PASSWORD com a palavra-passe fictícia do seed.')
@@ -13,17 +14,25 @@ async function login(request: APIRequestContext, email = 'ana@example.test') {
   expect((await request.post('/api/sessao', { data: { email, palavraPasse: password }, headers: { 'X-CSRF-Token': token } })).status()).toBe(200)
 }
 async function csrf(request: APIRequestContext) { return { 'X-CSRF-Token': (await (await request.get('/api/sessao/csrf')).json()).token } }
-test.afterEach(async ({ request }) => {
+test.afterEach(async ({ request }, testInfo) => {
   if (!ids.length && !projects.length) return
-  await login(request)
-  // Only IDs created in this test. Never reset the seed or the persistent volume.
-  for (const id of ids) {
-    expect([204, 404]).toContain((await request.delete(`/api/tarefas/${id}`, { headers: await csrf(request) })).status())
-    expect((await request.get(`/api/tarefas/${id}`)).status()).toBe(404)
-  }
-  for (const id of projects) {
-    expect([204, 404]).toContain((await request.delete(`/api/projetos/${id}`, { headers: await csrf(request) })).status())
-    expect((await request.get(`/api/projetos/${id}`)).status()).toBe(404)
+  // Cleanup — tentar todas as fixtures próprias; nunca repor o seed/volume.
+  const failures = await collectCleanupFailures([
+    { name: 'Autenticação da limpeza', run: async () => { await login(request) } },
+    ...ids.map(id => ({ name: `Tarefa ${id}`, run: async () => {
+      expect([204, 404]).toContain((await request.delete(`/api/tarefas/${id}`, { headers: await csrf(request) })).status())
+      expect((await request.get(`/api/tarefas/${id}`)).status()).toBe(404)
+    } })),
+    ...projects.map(id => ({ name: `Projeto ${id}`, run: async () => {
+      expect([204, 404]).toContain((await request.delete(`/api/projetos/${id}`, { headers: await csrf(request) })).status())
+      expect((await request.get(`/api/projetos/${id}`)).status()).toBe(404)
+    } })),
+  ])
+  if (failures.length) {
+    // Sem credenciais, tokens ou corpos de pedidos no anexo.
+    await testInfo.attach('cleanup-failures', { body: failures.map(failure => failure.name).join('\n'), contentType: 'text/plain' })
+    const error = cleanupError(failures, testInfo.errors.length > 0)
+    if (error) throw error
   }
 })
 async function enter(page: Page, email = 'ana@example.test', navigate = true) {
@@ -301,4 +310,43 @@ test('tarefas mantêm os campos após reinício e novo login @task-restart', asy
 
   // Assert — verificar o resultado.
   expect(stored.estado).toBe('IN_PROGRESS'); expect(stored.prioridade).toBe('HIGH'); expect(stored.prazo).toBe('2026-11-19')
+})
+
+
+test('título Unicode segue o backend: espaços rejeitados e conteúdo válido conservado', async ({ page }) => {
+  // Arrange — formulário real e observação de pedidos, sem mocks de validação.
+  await enter(page)
+  let posts = 0
+  page.on('request', request => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/tarefas') posts++
+  })
+  await page.getByRole('button', { name: 'Nova tarefa', exact: true }).click()
+  for (const title of ['\u0085', '\u00a0', '\u2003', ' \u0085\u00a0']) {
+    // Act — tentar submeter apenas espaços Unicode.
+    await page.getByLabel('Título da tarefa').fill(title)
+    await page.getByRole('button', { name: 'Guardar tarefa', exact: true }).click()
+
+    // Assert — erro local e nenhum pedido de criação.
+    await expect(page.getByRole('alert')).toContainText('Indica um título')
+    expect(posts).toBe(0)
+  }
+  for (const title of ['\ufeff', `\u0085Tarefa Unicode ${Date.now()}`]) {
+    // Arrange — FEFF e título misto, aceites pela regra Unicode do backend.
+    await page.getByLabel('Título da tarefa').fill(title)
+
+    // Act — submeter e consultar os dados realmente persistidos.
+    const created = await save(page, true)
+    const stored = await page.request.get(`/api/tarefas/${created.id}`)
+
+    // Assert — backend aceita e preserva o texto enviado pela UI.
+    expect(created.titulo).toBe(title)
+    expect(stored.status()).toBe(200)
+    expect((await stored.json()).titulo).toBe(title)
+    await expect(page.getByRole('status').filter({ hasText: /^Tarefa criada\.$/ })).toBeVisible()
+
+    // Arrange — preparar a próxima criação sem perder os IDs de limpeza.
+    await page.getByRole('button', { name: 'Nova tarefa', exact: true }).click()
+  }
+  // Assert — apenas os dois títulos válidos produziram criações.
+  expect(posts).toBe(2)
 })

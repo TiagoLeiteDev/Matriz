@@ -75,3 +75,19 @@ O utilizador autorizou a criação de issues e commits em 19/11/2026. Registo re
 Plano apresentado: diff dos cinco commits da Ficha 04 e revisão dirigida dos componentes de autenticação/autorização, ESLint, cenários de IDs alheios em Compose isolado. Decisão da IA: reutilizar cenário de revogação e acrescentar teste complementar de snapshots/erros nas duas direções; não inventar vulnerabilidade a partir de 403/404, SQL com nomes internos de tabelas ou cookie local HTTP. Nenhuma ferramenta instalada ou produção alterada.
 
 Resultado: dois cenários Playwright repetidos duas vezes, todos passaram; ESLint exit0; procura limitada por padrões de segredos sem ficheiros sinalizados. Q01 fragilidade de cleanup confirmada por código/simulação, R01 ambiguidade Unicode potencial, M01 manutenção. Correções não aplicadas; revisão humana do relatório ainda pendente. Baseline isolado conservado, containers/rede removidos sem apagar volume. Detalhes/comandos/limites em quality-security-review.md e verification.md; novo security-review.spec.ts com AAA. Sem commit/push.
+
+
+## Correções aprovadas após revisão (19/11/2026)
+
+Utilizador: "aceito as correções propostas". A IA pediu definição concreta para R01 enquanto avançava com Q01/M01; utilizador confirmou "Conservar a definição Unicode do backend e alinhar a interface". Esta resposta autoriza o comportamento aplicado, sem inventar um máximo/mínimo de texto.
+
+Q01: helper usado pelo hook real tenta todos os recursos e agrega falhas, com preservação do erro original; três regressões passaram. R01: UI alinhada com White_Space do backend, schema clarificado, oito variantes unitárias e E2E Unicode acrescentados. Backend de produção inalterado. M01: método de edição reorganizado e tokens comparados com a versão anterior, sem mudar operações.
+
+Verificações reais: 36 testes backend passaram, lint/build passaram, OpenAPI validado com dependências locais após import yaml inicial falhado; schema/UI equivalentes em todos os caracteres isolados no Node. Playwright selecionado 9 passaram/1 reinício ignorado; ambiente Compose isolado, baseline conservado, containers/rede removidos sem apagar volume. Sem novas execuções integrais ou publicação/commit. Resultados/limites completos nos relatórios. Convenção AAA respeitada.
+
+Conferência final: surgiu uma alteração externa de uma linha vazia no início de Dockerfile durante o trabalho; não foi criada nem revertida por esta correção, e foi preservada. Diff e links documentais verificados sem erros.
+
+
+## Fecho Git da Ficha 04 — 19/11/2026
+
+O utilizador autorizou os commits finais e o push para concluir a Ficha 04. Issues #11–15 acompanham plano/unitários/AAA/integração/E2E; #16 acompanha revisão e correções aprovadas do exercício 5, em dois commits. Os checkpoints anteriores sem commit/push são históricos. Os SHAs e a confirmação efetiva do remoto ficam nas issues após o push. Não foram repetidas suites apenas para o registo Git; conservam-se os resultados reais descritos acima. Exercícios obrigatórios concluídos; CI opcional na Ficha 04 fica para a Ficha 05. Uma alteração externa de uma linha vazia em Dockerfile foi preservada fora dos commits desta ficha.

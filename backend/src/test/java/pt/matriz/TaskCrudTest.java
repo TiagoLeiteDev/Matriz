@@ -177,14 +177,16 @@ class TaskCrudTest {
         assertThat(mapper.readTree(r.getResponse().getContentAsString()).get("prazo").asText()).isEqualTo("2020-01-01");
     }
     @Test void patchPreservesOmittedFieldsAndClearsOnlyOptionalOnes() throws Exception {
-        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+        // Arrange — autenticar e criar a tarefa de referência.
+        var ana = login("ana@example.test");
+        UUID id = id(create(ana,"{\"titulo\":\"Inicial\",\"descricao\":\"Conservar\",\"prazo\":\"2026-11-19\"}",201));
 
-        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
-        var ana=login("ana@example.test");UUID id=id(create(ana,"{\"titulo\":\"Inicial\",\"descricao\":\"Conservar\",\"prazo\":\"2026-11-19\"}",201));
+        // Act & Assert — editar pela API e verificar o código HTTP no helper.
         var changed=mapper.readTree(update(ana,id,"{\"estado\":\"IN_PROGRESS\"}",200).getResponse().getContentAsString());
 
         // Assert — verificar o resultado.
-        assertThat(changed.get("titulo").asText()).isEqualTo("Inicial");assertThat(changed.get("descricao").asText()).isEqualTo("Conservar");
+        assertThat(changed.get("titulo").asText()).isEqualTo("Inicial");
+        assertThat(changed.get("descricao").asText()).isEqualTo("Conservar");
 
         // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var cleared=mapper.readTree(update(ana,id,"{\"descricao\":null,\"prioridade\":null,\"prazo\":null}",200).getResponse().getContentAsString());

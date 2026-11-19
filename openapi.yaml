@@ -888,7 +888,9 @@ components:
     Texto:
       type: string
       minLength: 1
-      pattern: \S
+      pattern: '[^\u0009-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]'
+      description: Exige conteúdo fora de Unicode White_Space, como o backend. Não normaliza
+        o texto; U+0085 é espaço, U+FEFF não é. Clarificação R01 aprovada; sem novos limites.
     TextoOpcional:
       type:
       - string

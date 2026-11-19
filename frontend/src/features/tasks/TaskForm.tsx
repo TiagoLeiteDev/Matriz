@@ -21,7 +21,7 @@ export default function TaskForm({ task, projects, defaultProject, userId, onSav
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     if (inFlight.current) return
-    if (!title.trim()) { setError('Indica um título que não seja vazio ou apenas espaços.'); return }
+    if (!/\P{White_Space}/u.test(title)) { setError('Indica um título que não seja vazio ou apenas espaços.'); return }
     inFlight.current = true; setBusy(true); setError('')
     try {
       onSaved(await mutate<Task | null>(task ? `/tarefas/${task.id}` : '/tarefas', task ? 'PATCH' : 'POST', {

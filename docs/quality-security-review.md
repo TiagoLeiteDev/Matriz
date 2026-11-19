@@ -1,7 +1,7 @@
 # Matriz — Code Review e Security Review
 
 **Ficha 04, exercício 5 · 19/11/2026 · branch main · base revista 3b03d15.**
-**Estado nesta etapa:** revisão inicial documentada; correções apresentadas para validação humana, aplicadas no passo seguinte. Sem commit/push no momento da análise.
+**Estado atual:** correções aprovadas e executadas; ver secção final. Diagnóstico e resultados iniciais preservados como histórico. Alterações ainda locais, sem commit/push.
 
 ## Resumo e âmbito
 
@@ -95,3 +95,34 @@ Existem no repositório unitários TaskInputTest, integração TaskCrudTest e E2
 Decisões da revisão: rejeitar inferência de que 403/404 diferentes, concatenação de nomes internos de tabelas ou ausência de cookie Secure no HTTP local sejam, por si, IDOR/SQL injection/falha confirmada de produção. Não confundir falta de reprodução com prova de ausência de vulnerabilidades. Não aplicar Q01/R01/M01 automaticamente. A validação humana deste relatório/propostas **ainda não ocorreu**.
 
 Pendências: decidir Q01 e reproduzir/clarificar R01 se priorizado. Não houve correção de produção e, portanto, não há regressão de uma correção a declarar aprovada. Novo teste cobre o controlo de acesso observado, não corrige a aplicação. Não foram executadas nesta revisão a suite backend integral, unitários, todos os E2E, reinícios/expiração, carga, outros browsers, pentest externo ou auditoria completa de dependências/concurrency. A ausência de vulnerabilidade demonstrada aplica-se apenas às verificações descritas. Exercício 5 tem revisão/testes/relatório preparados, com decisões humanas pendentes explícitas.
+
+
+## Correções aprovadas — 19/11/2026
+
+**Decisão humana:** "aceito as correções propostas". R01 clarificada em resposta específica: "Conservar a definição Unicode do backend e alinhar a interface". O diagnóstico inicial acima é histórico; os estados atuais são os desta secção. Sem novo requisito de comprimento ou normalização de texto.
+
+| Ponto | Alteração aplicada | Estado atual |
+|---|---|---|
+| Q01 | e2e/helpers/cleanup.ts recolhe falhas e tenta todos os passos sequencialmente; afterEach de tasks.spec.ts tenta autenticação, tarefas e projetos, anexa apenas nomes de fixtures quando falha e só lança AggregateError se não existir falha original | Corrigido no hook revisto; outros hooks não foram generalizados nesta correção limitada |
+| R01 | TaskForm.tsx usa conteúdo fora de Unicode White_Space, em vez de trim. Backend inalterado. Schema Texto do OpenAPI explicitado com o conjunto Unicode, evitando semântica de \S dependente do motor | Clarificado e alinhado para o título de tarefas; não se afirma revisão de todos os formulários |
+| M01 | Separadas autenticação/criação, instruções e asserções em TaskCrudTest.patchPreservesOmittedFieldsAndClearsOnlyOptionalOnes; comentários AAA corrigidos | Melhoria localizada aplicada, sem refatoração geral; comparação de tokens confirmou operações/asserções preservadas |
+
+### Regressões e verificações reais
+
+- **cleanup.spec.ts:** três testes sem serviços: primeira limpeza falha e as seguintes continuam; caminho sem falhas; falha original do teste não é substituída. Usa o mesmo helper do hook real. Não provoca falhas destrutivas na aplicação. Execução isolada inicial: 3 passaram, 782 ms.
+- **TaskInputTest:** cinco variantes Unicode inválidas e três válidas acrescentadas à cobertura, tanto create como patch. U+0085/U+00A0/U+2003 apenas espaços são rejeitados; FEFF não é White_Space na definição existente e continua aceite. Conteúdo misto preservado sem trim. Total classe: 19 testes.
+- **tasks.spec.ts:** novo cenário UI rejeita quatro títulos só de espaços Unicode sem POST e cria dois títulos válidos (FEFF e conteúdo misto), confirmando API e conservação do texto. Hooks reais limpam os IDs. Restantes cenários do ficheiro preservados.
+- `./backend/mvnw.cmd -f backend/pom.xml '-Dtest=TaskInputTest,TaskCrudTest' test` → **BUILD SUCCESS, 36 testes, 0 falhas/erros/ignorados**, 41,633 s (19 unitários + 17 integração PostgreSQL Testcontainers).
+- `npm.cmd --prefix frontend run lint` e `npm.cmd --prefix frontend run build` → passaram. Imagem da app isolada reconstruída com sucesso, serviços healthy.
+- Ambiente de execução como no exercício 4: APP_PORT=18083, DB_PORT=55434, APP_ALLOWED_ORIGINS=http://127.0.0.1:18083, MATRIZ_BASE_URL igual, PLAYWRIGHT_CHANNEL=chrome. `docker compose -p matriz-ficha04-e2e build app` e `up -d db app --wait`; seed não repetido, volume existente conservado.
+- `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts tests/tasks.spec.ts tests/security-review.spec.ts` → **9 passaram, 1 ignorado**, 13,2 s. Ignorado apenas o reinício opt-in; não aprovado por esta execução. Inclui a regressão de segurança com duas identidades.
+- OpenAPI 3.1 validado com OpenAPIV31SpecValidator e sete exemplos do schema Texto com Draft202012Validator. Primeira tentativa de importar yaml falhou no runtime base; reutilizado tmp/openapi-validation já existente, sem instalar dependências. Validação final passou.
+- Comparação Node do padrão explícito do schema com a regex UI nos 1 114 112 pontos de código possíveis: equivalentes para caracteres isolados. Isto não constitui prova exaustiva de equivalência entre versões Unicode de Java/JS; o backend foi exercitado pelos exemplos unitários e pela UI/API real.
+- SQL final na instância isolada: 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário, 2 atribuições. Containers/rede removidos com down sem -v; volume conservado. App principal não reconstruída/reiniciada neste pedido.
+
+Não foram alteradas as regras/implementação do backend ou migrations. A clarificação do schema Texto também descreve os nomes de projeto que já usam a mesma regra no backend; o formulário de projetos não foi alterado e equivalência Unicode de todos os formulários não foi certificada. Não houve novas execuções da suite backend completa, todos os E2E ou especiais. Q01/R01 não são agora decisões pendentes neste âmbito; novas extensões continuam fora dele. Alterações locais sem commit/push. Relatórios anteriores preservados, sem transformar resultados históricos em novas execuções.
+
+
+## Fecho Git da Ficha 04 — 19/11/2026
+
+O utilizador autorizou os commits finais e o push para concluir a Ficha 04. Issues #11–15 acompanham plano/unitários/AAA/integração/E2E; #16 acompanha revisão e correções aprovadas do exercício 5, em dois commits. Os checkpoints anteriores sem commit/push são históricos. Os SHAs e a confirmação efetiva do remoto ficam nas issues após o push. Não foram repetidas suites apenas para o registo Git; conservam-se os resultados reais descritos acima. Exercícios obrigatórios concluídos; CI opcional na Ficha 04 fica para a Ficha 05. Uma alteração externa de uma linha vazia em Dockerfile foi preservada fora dos commits desta ficha.
