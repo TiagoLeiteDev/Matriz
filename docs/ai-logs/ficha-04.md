@@ -32,3 +32,12 @@ Apenas inspeção documental/estática e verificação de diff/formato. Nenhum t
 **Decisão da IA:** manter asserções centradas no título e no campo da exceção; não exigir mensagem integral, códigos HTTP ou persistência num teste unitário. Omissão de PATCH não é equivalente a null explícito. A fronteira escolhida é um carácter não branco, pois não existe máximo aprovado. Defaults de T02 continuam fora destas novas asserções. Nenhum resultado foi corrigido artificialmente nem regra alterada para obter sucesso.
 
 **Execução real:** ./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskInputTest test → BUILD SUCCESS, 11 aprovados, 0 falhas, 0 erros, 0 ignorados. Não houve correção após execução; sem defeito identificado na regra selecionada. Relatórios locais Surefire, comando e limitações em [verification.md](../verification.md). Integração/E2E não executados neste exercício. Sem commit/push.
+
+
+## Pedido adicional — Organização AAA (19/11/2026)
+
+O utilizador pediu organizar os testes existentes em Arrange, Act e Assert, com comentários, e aplicar a convenção no futuro. Plano apresentado: comentários/blocos sem mudar cenários/asserções, com ciclos AAA adicionais nos percursos e Act & Assert nos pedidos/helpers e exceções que combinam as fases.
+
+Aplicado nos 10 ficheiros de testes Java e 7 Playwright; convenção persistida em AGENTS.md. Comparação com a cópia anterior confirmou instruções/ordem/asserções preservadas, excluindo apenas comentários adicionados e linhas vazias. Não houve alteração de produção.
+
+Execuções reais: Maven verify → 86 aprovados/0 falhas/0 erros/0 ignorados; Playwright → 25 aprovados/4 especiais ignorados. Primeira tentativa de E2E bloqueada pela rede do sandbox, interrompida e repetida com permissão; execução final passou. Resultados, comandos e avisos em verification.md. Sem commit/push.

@@ -78,6 +78,9 @@ class SecurityTest {
     }
 
     @Test void realServletContainerUsesApprovedTimeoutAndCookieOnlySessions() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Assert — verificar o resultado.
         assertThat(server.getServletContext().getSessionTimeout()).isEqualTo(60);
         assertThat(server.getServletContext().getEffectiveSessionTrackingModes())
             .containsExactly(jakarta.servlet.SessionTrackingMode.COOKIE);
@@ -86,21 +89,29 @@ class SecurityTest {
     }
 
     @Test void loginRotatesSessionErasesCredentialsAndReturnsOnlyProfile() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         Prepared prepared = prepare();
         String old = prepared.session().getId();
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/sessao").session(prepared.session()).header("X-CSRF-Token", prepared.token())
             .contentType("application/json").content("{\"email\":\"ana@example.test\",\"palavraPasse\":\"" + PASSWORD + "\"}"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(ANA.toString()))
             .andExpect(jsonPath("$.password_hash").doesNotExist()).andExpect(jsonPath("$.palavraPasse").doesNotExist());
+
+        // Assert — verificar o resultado.
         assertThat(prepared.session().getId()).isNotEqualTo(old);
         SecurityContext context = (SecurityContext) prepared.session().getAttribute(SPRING_SECURITY_CONTEXT_KEY);
         assertThat(context.getAuthentication().getCredentials()).isNull();
         assertThat(((AccountPrincipal) context.getAuthentication().getPrincipal()).getPassword()).isNull();
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/sessao").session(prepared.session())).andExpect(status().isOk())
             .andExpect(jsonPath("$.nome").value("Ana Demo")).andExpect(jsonPath("$.email").value("ana@example.test"));
     }
 
     @Test void wrongPasswordAndUnknownAccountHaveSameGenericResponse() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         String previous = null;
         for (String email : new String[]{"ana@example.test", "unknown@example.test"}) {
             Prepared p = prepare();
@@ -116,26 +127,43 @@ class SecurityTest {
     }
 
     @Test void csrfIsRequiredForLoginAndCannotBeBorrowedFromAnotherSession() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         Prepared a = prepare(), b = prepare();
         String body = "{\"email\":\"ana@example.test\",\"palavraPasse\":\"" + PASSWORD + "\"}";
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(post("/api/sessao").session(a.session()).contentType("application/json").content(body)).andExpect(status().isForbidden());
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/sessao").session(b.session()).header("X-CSRF-Token", a.token())
             .contentType("application/json").content(body)).andExpect(status().isForbidden());
     }
 
     @Test void logoutRejectsOldCsrfAndRevokesSession() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         Prepared p = prepare();
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/sessao").session(p.session()).header("X-CSRF-Token", p.token())
             .contentType("application/json").content("{\"email\":\"ana@example.test\",\"palavraPasse\":\"" + PASSWORD + "\"}"))
             .andExpect(status().isOk());
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(delete("/api/sessao").session(p.session()).header("X-CSRF-Token", p.token())).andExpect(status().isForbidden());
+
+        // Act — executar a operação em teste.
         mvc.perform(delete("/api/sessao").session(p.session()).header("X-CSRF-Token", token(p.session())))
             .andExpect(status().isNoContent()).andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Max-Age=0")));
+
+        // Assert — verificar o resultado.
         assertThat(p.session().isInvalid()).isTrue();
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/sessao")).andExpect(status().isUnauthorized());
     }
 
     @Test void missingOrUnknownSessionCannotReadAnyProtectedResource() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         for (String path : new String[]{"/api/sessao", "/api/projetos/" + PROJETO_ANA,
                 "/api/tarefas/" + TAREFA_PARTILHADA, "/api/tarefas/" + TAREFA_PARTILHADA + "/comentarios",
                 "/api/tarefas/" + TAREFA_PARTILHADA + "/responsaveis"}) {
@@ -146,16 +174,23 @@ class SecurityTest {
     }
 
     @Test void identitiesHaveDifferentAccessAndPersonalTasksArePrivate() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana = login("ana@example.test"); var bruno = login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/projetos/" + PROJETO_ANA).session(ana)).andExpect(status().isOk());
         mvc.perform(get("/api/projetos/" + PROJETO_ANA).session(bruno)).andExpect(status().isOk());
         mvc.perform(get("/api/projetos/" + PROJETO_BRUNO).session(ana)).andExpect(status().isForbidden());
         mvc.perform(get("/api/projetos/" + PROJETO_BRUNO).session(bruno)).andExpect(status().isOk());
+
+        // Arrange — preparar o próximo cenário/dados.
         for (String suffix : new String[]{"", "/comentarios", "/responsaveis"}) {
             mvc.perform(get("/api/tarefas/" + TAREFA_PESSOAL + suffix).session(bruno)).andExpect(status().isForbidden());
             mvc.perform(get("/api/tarefas/" + TAREFA_PESSOAL + suffix).session(ana)).andExpect(status().isOk());
             mvc.perform(get("/api/tarefas/" + TAREFA_PRIVADA + suffix).session(ana)).andExpect(status().isForbidden());
         }
+
+        // Act — executar a operação em teste.
         mvc.perform(get("/api/tarefas/" + TAREFA_PARTILHADA + "/comentarios").session(bruno))
             .andExpect(status().isOk()).andExpect(jsonPath("$[0].autor.id").value(BRUNO.toString()));
         mvc.perform(get("/api/tarefas/" + TAREFA_PARTILHADA + "/responsaveis").session(ana))
@@ -163,9 +198,14 @@ class SecurityTest {
     }
 
     @Test void revokedMembershipAndHistoricalAssignmentDoNotGrantAccess() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno = login("bruno@example.test");
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("DELETE FROM colaboracao_projeto WHERE projeto_id = ? AND utilizador_id = ?", PROJETO_ANA, BRUNO);
         jdbc.update("UPDATE tarefa SET criador_id = ? WHERE id = ?", BRUNO, TAREFA_PARTILHADA);
+
+        // Arrange — preparar o próximo cenário/dados.
         for (String path : new String[]{"/api/projetos/" + PROJETO_ANA, "/api/tarefas/" + TAREFA_PARTILHADA,
             "/api/tarefas/" + TAREFA_PARTILHADA + "/comentarios", "/api/tarefas/" + TAREFA_PARTILHADA + "/responsaveis"}) {
             mvc.perform(get(path).session(bruno)).andExpect(status().isForbidden());
@@ -173,6 +213,7 @@ class SecurityTest {
     }
 
     @Test void ownershipArchiveAndEligibilityAreCheckedFromAuthenticatedActor() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno = login("bruno@example.test");
         var context = (SecurityContext) bruno.getAttribute(SPRING_SECURITY_CONTEXT_KEY);
         SecurityContextHolder.setContext(context);
@@ -194,21 +235,33 @@ class SecurityTest {
     }
 
     @Test void identityInjectionAndInvalidRequestDataAreRejected() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         Prepared p = prepare();
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/sessao").session(p.session()).header("X-CSRF-Token", p.token()).contentType("application/json")
             .content("{\"email\":\"ana@example.test\",\"palavraPasse\":\"" + PASSWORD + "\",\"proprietarioId\":\"" + BRUNO + "\"}"))
             .andExpect(status().isBadRequest());
         mvc.perform(post("/api/sessao").session(p.session()).header("X-CSRF-Token", p.token()).contentType("application/json")
             .content("{\"email\":\"invalid\",\"palavraPasse\":\" \"}")).andExpect(status().isUnprocessableEntity());
+
+        // Arrange — preparar o próximo cenário/dados.
         var ana = login("ana@example.test");
+
+        // Act — executar a operação em teste.
         mvc.perform(get("/api/sessao").session(ana).param("utilizadorId", BRUNO.toString()))
             .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(ANA.toString()));
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/projetos/not-a-uuid").session(ana)).andExpect(status().isBadRequest());
         mvc.perform(get("/api/projetos/" + UUID.randomUUID()).session(ana)).andExpect(status().isNotFound());
     }
 
     @Test void hostileOriginIsRejectedEvenWithCorrectCsrf() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         Prepared p = prepare();
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/sessao").session(p.session()).header("X-CSRF-Token", p.token())
             .header("Origin", "https://attacker.example").contentType("application/json")
             .content("{\"email\":\"ana@example.test\",\"palavraPasse\":\"" + PASSWORD + "\"}"))
@@ -216,7 +269,10 @@ class SecurityTest {
     }
 
     @Test void authenticatedUsersStillCannotCallUnimplementedWrites() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var session = login("ana@example.test");
+
+        // Act — executar a operação em teste.
         mvc.perform(delete("/api/tarefas/" + TAREFA_PARTILHADA + "/comentarios/00000000-0000-4000-8000-000000000031").session(session).header("X-CSRF-Token", token(session))
             .contentType("application/json").content("{\"email\":\"outra@example.test\"}"))
             .andExpect(status().isForbidden());

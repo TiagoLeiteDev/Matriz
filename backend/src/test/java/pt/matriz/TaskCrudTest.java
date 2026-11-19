@@ -60,16 +60,23 @@ class TaskCrudTest {
     int count(String table) { return jdbc.queryForObject("SELECT count(*) FROM "+table,Integer.class); }
 
     @Test void createDefaultsIdentityAndPersistenceInNewSession() throws Exception {
+        // Arrange — preparar o cenário.
         var ana=login("ana@example.test");
+        // Act & Assert
         var result=create(ana,"{\"titulo\":\"X\",\"projetoId\":\""+PROJETO_ANA+"\"}",201); UUID id=id(result);
+        // Assert
         assertThat(result.getResponse().getHeader("Location")).isEqualTo("/api/tarefas/"+id);
         var again=login("ana@example.test");
+        // Act & Assert
         mvc.perform(get("/api/tarefas/"+id).session(again.session())).andExpect(status().isOk())
             .andExpect(jsonPath("$.criadorId").value(ANA.toString())).andExpect(jsonPath("$.estado").value("TODO"))
             .andExpect(jsonPath("$.prioridade").value("MEDIUM")).andExpect(jsonPath("$.titulo").value("X"));
     }
     @Test void personalTaskHasOptionalNullPriorityAndIsPrivate() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         UUID id=id(create(ana,"{\"titulo\":\"Pessoal\",\"prioridade\":null}",201));
         mvc.perform(get("/api/tarefas/"+id).session(ana.session())).andExpect(status().isOk())
             .andExpect(jsonPath("$.projetoId").isEmpty()).andExpect(jsonPath("$.prioridade").isEmpty());
@@ -78,31 +85,53 @@ class TaskCrudTest {
         mvc.perform(delete("/api/tarefas/"+id).session(bruno.session()).header("X-CSRF-Token",bruno.token())).andExpect(status().isForbidden());
     }
     @Test void badFieldsEnumsDatesAndForgedIdentityDoNotWrite() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
         for(String body:List.of("{}","{\"titulo\":\"   \"}","{\"titulo\":null}","{\"titulo\":12}",
             "{\"titulo\":\"X\",\"descricao\":false}","{\"titulo\":\"X\",\"estado\":\"Em Curso\"}",
             "{\"titulo\":\"X\",\"estado\":null}","{\"titulo\":\"X\",\"prioridade\":\"Crítica\"}",
             "{\"titulo\":\"X\",\"prioridade\":\"\"}","{\"titulo\":\"X\",\"prazo\":\"2026-02-30\"}",
             "{\"titulo\":\"X\",\"projetoId\":\"invalid\"}")) create(ana,body,422);
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         create(ana,"{\"titulo\":\"X\",\"criadorId\":\""+BRUNO+"\"}",400);
+
+        // Assert — verificar o resultado.
         assertThat(count("tarefa")).isEqualTo(3);
     }
     @Test void validLongTextAndPastDeadlinesAreNotRestrictedByTeachingExamples() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var r=create(ana,mapper.writeValueAsString(Map.of("titulo","T".repeat(201),"descricao","D".repeat(3001),"prazo","2020-01-01")),201);
+
+        // Assert — verificar o resultado.
         assertThat(mapper.readTree(r.getResponse().getContentAsString()).get("prazo").asText()).isEqualTo("2020-01-01");
     }
     @Test void patchPreservesOmittedFieldsAndClearsOnlyOptionalOnes() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");UUID id=id(create(ana,"{\"titulo\":\"Inicial\",\"descricao\":\"Conservar\",\"prazo\":\"2026-11-19\"}",201));
         var changed=mapper.readTree(update(ana,id,"{\"estado\":\"IN_PROGRESS\"}",200).getResponse().getContentAsString());
+
+        // Assert — verificar o resultado.
         assertThat(changed.get("titulo").asText()).isEqualTo("Inicial");assertThat(changed.get("descricao").asText()).isEqualTo("Conservar");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var cleared=mapper.readTree(update(ana,id,"{\"descricao\":null,\"prioridade\":null,\"prazo\":null}",200).getResponse().getContentAsString());
+
+        // Assert — verificar os resultados.
         for(String field:List.of("descricao","prioridade","prazo"))assertThat(cleared.get(field).isNull()).isTrue();
         assertThat(cleared.get("criadorId").asText()).isEqualTo(ANA.toString());
+
+        // Act & Assert — executar o percurso/pedido e verificar o resultado.
         for(String body:List.of("{}","{\"titulo\":null}","{\"estado\":null}","{\"titulo\":\" \"}","{\"estado\":\"INVALID\"}"))update(ana,id,body,422);
         update(ana,id,"{\"criadorId\":\""+BRUNO+"\"}",400);
     }
     @Test void everyStateTransitionAndReopeningUpdateProjectProgress() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
         for(String from:List.of("TODO","IN_PROGRESS","DONE"))for(String to:List.of("TODO","IN_PROGRESS","DONE")){
             update(ana,TAREFA_PARTILHADA,"{\"estado\":\""+from+"\"}",200);
@@ -112,7 +141,10 @@ class TaskCrudTest {
         }
     }
     @Test void listStartsFromAuthorizedSetAndNeverUsesAssignmentsAsAccess() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
         mvc.perform(get("/api/tarefas").session(bruno.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
         mvc.perform(get("/api/tarefas").session(ana.session()).param("projetoId",PROJETO_BRUNO.toString())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
@@ -121,61 +153,100 @@ class TaskCrudTest {
         mvc.perform(get("/api/tarefas").session(bruno.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
     }
     @Test void filtersIntersectAndSearchIgnoresCaseAccentsWithLiteralWildcards() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         UUID target=id(create(ana,"{\"titulo\":\"Preparar apresentação 100%\",\"projetoId\":\""+PROJETO_ANA+"\",\"estado\":\"IN_PROGRESS\",\"prioridade\":\"HIGH\",\"prazo\":\"2026-11-19\"}",201));
         create(ana,"{\"titulo\":\"Preparar apresentação\",\"projetoId\":\""+PROJETO_ANA+"\",\"estado\":\"IN_PROGRESS\",\"prioridade\":\"LOW\",\"prazo\":\"2026-11-19\"}",201);
+
+        // Act — executar a operação em teste.
         mvc.perform(get("/api/tarefas").session(ana.session()).param("q","APRESENTACAO").param("projetoId",PROJETO_ANA.toString())
             .param("estado","IN_PROGRESS").param("prioridade","HIGH").param("prazoDe","2026-11-19").param("prazoAte","2026-11-19"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(target.toString()));
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas").session(ana.session()).param("q","%")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
         create(ana,"{\"titulo\":\"Sem prioridade\",\"prioridade\":null}",201);
+
+        // Act — executar a operação em teste.
         mvc.perform(get("/api/tarefas").session(ana.session()).param("semProjeto","true").param("semPrioridade","true"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
     }
     @Test void malformedOrConflictingFiltersAre400() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
         for(var pair:List.of(Map.entry("estado","Por Fazer"),Map.entry("prioridade","Crítica"),Map.entry("semProjeto","yes"),Map.entry("semPrioridade","1"),Map.entry("projetoId","invalid"),Map.entry("prazoDe","2026-02-30"))){
             mvc.perform(get("/api/tarefas").session(ana.session()).param(pair.getKey(),pair.getValue())).andExpect(status().isBadRequest());
         }
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas").session(ana.session()).param("semProjeto","true").param("projetoId",PROJETO_ANA.toString())).andExpect(status().isBadRequest());
         mvc.perform(get("/api/tarefas").session(ana.session()).param("semPrioridade","true").param("prioridade","HIGH")).andExpect(status().isBadRequest());
         mvc.perform(get("/api/tarefas").session(ana.session()).param("prazoDe","2026-11-20").param("prazoAte","2026-11-19")).andExpect(status().isBadRequest());
     }
     @Test void creationRequiresExistingAccessibleActiveProject() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         create(ana,"{\"titulo\":\"X\",\"projetoId\":\""+UUID.randomUUID()+"\"}",404);
         create(ana,"{\"titulo\":\"X\",\"projetoId\":\""+PROJETO_BRUNO+"\"}",403);
         jdbc.update("UPDATE projeto SET arquivado=true WHERE id=?",PROJETO_ANA);
         create(ana,"{\"titulo\":\"X\",\"projetoId\":\""+PROJETO_ANA+"\"}",409);
+
+        // Assert — verificar o resultado.
         assertThat(count("tarefa")).isEqualTo(3);
     }
     @Test void archiveBlocksAllWritesButKeepsReadAndData() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");jdbc.update("UPDATE projeto SET arquivado=true WHERE id=?",PROJETO_ANA);
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA).session(ana.session())).andExpect(status().isOk());
         for(String body:List.of("{\"titulo\":\"Alterar\"}","{\"estado\":\"DONE\"}","{\"prioridade\":\"HIGH\"}","{\"projetoId\":null}"))update(ana,TAREFA_PARTILHADA,body,409);
         update(ana,TAREFA_PESSOAL,"{\"projetoId\":\""+PROJETO_ANA+"\"}",409);
         mvc.perform(delete("/api/tarefas/"+TAREFA_PARTILHADA).session(ana.session()).header("X-CSRF-Token",ana.token())).andExpect(status().isConflict());
+
+        // Assert — verificar o resultado.
         assertThat(count("tarefa")).isEqualTo(3);assertThat(count("comentario")).isEqualTo(1);assertThat(count("atribuicao_tarefa")).isEqualTo(2);
     }
     @Test void transferCleansOnlyIneligibleAssignmentsAndPreservesCreatorAndComments() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var body=mapper.readTree(update(bruno,TAREFA_PARTILHADA,"{\"projetoId\":\""+PROJETO_BRUNO+"\"}",200).getResponse().getContentAsString());
+
+        // Assert — verificar o resultado.
         assertThat(body.get("criadorId").asText()).isEqualTo(ANA.toString());
         assertThat(jdbc.queryForObject("SELECT utilizador_id FROM atribuicao_tarefa WHERE tarefa_id=?",UUID.class,TAREFA_PARTILHADA)).isEqualTo(BRUNO);
         assertThat(count("comentario")).isEqualTo(1);
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA).session(ana.session())).andExpect(status().isForbidden());
     }
     @Test void desassociationMayRevokeActorAndReturnsJsonNullInsteadOfEmptyResponse() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var result=update(bruno,TAREFA_PARTILHADA,"{\"projetoId\":null}",200);
+
+        // Assert — verificar o resultado.
         assertThat(result.getResponse().getContentAsString()).isEqualTo("null");
         assertThat(result.getResponse().getContentType()).startsWith("application/json");
         assertThat(jdbc.queryForObject("SELECT utilizador_id FROM atribuicao_tarefa WHERE tarefa_id=?",UUID.class,TAREFA_PARTILHADA)).isEqualTo(ANA);
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA).session(bruno.session())).andExpect(status().isForbidden());
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA).session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.projetoId").isEmpty());
+
+        // Assert — verificar o resultado.
         assertThat(count("comentario")).isEqualTo(1);
     }
     @Test void failedAssignmentCleanupRollsBackTransfer() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");
         jdbc.execute("CREATE FUNCTION fail_assignment_delete() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'forced failure'; END; $$");
         jdbc.execute("CREATE TRIGGER fail_assignment BEFORE DELETE ON atribuicao_tarefa FOR EACH ROW EXECUTE FUNCTION fail_assignment_delete()");
@@ -186,13 +257,21 @@ class TaskCrudTest {
         }finally{jdbc.execute("DROP TRIGGER fail_assignment ON atribuicao_tarefa");jdbc.execute("DROP FUNCTION fail_assignment_delete()");}
     }
     @Test void deleteByCollaboratorCascadesOnlyTaskDependents() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(delete("/api/tarefas/"+TAREFA_PARTILHADA).session(bruno.session()).header("X-CSRF-Token",bruno.token())).andExpect(status().isNoContent());
+
+        // Assert — verificar o resultado.
         assertThat(count("tarefa")).isEqualTo(2);assertThat(count("comentario")).isZero();assertThat(count("atribuicao_tarefa")).isZero();
         assertThat(count("projeto")).isEqualTo(2);assertThat(count("utilizador")).isEqualTo(2);assertThat(count("colaboracao_projeto")).isEqualTo(1);
     }
     @Test void csrfAuthenticationAndMissingReferencesRemainEnforced() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(post("/api/tarefas").session(ana.session()).contentType("application/json").content("{\"titulo\":\"X\"}")).andExpect(status().isForbidden());
         mvc.perform(patch("/api/tarefas/"+TAREFA_PESSOAL).session(ana.session()).contentType("application/json").content("{\"estado\":\"DONE\"}")).andExpect(status().isForbidden());
         mvc.perform(delete("/api/tarefas/"+TAREFA_PESSOAL).session(ana.session())).andExpect(status().isForbidden());

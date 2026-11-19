@@ -27,24 +27,38 @@ test.afterEach(async ({ request }) => {
 })
 
 test('verificação: pedidos inválidos não alteram dados confirmados nem criam dependentes', async ({ request }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   const { task } = await fixture(request)
   for (const data of [{ titulo: '' }, { titulo: '\u2003\u00a0' }, { titulo: null }, { titulo: true },
     { estado: 'Em Revisão' }, { prioridade: 'Crítica' }, { prazo: '2026-02-30' }, { projetoId: 'invalid' }]) {
     expect((await request.patch(`/api/tarefas/${task.id}`, { headers: await csrf(request), data })).status()).toBe(422)
     expect(await (await request.get(`/api/tarefas/${task.id}`)).json()).toEqual(task)
   }
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect((await request.patch(`/api/tarefas/${task.id}`, { headers: await csrf(request), data: { criadorId: task.criadorId } })).status()).toBe(400)
+
+  // Arrange — preparar o próximo cenário/dados.
   for (const conteudo of ['', ' \n\t', 'x'.repeat(2001)])
     expect((await request.post(`/api/tarefas/${task.id}/comentarios`, { headers: await csrf(request), data: { conteudo } })).status()).toBe(422)
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect((await request.post(`/api/tarefas/${task.id}/responsaveis`, { headers: await csrf(request), data: { utilizadorId: 'invalid' } })).status()).toBe(422)
   expect(await (await request.get(`/api/tarefas/${task.id}/comentarios`)).json()).toEqual([])
   expect(await (await request.get(`/api/tarefas/${task.id}/responsaveis`)).json()).toEqual([])
 })
 
 test('verificação: IDs alheios e sessão revogada não permitem ler ou escrever recursos', async ({ request, playwright }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   const { project, task } = await fixture(request)
+
+  // Act — executar a operação em teste.
   const saved = await request.post('/api/tarefas', { headers: await csrf(request), data: { titulo: 'Pessoal da verificação' } })
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect(saved.status()).toBe(201); const own = await saved.json(); personal.push(own.id)
+
+  // Arrange — preparar o próximo cenário/dados.
   const other = await playwright.request.newContext({ baseURL })
   try {
     const bruno = await login(other, 'bruno@example.test')
@@ -80,46 +94,97 @@ test('verificação: IDs alheios e sessão revogada não permitem ler ou escreve
 })
 
 test('verificação: criação na interface é consultável com os mesmos dados numa sessão independente', async ({ page, request, playwright }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   await page.goto('/')
   await page.getByLabel('Email', { exact: true }).fill('ana@example.test'); await page.getByLabel('Palavra-passe').fill(password!)
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
   await page.getByRole('button', { name: 'Projetos', exact: true }).click()
   await page.getByRole('button', { name: 'Criar projeto', exact: true }).click()
+
+  // Arrange — preparar o próximo cenário/dados.
   let name = `Persistência consolidada ${Date.now()}`
   await page.getByLabel('Nome do projeto').fill(name)
   const created = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/api/projetos'))
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Guardar projeto', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   const projectResponse = await created; expect(projectResponse.status()).toBe(201); const project = await projectResponse.json(); projects.push(project.id)
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Nova tarefa', exact: true }).click()
   await page.getByLabel('Título da tarefa').fill('Tarefa persistida noutra sessão')
   await page.getByLabel('Descrição da tarefa (opcional)').fill('Dados reais conservados')
   await page.getByLabel('Prioridade da tarefa').selectOption('HIGH')
   await page.getByLabel('Prazo da tarefa (opcional)').fill('2026-11-19')
+
+  // Arrange — preparar o próximo cenário/dados.
   const taskSaved = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/api/tarefas'))
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Guardar tarefa', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   const taskResponse = await taskSaved; expect(taskResponse.status()).toBe(201); const task = await taskResponse.json()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: task.titulo, exact: true }).click()
+
+  // Assert — verificar o resultado.
   expect(new URL(page.url()).hash).toBe(`#projetos/${project.id}/tarefas/${task.id}`)
+
+  // Arrange — preparar o próximo cenário/dados.
   const assignees = page.getByRole('region', { name: 'Responsáveis da tarefa', exact: true })
   await assignees.getByLabel('Utilizador elegível').selectOption({ label: 'Ana Demo (ana@example.test)' })
+
+  // Act — executar a operação em teste.
   await assignees.getByRole('button', { name: 'Associar responsável' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(assignees.getByRole('button', { name: 'Remover responsável Ana Demo', exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   const comments = page.getByRole('region', { name: 'Comentários da tarefa', exact: true })
   await comments.getByLabel('Conteúdo do comentário').fill('Persistência verificada')
+
+  // Act — executar a operação em teste.
   await comments.getByRole('button', { name: 'Adicionar comentário', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
   await page.reload(); await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Lista de tarefas', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('button', { name: task.titulo, exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   await page.goBack()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Editar projeto', exact: true }).click()
   name += ' revisto'
   await page.getByLabel('Nome do projeto').fill(name)
   await page.getByRole('button', { name: 'Guardar projeto', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: task.titulo, exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   const fresh = await playwright.request.newContext({ baseURL })
   try {
     const profile = await login(fresh)

@@ -66,36 +66,57 @@ class ProjectCollaborationTest {
         mvc.perform(delete("/api/projetos/"+project+"/colaboradores/"+user).session(c.session()).header("X-CSRF-Token",c.token())).andExpect(status().is(expected));
     }
     @Test void ownerAddsExistingUserAndCannotDuplicateOrAddOwner()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");var ana=login("ana@example.test");
         var r=add(bruno,PROJETO_BRUNO,"ana@example.test",201);
+
+        // Assert — verificar o resultado.
         assertThat(r.getResponse().getHeader("Location")).isEqualTo("/api/projetos/"+PROJETO_BRUNO+"/colaboradores/"+ANA);
         add(bruno,PROJETO_BRUNO,"ana@example.test",409);add(bruno,PROJETO_BRUNO,"bruno@example.test",409);add(bruno,PROJETO_BRUNO,"absent@example.test",404);
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/projetos/"+PROJETO_BRUNO).session(ana.session())).andExpect(status().isOk());
         add(ana,PROJETO_BRUNO,"ana@example.test",403);remove(ana,PROJETO_BRUNO,ANA,403);
         mvc.perform(get("/api/projetos/"+PROJETO_BRUNO+"/colaboradores").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].passwordHash").doesNotExist());
     }
     @Test void removalRevokesSessionAccessAndCleansAssignmentsButKeepsAuthorship()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");remove(ana,PROJETO_ANA,BRUNO,204);
+
+        // Assert — verificar o resultado.
         assertThat(count("atribuicao_tarefa")).isEqualTo(1);assertThat(count("comentario")).isEqualTo(1);assertThat(count("utilizador")).isEqualTo(2);
         assertThat(jdbc.queryForObject("SELECT autor_id FROM comentario",UUID.class)).isEqualTo(BRUNO);
+
+        // Act & Assert — executar o percurso/pedido e verificar o resultado.
         for(String path:List.of("/api/projetos/"+PROJETO_ANA,"/api/tarefas/"+TAREFA_PARTILHADA,"/api/tarefas/"+TAREFA_PARTILHADA+"/comentarios"))mvc.perform(get(path).session(bruno.session())).andExpect(status().isForbidden());
         remove(ana,PROJETO_ANA,BRUNO,404);remove(ana,PROJETO_ANA,ANA,409);
     }
     @Test void ownerCanManageArchivedCollaborationButTaskWritesRemainBlocked()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");jdbc.update("UPDATE projeto SET arquivado=true WHERE id=?",PROJETO_ANA);
         remove(ana,PROJETO_ANA,BRUNO,204);add(ana,PROJETO_ANA,"bruno@example.test",201);
         mvc.perform(get("/api/projetos/"+PROJETO_ANA+"/colaboradores").session(ana.session())).andExpect(status().isOk());
         update(ana,TAREFA_PARTILHADA,"{\"estado\":\"DONE\"}",409);
     }
     @Test void failureInCleanupRollsBackMembershipAndAssignments()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");jdbc.execute("CREATE FUNCTION reject_member_cleanup() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test'; END $$");
         jdbc.execute("CREATE TRIGGER reject_member_cleanup BEFORE DELETE ON atribuicao_tarefa FOR EACH ROW EXECUTE FUNCTION reject_member_cleanup()");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         try{remove(ana,PROJETO_ANA,BRUNO,500);assertThat(count("colaboracao_projeto")).isEqualTo(1);assertThat(count("atribuicao_tarefa")).isEqualTo(2);}
         finally{jdbc.execute("DROP TRIGGER reject_member_cleanup ON atribuicao_tarefa");jdbc.execute("DROP FUNCTION reject_member_cleanup()");}
     }
     @Test void strictValidationAccessCsrfAndUnknownProject()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
         add(ana,PROJETO_BRUNO,"ana@example.test",403);add(ana,UUID.randomUUID(),"ana@example.test",404);add(ana,PROJETO_ANA,"   ",422);add(ana,PROJETO_ANA,"bad",422);
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/projetos/"+PROJETO_ANA+"/colaboradores")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/projetos/"+PROJETO_ANA+"/colaboradores").session(ana.session()).contentType("application/json").content("{}")).andExpect(status().isForbidden());
         mvc.perform(post("/api/projetos/"+PROJETO_ANA+"/colaboradores").session(ana.session()).header("X-CSRF-Token",ana.token()).contentType("application/json").content("{\"email\":\"bruno@example.test\",\"proprietarioId\":\""+ANA+"\"}")).andExpect(status().isBadRequest());

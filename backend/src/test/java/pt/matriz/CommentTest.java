@@ -64,56 +64,92 @@ class CommentTest {
             .contentType("application/json").content(mapper.writeValueAsString(Map.of("conteudo",content)))).andExpect(status().is(expected)).andReturn();
     }
     @Test void authorDateContentAndNewSessionPersistence() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");var before=java.time.Instant.now();
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var result=comment(bruno,TAREFA_PARTILHADA,"  Informação\nregistada  ",201);
+
+        // Arrange — preparar o próximo cenário/dados.
         var body=mapper.readTree(result.getResponse().getContentAsString());UUID id=UUID.fromString(body.get("id").asText());
+
+        // Assert — verificar o resultado.
         assertThat(result.getResponse().getHeader("Location")).isEqualTo("/api/tarefas/"+TAREFA_PARTILHADA+"/comentarios/"+id);
         assertThat(body.get("autor").get("id").asText()).isEqualTo(BRUNO.toString());assertThat(body.get("autor").has("passwordHash")).isFalse();
         assertThat(java.time.Instant.parse(body.get("criadoEm").asText())).isBetween(before.minusMillis(1),java.time.Instant.now());
         assertThat(jdbc.queryForObject("SELECT conteudo FROM comentario WHERE id=?",String.class,id)).isEqualTo("  Informação\nregistada  ");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var fresh=login("ana@example.test");mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/comentarios").session(fresh.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
     }
     @Test void boundariesIncludingSupplementaryUnicode() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");String emoji=new String(Character.toChars(0x1F600));
+
+        // Act & Assert — executar o percurso/pedido e verificar o resultado.
         for(String text:List.of("X","a".repeat(2000),emoji.repeat(2000)))comment(ana,TAREFA_PESSOAL,text,201);
         comment(ana,TAREFA_PESSOAL,"a".repeat(2001),422);comment(ana,TAREFA_PESSOAL,emoji.repeat(2001),422);
+
+        // Assert — verificar o resultado.
         assertThat(jdbc.queryForObject("SELECT count(*) FROM comentario WHERE tarefa_id=?",Integer.class,TAREFA_PESSOAL)).isEqualTo(3);
     }
     @Test void invalidAndForgedContentIsRejected() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
+
+        // Act & Assert — executar o percurso/pedido e verificar o resultado.
         for(Object text:List.of("","  ","\t\r\n","\u00a0\u2003",true,5))comment(ana,TAREFA_PESSOAL,text,422);
         for(String body:List.of("{}","{\"conteudo\":null}"))mvc.perform(post("/api/tarefas/"+TAREFA_PESSOAL+"/comentarios").session(ana.session()).header("X-CSRF-Token",ana.token()).contentType("application/json").content(body)).andExpect(status().isUnprocessableEntity());
         for(String field:List.of("autorId","criadoEm","id"))mvc.perform(post("/api/tarefas/"+TAREFA_PESSOAL+"/comentarios").session(ana.session()).header("X-CSRF-Token",ana.token()).contentType("application/json").content(mapper.writeValueAsString(Map.of("conteudo","Texto",field,BRUNO.toString())))).andExpect(status().isBadRequest());
+
+        // Assert — verificar o resultado.
         assertThat(count("comentario")).isEqualTo(1);
     }
     @Test void personalForeignAndRevokedAccess() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         comment(ana,TAREFA_PESSOAL,"Privado",201);comment(bruno,TAREFA_PESSOAL,"Intrusão",403);comment(ana,TAREFA_PRIVADA,"Intrusão",403);comment(ana,UUID.randomUUID(),"Texto",404);
         mvc.perform(get("/api/tarefas/"+TAREFA_PESSOAL+"/comentarios").session(bruno.session())).andExpect(status().isForbidden());
         jdbc.update("DELETE FROM colaboracao_projeto WHERE projeto_id=? AND utilizador_id=?",PROJETO_ANA,BRUNO);
         comment(bruno,TAREFA_PARTILHADA,"Revogado",403);mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/comentarios").session(bruno.session())).andExpect(status().isForbidden());
     }
     @Test void archivedReadOnly() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");jdbc.update("UPDATE projeto SET arquivado=true WHERE id=?",PROJETO_ANA);
         comment(ana,TAREFA_PARTILHADA,"Novo",409);mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/comentarios").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
     }
     @Test void orderBreaksTiesAndLegacyLongContentRemainsReadable() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");UUID low=UUID.fromString("00000000-0000-4000-8000-000000000101"),high=UUID.fromString("00000000-0000-4000-8000-000000000102");
         var instant=java.sql.Timestamp.from(java.time.Instant.parse("2026-11-18T10:00:00Z"));
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         for(UUID id:List.of(high,low))jdbc.update("INSERT INTO comentario(id,conteudo,tarefa_id,autor_id,criado_em) VALUES(?,?,?,?,?)",id,"Antigo",TAREFA_PESSOAL,ANA,instant);
         UUID legacy=UUID.randomUUID();jdbc.update("INSERT INTO comentario(id,conteudo,tarefa_id,autor_id,criado_em) VALUES(?,?,?,?,?)",legacy,"a".repeat(2001),TAREFA_PESSOAL,BRUNO,java.sql.Timestamp.from(java.time.Instant.parse("2026-11-18T11:00:00Z")));
         mvc.perform(get("/api/tarefas/"+TAREFA_PESSOAL+"/comentarios").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(low.toString())).andExpect(jsonPath("$[1].id").value(high.toString())).andExpect(jsonPath("$[2].conteudo").value("a".repeat(2001)));
     }
     @Test void csrfAndMalformedPath() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(post("/api/tarefas/"+TAREFA_PESSOAL+"/comentarios").session(ana.session()).contentType("application/json").content("{\"conteudo\":\"X\"}")).andExpect(status().isForbidden());
         mvc.perform(get("/api/tarefas/"+TAREFA_PESSOAL+"/comentarios")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/tarefas/bad/comentarios").session(ana.session()).header("X-CSRF-Token",ana.token()).contentType("application/json").content("{\"conteudo\":\"X\"}")).andExpect(status().isBadRequest());
+
+        // Assert — verificar o resultado.
         assertThat(count("comentario")).isEqualTo(1);
     }
     @Test void insertFailureRollsBackAndDoesNotLeakDatabaseDetails() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");jdbc.execute("CREATE FUNCTION reject_comment() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Test failure'; END $$");
         jdbc.execute("CREATE TRIGGER reject_comment BEFORE INSERT ON comentario FOR EACH ROW EXECUTE FUNCTION reject_comment()");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         try {var result=comment(ana,TAREFA_PESSOAL,"Não gravado",500);assertThat(result.getResponse().getContentAsString()).doesNotContain("Test failure","INSERT","reject_comment");assertThat(count("comentario")).isEqualTo(1);}
         finally {jdbc.execute("DROP TRIGGER reject_comment ON comentario");jdbc.execute("DROP FUNCTION reject_comment()");}
     }

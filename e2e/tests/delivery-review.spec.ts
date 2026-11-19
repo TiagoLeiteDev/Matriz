@@ -24,26 +24,43 @@ test.afterEach(async ({ request }) => {
   for (const id of personal) expect([204, 404]).toContain((await request.delete(`/api/tarefas/${id}`, { headers: await csrf(request) })).status())
 })
 test('revisão de entrega: progresso exato, fração em português, pessoais e transferência', async ({ page, request }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   await login(request)
   const project = await createProject(request, `Revisão de progresso ${Date.now()}`)
   const done = await task(request, project.id, 'DONE')
   const pending = []
   for (let i = 0; i < 3; i++) pending.push(await task(request, project.id, 'TODO'))
   await task(request, null, 'DONE')
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect((await (await request.get(`/api/projetos/${project.id}`)).json()).progresso.percentagem).toBe(25)
+
+  // Arrange — preparar o próximo cenário/dados.
   await page.goto(`/#projetos/${project.id}`)
   await page.getByLabel('Email', { exact: true }).fill('ana@example.test'); await page.getByLabel('Palavra-passe').fill(password!)
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByText('25% (1/4)', { exact: true })).toBeVisible()
   expect((await request.delete(`/api/tarefas/${pending[0].id}`, { headers: await csrf(request) })).status()).toBe(204)
   expect((await (await request.get(`/api/projetos/${project.id}`)).json()).progresso.percentagem).toBe(33.3)
+
+  // Act — executar a operação em teste.
   await page.reload()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByText('33,3% (1/3)', { exact: true })).toBeVisible()
   expect((await request.delete(`/api/tarefas/${pending[1].id}`, { headers: await csrf(request) })).status()).toBe(204)
   await page.reload(); await expect(page.getByText('50% (1/2)', { exact: true })).toBeVisible()
   expect((await request.delete(`/api/tarefas/${pending[2].id}`, { headers: await csrf(request) })).status()).toBe(204)
   await page.reload(); await expect(page.getByText('100% (1/1)', { exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   const destination = await createProject(request, 'Destino de progresso')
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect((await request.patch(`/api/tarefas/${done.id}`, { headers: await csrf(request), data: { projetoId: destination.id } })).status()).toBe(200)
   expect((await (await request.get(`/api/projetos/${project.id}`)).json()).progresso.percentagem).toBe(0)
   expect((await (await request.get(`/api/projetos/${destination.id}`)).json()).progresso.percentagem).toBe(100)

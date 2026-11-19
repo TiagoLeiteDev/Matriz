@@ -69,67 +69,119 @@ class AssignmentTest {
             .andExpect(status().is(expected));
     }
     @Test void eligibleListsAreAuthorizedAndPersonalOnlyCreator() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act — executar a operação em teste.
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/utilizadores-elegiveis").session(bruno.session()))
             .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2)).andExpect(jsonPath("$[0].passwordHash").doesNotExist());
         mvc.perform(get("/api/tarefas/"+TAREFA_PESSOAL+"/utilizadores-elegiveis").session(ana.session()))
             .andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(ANA.toString()));
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas/"+TAREFA_PESSOAL+"/utilizadores-elegiveis").session(bruno.session())).andExpect(status().isForbidden());
         mvc.perform(get("/api/tarefas/"+TAREFA_PRIVADA+"/utilizadores-elegiveis").session(ana.session())).andExpect(status().isForbidden());
     }
     @Test void multipleAssignmentsPersistAndRemovalOnlyDeletesOnePair() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("DELETE FROM atribuicao_tarefa WHERE tarefa_id=?",TAREFA_PARTILHADA);
+
+        // Arrange — preparar o próximo cenário/dados.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var result=assign(bruno,TAREFA_PARTILHADA,ANA,201);
+
+        // Assert — verificar o resultado.
         assertThat(result.getResponse().getHeader("Location")).isEqualTo("/api/tarefas/"+TAREFA_PARTILHADA+"/responsaveis/"+ANA);
         assertThat(mapper.readTree(result.getResponse().getContentAsString()).get("utilizador").get("id").asText()).isEqualTo(ANA.toString());
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         assign(ana,TAREFA_PARTILHADA,BRUNO,201);assign(ana,TAREFA_PARTILHADA,BRUNO,409);
+
+        // Arrange — preparar o próximo cenário/dados.
         var fresh=login("ana@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/responsaveis").session(fresh.session())).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(2));
         remove(bruno,TAREFA_PARTILHADA,ANA,204);remove(bruno,TAREFA_PARTILHADA,ANA,404);
+
+        // Assert — verificar o resultado.
         assertThat(count("atribuicao_tarefa")).isEqualTo(1);assertThat(count("utilizador")).isEqualTo(2);assertThat(count("tarefa")).isEqualTo(3);
     }
     @Test void personalOnlyCreatorEligibleAndNonexistentUserRejected() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         assign(ana,TAREFA_PESSOAL,ANA,201);assign(ana,TAREFA_PESSOAL,BRUNO,403);
         assign(ana,TAREFA_PESSOAL,UUID.randomUUID(),404);assign(bruno,TAREFA_PESSOAL,BRUNO,403);
         remove(bruno,TAREFA_PESSOAL,ANA,403);assign(ana,TAREFA_PRIVADA,ANA,403);
         assign(ana,UUID.randomUUID(),ANA,404);
     }
     @Test void unrelatedExistingAccountIsNotEligibleAndAssignmentNeverGrantsAccess() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         UUID outsider=UUID.randomUUID();
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("INSERT INTO utilizador(id,nome,email,password_hash) VALUES (?, 'Outra', 'outra@example.test', ?)",outsider,encoder.encode(PASSWORD));
         var ana=login("ana@example.test");assign(ana,TAREFA_PARTILHADA,outsider,403);
+
+        // Arrange — preparar o próximo cenário/dados.
         var other=login("outra@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/responsaveis").session(other.session())).andExpect(status().isForbidden());
+
+        // Assert — verificar o resultado.
         assertThat(count("atribuicao_tarefa")).isEqualTo(2);
     }
     @Test void archivedTaskAllowsReadsButBlocksBothWrites() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");jdbc.update("UPDATE projeto SET arquivado=true WHERE id=?",PROJETO_ANA);
         assign(ana,TAREFA_PARTILHADA,ANA,409);remove(ana,TAREFA_PARTILHADA,ANA,409);
+
+        // Arrange — preparar o próximo cenário/dados.
         for(String suffix:List.of("responsaveis","utilizadores-elegiveis"))
             mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/"+suffix).session(ana.session())).andExpect(status().isOk());
+
+        // Assert — verificar o resultado.
         assertThat(count("atribuicao_tarefa")).isEqualTo(2);
     }
     @Test void strictBodyRejectsMalformedAndForgedIdentity() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");
         for(String body:List.of("{}","{\"utilizadorId\":null}","{\"utilizadorId\":3}","{\"utilizadorId\":\"bad\"}"))
             mvc.perform(post("/api/tarefas/"+TAREFA_PESSOAL+"/responsaveis").session(ana.session()).header("X-CSRF-Token",ana.token())
                 .contentType("application/json").content(body)).andExpect(status().isUnprocessableEntity());
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/tarefas/"+TAREFA_PESSOAL+"/responsaveis").session(ana.session()).header("X-CSRF-Token",ana.token())
             .contentType("application/json").content("{\"utilizadorId\":\""+ANA+"\",\"autorId\":\""+BRUNO+"\"}")).andExpect(status().isBadRequest());
     }
     @Test void csrfUnauthenticatedAndRevokedMembershipAreRejected() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/utilizadores-elegiveis")).andExpect(status().isUnauthorized());
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/tarefas/"+TAREFA_PARTILHADA+"/responsaveis").session(bruno.session()).contentType("application/json")
             .content("{\"utilizadorId\":\""+ANA+"\"}")).andExpect(status().isForbidden());
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(delete("/api/tarefas/"+TAREFA_PARTILHADA+"/responsaveis/"+ANA).session(bruno.session())).andExpect(status().isForbidden());
         jdbc.update("DELETE FROM colaboracao_projeto WHERE projeto_id=? AND utilizador_id=?",PROJETO_ANA,BRUNO);
         assign(bruno,TAREFA_PARTILHADA,ANA,403);remove(bruno,TAREFA_PARTILHADA,ANA,403);
         mvc.perform(get("/api/tarefas/"+TAREFA_PARTILHADA+"/utilizadores-elegiveis").session(bruno.session())).andExpect(status().isForbidden());
     }
     @Test void concurrentDuplicateRequestsReturn201And409OnlyOneRow() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var first=login("ana@example.test");var second=login("ana@example.test");
         var ready=new java.util.concurrent.CountDownLatch(2);var start=new java.util.concurrent.CountDownLatch(1);
         try(var pool=java.util.concurrent.Executors.newFixedThreadPool(2)) {
@@ -140,6 +192,8 @@ class AssignmentTest {
             var x=pool.submit(a);var y=pool.submit(b);assertThat(ready.await(5,java.util.concurrent.TimeUnit.SECONDS)).isTrue();start.countDown();
             assertThat(List.of(x.get(15,java.util.concurrent.TimeUnit.SECONDS),y.get(15,java.util.concurrent.TimeUnit.SECONDS))).containsExactlyInAnyOrder(201,409);
         }
+
+        // Assert — verificar o resultado.
         assertThat(jdbc.queryForObject("SELECT count(*) FROM atribuicao_tarefa WHERE tarefa_id=?",Integer.class,TAREFA_PESSOAL)).isEqualTo(1);
     }
 }

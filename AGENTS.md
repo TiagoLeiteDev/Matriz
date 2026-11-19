@@ -72,3 +72,7 @@ E2E limpa só IDs próprios; TRUNCATE/triggers destrutivos apenas em PostgreSQL 
 Antes de entrega: comparar OpenAPI/controladores, rever segredos/gerados/.gitignore, links, diff e execução de cópia limpa isolada. Relatórios ficam fora do Git, resumos reais em verification.md. Histórico de resultados não substitui execução da árvore alterada. Uma cópia limpa no mesmo computador não equivale a teste noutro computador; automação não equivale a teste manual humano. Não declarar os 88 critérios individualmente aprovados sem evidência específica.
 
 Apresentar alterações, pressupostos, verificações/resultados, riscos/limites e ações pendentes. Propor commits com mensagens claras; não os executar sem autorização.
+
+## Organização dos testes — AAA
+
+Sempre que aplicável, organizar testes novos e alterados em Arrange, Act e Assert, com comentários explícitos `// Arrange`, `// Act` e `// Assert`. Separar preparação, execução e verificação em blocos legíveis. Em testes de exceções, cadeias MockMvc ou helpers que verificam a resposta, usar `// Act & Assert` quando os passos forem indissociáveis. Em percursos de integração/E2E com vários passos, identificar cada ciclo e a preparação adicional; manter limpeza em finally/afterEach e fixtures nos hooks. Não reordenar operações nem alterar asserções apenas para forçar três blocos.

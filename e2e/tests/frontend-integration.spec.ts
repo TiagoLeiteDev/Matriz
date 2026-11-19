@@ -30,34 +30,56 @@ test.afterEach(async ({ request }) => {
   for (const id of tasks) expect([204, 404]).toContain((await request.delete(`/api/tarefas/${id}`, { headers: await headers(request) })).status())
 })
 test('painel inicial e contagens seguem criações/edições/arquivo com navegação real', async ({ page, request }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   const p = await project(request)
   const t = await task(request, { titulo: `Painel ${Date.now()}`, projetoId: p.id })
   await task(request, { titulo: 'Pessoal no painel', estado: 'DONE' })
   await enter(page)
   const region = page.getByRole('region', { name: 'Painel inicial', exact: true })
   const before = await (await request.get('/api/painel?incluirIndependentes=true')).json()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   for (const state of ['TODO', 'IN_PROGRESS', 'DONE']) await expect(region.getByTestId(`count-${state}`)).toHaveText(String(before.contagens[state]))
+
+  // Act — executar a operação em teste.
   await region.getByRole('link', { name: p.nome, exact: true }).click()
   await page.getByRole('button', { name: t.titulo, exact: true }).click()
   await page.getByRole('button', { name: 'Editar tarefa', exact: true }).click()
   await page.getByLabel('Estado da tarefa').selectOption('DONE')
   await page.getByRole('button', { name: 'Guardar tarefa', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('status').filter({ hasText: /^Tarefa atualizada\.$/ })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Painel', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(region.getByTestId('count-TODO')).toHaveText(String(before.contagens.TODO - 1))
   await expect(region.getByTestId('count-DONE')).toHaveText(String(before.contagens.DONE + 1))
   expect((await request.patch(`/api/projetos/${p.id}`, { headers: await headers(request), data: { arquivado: true } })).status()).toBe(200)
+
+  // Act — executar a operação em teste.
   await region.getByRole('button', { name: 'Atualizar painel' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(region.getByRole('link', { name: p.nome, exact: true })).toHaveCount(0)
   await expect(region.getByTestId('count-DONE')).toHaveText(String(before.contagens.DONE))
 })
 test('colaboradores: partilhar, remover em arquivo, revogar atribuições e conservar comentários', async ({ page, request, browser }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   const p = await project(request); const t = await task(request, { titulo: 'Tarefa partilhável', projetoId: p.id })
   await enter(page, `#projetos/${p.id}`)
   const members = page.getByRole('region', { name: 'Colaboradores do projeto', exact: true })
   await members.getByLabel('Email do colaborador').fill('bruno@example.test')
+
+  // Act — executar a operação em teste.
   await members.getByRole('button', { name: 'Adicionar colaborador' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(members.getByRole('button', { name: 'Remover colaborador Bruno Demo', exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   const context = await browser.newContext({ baseURL: process.env.MATRIZ_BASE_URL || 'http://127.0.0.1:8080' })
   try {
     const other = await context.newPage(); await enter(other, `#projetos/${p.id}`, 'bruno@example.test')
@@ -79,39 +101,78 @@ test('colaboradores: partilhar, remover em arquivo, revogar atribuições e cons
   } finally { await context.close() }
 })
 test('vistas mantêm filtros, estado e prazo; layout utilizável a 360px', async ({ page, request }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   const p = await project(request)
   const noDate = await task(request, { titulo: 'Sem prazo próprio', projetoId: p.id, prioridade: 'LOW' })
   const due = await task(request, { titulo: 'Prazo próprio', projetoId: p.id, estado: 'IN_PROGRESS', prioridade: 'HIGH', prazo: '2026-11-19' })
   await task(request, { titulo: 'Dezembro próprio', projetoId: p.id, estado: 'DONE', prioridade: 'HIGH', prazo: '2026-12-01' })
   await enter(page, '#tarefas')
   await page.getByLabel('Filtrar por projeto').selectOption(p.id)
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Aplicar filtros' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByTestId('task-count')).toHaveText('Nesta lista: 3 tarefas.')
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Kanban', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('region', { name: 'Coluna Por fazer', exact: true }).getByRole('button', { name: noDate.titulo, exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Coluna Em curso', exact: true }).getByRole('button', { name: due.titulo, exact: true })).toBeVisible()
   mkdirSync(path.resolve(process.cwd(), '../tmp/ui'), { recursive: true })
+
+  // Arrange — preparar o próximo cenário/dados.
   await page.screenshot({ path: path.resolve(process.cwd(), '../tmp/ui/ex7-kanban-desktop.png'), fullPage: true })
   await page.getByLabel('Filtrar por prioridade').selectOption('HIGH')
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Aplicar filtros' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('button', { name: noDate.titulo, exact: true })).toHaveCount(0)
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Calendário', exact: true }).click()
   await page.getByLabel('Mês do calendário').fill('2026-11')
+
+  // Arrange — preparar o próximo cenário/dados.
   const november = page.getByRole('region', { name: '2026-11-19', exact: true })
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(november.getByRole('button', { name: due.titulo, exact: true })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await november.getByRole('button', { name: due.titulo, exact: true }).click()
   await page.getByRole('button', { name: 'Editar tarefa' }).click()
   await page.getByLabel('Prazo da tarefa (opcional)').fill('2026-12-02')
   await page.getByLabel('Estado da tarefa').selectOption('DONE')
   await page.getByRole('button', { name: 'Guardar tarefa' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByText('Sem tarefas com prazo neste mês para estes filtros.', { exact: true })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Mês seguinte' }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('region', { name: '2026-12-02', exact: true }).getByRole('button', { name: due.titulo, exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   await page.setViewportSize({ width: 360, height: 800 })
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   await expect(page.getByRole('heading', { name: 'Prazos neste mês', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: due.titulo, exact: true })).toBeVisible()
+
+  // Arrange — preparar o próximo cenário/dados.
   await page.screenshot({ path: path.resolve(process.cwd(), '../tmp/ui/ex7-calendar-mobile.png'), fullPage: true })
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByRole('button', { name: due.titulo, exact: true })).toBeVisible()
 })

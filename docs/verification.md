@@ -497,3 +497,27 @@ Comando executado na raiz, PowerShell:
 Não houve falhas de configuração, correções aos testes após execução ou defeito identificado na regra selecionada. Não foi necessário alterar produção, dependências ou serviços. O teste de omissão verifica a representação do PATCH, não persistência de campos: isso pertence à integração. O caso válido é fronteira inferior de conteúdo não vazio; não inventa máximo de comprimento. Não se testou equivalência de whitespace Unicode entre UI/backend.
 
 Âmbito: apenas a classe selecionada foi executada. Não foram executados testes de integração/E2E nem a suite backend completa neste exercício. T01/T03 foram cobertos; T02 foi coberto quanto ao título válido/fronteira, sem novas asserções dos defaults/opcionais, já representadas nos testes de integração existentes. O resultado não aprova automaticamente toda a matriz ou o MVP.
+
+
+## Organização AAA dos testes existentes — 19/11/2026
+
+**Autorização:** o utilizador pediu refactoring dos testes existentes para Arrange/Act/Assert com comentários e adoção da convenção nos próximos testes.
+
+Alterados os 10 ficheiros *Test.java em backend/src/test/java/pt/matriz (incluindo TaskInputTest) e os 7 *.spec.ts em e2e/tests. Acrescentados comentários e separação visual dos blocos. Asserções de exceções, cadeias MockMvc e helpers que executam/verificam pedidos usam Act & Assert; percursos com vários passos identificam ciclos adicionais. Preparação partilhada continua nos hooks existentes; limpeza/finally conservados. AGENTS.md regista a convenção para testes novos e alterados.
+
+Comparação automática com cópia anterior local dos 17 ficheiros: excluindo apenas comentários AAA introduzidos e linhas vazias, todas as linhas originais permanecem iguais e na mesma ordem. Nenhuma asserção, operação, fixture, timeout, dado, produção ou dependência alterada. Não foi introduzida uma arquitetura de testes nova nem separado um percurso em testes dependentes.
+
+### Execuções reais após a organização
+
+```powershell
+./backend/mvnw.cmd -f backend/pom.xml verify
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+npm.cmd --prefix e2e test
+```
+
+- Backend: BUILD SUCCESS, **86 testes, 0 falhas, 0 erros, 0 ignorados**, 2 min 45 s; inclui 11 unitários do título e 75 testes anteriores. Testcontainers usa PostgreSQL descartável. Acesso Docker exigiu execução fora do sandbox.
+- Playwright/Chrome contra aplicação local: **25 passaram, 4 ignorados**, 47,2 s, código de saída 0. Ignorados os três reinícios e a expiração real de sessão, que são opt-in separados; não se afirma nova validação desses quatro casos.
+- Primeira tentativa E2E dentro do sandbox bloqueada por EACCES/ERR_NETWORK_ACCESS_DENIED para 127.0.0.1:8080; interrompida, sem interpretar como defeito funcional. Reexecução com a permissão de rede necessária passou. Nenhum teste alterado para contornar essa falha.
+- Avisos observados: NO_COLOR/FORCE_COLOR no Node e ligação Hikari fechada durante o ciclo dos containers; não provocaram falhas. Não foram feitas alterações fora do âmbito para os suprimir.
+- git diff --check sem erros. Relatórios Surefire e Playwright gerados localmente e ignorados pelo Git. Não houve commit/push neste pedido.

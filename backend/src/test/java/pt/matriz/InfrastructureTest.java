@@ -59,13 +59,25 @@ class InfrastructureTest {
     int count(String table) { return jdbc.queryForObject("SELECT count(*) FROM " + table, Integer.class); }
 
     @Test void migrationsAreVersionedAndNormalStartupDoesNotSeed() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Assert — verificar o resultado.
         assertThat(flyway.info().applied()).hasSize(2);
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         assertThat(flyway.migrate().migrationsExecuted).isZero();
+
+        // Assert — verificar o resultado.
         assertThat(count("utilizador")).isZero();
     }
 
     @Test void seedContainsSixEntitiesAndDifferentAccessRelationships() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act — executar a operação em teste.
         seed();
+
+        // Assert — verificar o resultado.
         assertThat(count("utilizador")).isEqualTo(2);
         assertThat(count("projeto")).isEqualTo(2);
         assertThat(count("tarefa")).isEqualTo(3);
@@ -76,18 +88,33 @@ class InfrastructureTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM colaboracao_projeto WHERE projeto_id = ? AND utilizador_id = ?",
             Integer.class, PROJETO_BRUNO, ANA)).isZero();
         assertThat(jdbc.queryForObject("SELECT projeto_id FROM tarefa WHERE id = ?", UUID.class, TAREFA_PESSOAL)).isNull();
+
+        // Arrange — preparar o próximo cenário/dados.
         String hash = jdbc.queryForObject("SELECT password_hash FROM utilizador WHERE id = ?", String.class, ANA);
+
+        // Assert — verificar o resultado.
         assertThat(hash).doesNotContain("FictitiousTestPassword42!");
         assertThat(encoder.matches("FictitiousTestPassword42!", hash)).isTrue();
     }
 
     @Test void repeatedSeedPreservesEditsRemovalsAndPasswordHashes() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act — executar a operação em teste.
         seed();
+
+        // Arrange — preparar o próximo cenário/dados.
         String hash = jdbc.queryForObject("SELECT password_hash FROM utilizador WHERE id = ?", String.class, ANA);
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("UPDATE tarefa SET titulo = 'Alteração preservada' WHERE id = ?", TAREFA_PARTILHADA);
         jdbc.update("DELETE FROM colaboracao_projeto WHERE projeto_id = ?", PROJETO_ANA);
         jdbc.update("DELETE FROM comentario");
+
+        // Act — executar a operação em teste.
         seed();
+
+        // Assert — verificar o resultado.
         assertThat(count("utilizador")).isEqualTo(2);
         assertThat(count("tarefa")).isEqualTo(3);
         assertThat(count("colaboracao_projeto")).isZero();
@@ -97,19 +124,29 @@ class InfrastructureTest {
     }
 
     @Test void seedRollsBackOnCollisionWithoutDeletingExistingData() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         UUID existing = UUID.randomUUID();
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("INSERT INTO utilizador VALUES (?, 'Conta existente', 'bruno@example.test', 'hash-existente')", existing);
         assertThatThrownBy(this::seed).isInstanceOf(DataIntegrityViolationException.class);
+
+        // Assert — verificar o resultado.
         assertThat(count("utilizador")).isEqualTo(1);
         assertThat(count("projeto")).isZero();
         assertThat(jdbc.queryForObject("SELECT id FROM utilizador", UUID.class)).isEqualTo(existing);
     }
 
     @Test void seedRejectsProjectIdCollisionWithoutGrantingAccessOrLeavingDemoAccounts() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         UUID existing = UUID.randomUUID();
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("INSERT INTO utilizador VALUES (?, 'Conta existente', 'existing@example.test', 'hash-existente')", existing);
         jdbc.update("INSERT INTO projeto (id, nome, proprietario_id) VALUES (?, 'Projeto existente', ?)", PROJETO_ANA, existing);
         assertThatThrownBy(this::seed).isInstanceOf(DataIntegrityViolationException.class);
+
+        // Assert — verificar o resultado.
         assertThat(count("utilizador")).isEqualTo(1);
         assertThat(count("projeto")).isEqualTo(1);
         assertThat(count("colaboracao_projeto")).isZero();
@@ -117,7 +154,12 @@ class InfrastructureTest {
     }
 
     @Test void schemaRejectsWhitespaceInvalidEnumsOrphansAndDuplicateAssignments() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act — executar a operação em teste.
         seed();
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         assertThatThrownBy(() -> jdbc.update("UPDATE projeto SET nome = E' \t\n' WHERE id = ?", PROJETO_ANA)).isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> jdbc.update("UPDATE tarefa SET estado = 'Inválido' WHERE id = ?", TAREFA_PARTILHADA)).isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> jdbc.update("UPDATE tarefa SET prioridade = 'Inválida' WHERE id = ?", TAREFA_PARTILHADA)).isInstanceOf(DataIntegrityViolationException.class);
@@ -126,8 +168,15 @@ class InfrastructureTest {
     }
 
     @Test void deletingProjectCascadesOnlyItsDependants() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act — executar a operação em teste.
         seed();
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("DELETE FROM projeto WHERE id = ?", PROJETO_ANA);
+
+        // Assert — verificar o resultado.
         assertThat(count("projeto")).isEqualTo(1);
         assertThat(count("tarefa")).isEqualTo(2);
         assertThat(count("comentario")).isZero();
@@ -137,15 +186,27 @@ class InfrastructureTest {
     }
 
     @Test void databaseRoundTripRetainsOptionalFieldsAndPastDates() {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act — executar a operação em teste.
         seed();
+
+        // Arrange — preparar os dados do cenário.
         jdbc.update("UPDATE tarefa SET prioridade = NULL, prazo = DATE '2020-01-01' WHERE id = ?", TAREFA_PESSOAL);
+
+        // Assert — verificar o resultado.
         assertThat(jdbc.queryForObject("SELECT prazo::text FROM tarefa WHERE id = ?", String.class, TAREFA_PESSOAL)).isEqualTo("2020-01-01");
     }
 
     @Test void publicHealthHasNoDetailsAndBusinessApiRemainsBlocked() throws Exception {
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/actuator/health")).andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("UP")).andExpect(jsonPath("$.components").doesNotExist());
         mvc.perform(get("/api/projetos")).andExpect(status().isUnauthorized());
+
+        // Act — executar a operação em teste.
         mvc.perform(post("/api/projetos").contentType("application/json").content("{}"))
             .andExpect(status().isForbidden());
     }

@@ -60,24 +60,36 @@ class DashboardTest {
     int count(String table) { return jdbc.queryForObject("SELECT count(*) FROM "+table,Integer.class); }
 
     @Test void panelCountsPersonalAndAuthorizedProjectsWithExplicitScope()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/painel?incluirIndependentes=true").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.utilizador.id").value(ANA.toString())).andExpect(jsonPath("$.projetos.length()").value(1)).andExpect(jsonPath("$.contagens.TODO").value(2)).andExpect(jsonPath("$.incluiIndependentes").value(true));
         mvc.perform(get("/api/painel?incluirIndependentes=false").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.contagens.TODO").value(1));
         mvc.perform(get("/api/painel?incluirIndependentes=true").session(bruno.session())).andExpect(status().isOk()).andExpect(jsonPath("$.projetos.length()").value(2)).andExpect(jsonPath("$.contagens.TODO").value(2));
     }
     @Test void allStatesAndArchiveExclusionIndependentOfListFilters()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         var ana=login("ana@example.test");jdbc.update("UPDATE tarefa SET estado='DONE' WHERE id=?",TAREFA_PESSOAL);jdbc.update("UPDATE tarefa SET estado='IN_PROGRESS' WHERE id=?",TAREFA_PARTILHADA);
         mvc.perform(get("/api/painel?incluirIndependentes=true&q=doesnotexist&estado=TODO").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.contagens.TODO").value(0)).andExpect(jsonPath("$.contagens.IN_PROGRESS").value(1)).andExpect(jsonPath("$.contagens.DONE").value(1));
         jdbc.update("UPDATE projeto SET arquivado=true WHERE id=?",PROJETO_ANA);
         mvc.perform(get("/api/painel?incluirIndependentes=true").session(ana.session())).andExpect(status().isOk()).andExpect(jsonPath("$.projetos.length()").value(0)).andExpect(jsonPath("$.contagens.IN_PROGRESS").value(0)).andExpect(jsonPath("$.contagens.DONE").value(1));
     }
     @Test void emptyUserGetsZeroesAndRevocationTakesEffect()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         UUID other=UUID.randomUUID();jdbc.update("INSERT INTO utilizador(id,nome,email,password_hash) VALUES(?,'Outra','outra@example.test',?)",other,encoder.encode(PASSWORD));var user=login("outra@example.test");
         mvc.perform(get("/api/painel?incluirIndependentes=true").session(user.session())).andExpect(status().isOk()).andExpect(jsonPath("$.projetos.length()").value(0)).andExpect(jsonPath("$.contagens.TODO").value(0)).andExpect(jsonPath("$.contagens.IN_PROGRESS").value(0)).andExpect(jsonPath("$.contagens.DONE").value(0));
         var bruno=login("bruno@example.test");jdbc.update("DELETE FROM colaboracao_projeto WHERE projeto_id=? AND utilizador_id=?",PROJETO_ANA,BRUNO);
         mvc.perform(get("/api/painel?incluirIndependentes=true").session(bruno.session())).andExpect(status().isOk()).andExpect(jsonPath("$.projetos.length()").value(1)).andExpect(jsonPath("$.contagens.TODO").value(1));
     }
     @Test void authenticationAndExplicitStrictBooleanRequired()throws Exception{
+        // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
+
+        // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
         mvc.perform(get("/api/painel?incluirIndependentes=true")).andExpect(status().isUnauthorized());var ana=login("ana@example.test");
         for(String query:List.of("","?incluirIndependentes=","?incluirIndependentes=1","?incluirIndependentes=TRUE"))mvc.perform(get("/api/painel"+query).session(ana.session())).andExpect(status().isBadRequest());
     }
