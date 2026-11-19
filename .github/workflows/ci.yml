@@ -73,13 +73,16 @@ jobs:
           docker compose --profile tools run --rm seed
           docker compose up -d app --wait
       - name: E2E e segurança (suite normal)
-        run: npm --prefix e2e test -- --reporter=list,json > e2e-normal.json
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/e2e-normal.json
+        run: npm --prefix e2e test -- --reporter=json
       - name: Reinícios isolados
         env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/e2e-restarts.json
           MATRIZ_RESTART_TEST: '1'
           MATRIZ_TASK_RESTART_TEST: '1'
           MATRIZ_COLLAB_RESTART_TEST: '1'
-        run: npm --prefix e2e test -- --grep '@restart|@task-restart|@collaboration-restart' --reporter=json > e2e-restarts.json
+        run: npm --prefix e2e test -- --grep '@restart|@task-restart|@collaboration-restart' --reporter=json
       - name: Resumo sem dados sensíveis
         if: always()
         run: python3 scripts/ci-summary.py
