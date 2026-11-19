@@ -103,3 +103,8 @@ Decisões desta proposta, ainda sujeitas à revisão do utilizador; não são ap
 ## Atualização de execução — Exercício 2 (19/11/2026)
 
 O pedido seguinte do utilizador autorizou implementar/executar os unitários do título. TaskInputTest cobre T01, T03 e a parte de título válido/fronteira de T02: 11 execuções aprovadas, zero falhas/erros/ignorados. Defaults/opcionais de T02 não fazem parte destas novas asserções. Os estados "não executado" acima referem-se ao momento de elaboração do exercício 1; os restantes cenários não tiveram nova execução. Comando, dados, resultados e limites em [verification.md](verification.md), secção Ficha 04 — Exercício 2. Nenhuma regra de negócio foi alterada.
+
+
+## Atualização — Exercício 3 (19/11/2026)
+
+T05/T06 reforçados em TaskCrudTest.createDefaultsIdentityAndPersistenceInNewSession: criação 201/Location/DTO completo, consulta 200 com nova sessão e verificação SQL independente. Acrescentada variante POST de T04 em whitespaceTitleReturnsProblemAndPreservesDatabase: título só com espaços, 422/Problema e snapshots das seis tabelas conservados. T04 tem outras variantes que não são aprovadas automaticamente por este novo cenário. Classe completa executada duas vezes em PostgreSQL Testcontainers novo por processo: 17 aprovados/0 falhas/0 erros/0 ignorados em cada execução. Inclui testes existentes de autorização, sem novas execuções E2E. Comandos, isolamento e evidência em [verification.md](verification.md), Ficha 04 — Exercício 3.

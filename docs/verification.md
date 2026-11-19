@@ -521,3 +521,38 @@ npm.cmd --prefix e2e test
 - Primeira tentativa E2E dentro do sandbox bloqueada por EACCES/ERR_NETWORK_ACCESS_DENIED para 127.0.0.1:8080; interrompida, sem interpretar como defeito funcional. Reexecução com a permissão de rede necessária passou. Nenhum teste alterado para contornar essa falha.
 - Avisos observados: NO_COLOR/FORCE_COLOR no Node e ligação Hikari fechada durante o ciclo dos containers; não provocaram falhas. Não foram feitas alterações fora do âmbito para os suprimir.
 - git diff --check sem erros. Relatórios Surefire e Playwright gerados localmente e ignorados pelo Git. Não houve commit/push neste pedido.
+
+
+## Ficha 04 — Exercício 3: integração da API de tarefas
+
+**Data:** 19/11/2026. **Base:** 212a4f6 e alterações locais dos exercícios anteriores preservadas. **Ficheiro:** backend/src/test/java/pt/matriz/TaskCrudTest.java.
+
+### Análise e implementação
+
+Contrato OpenAPI 0.7.0, requisitos F02/F04/F06/F13, CA-US-03-02/03/05, CA-US-04-01 e CA-US-11-01. Cenários T05/T06 e parte POST de T04 do plano. Endpoints reais POST /api/tarefas e GET /api/tarefas/{id}; entrada CriarTarefa (titulo obrigatório) e resposta Tarefa (oito campos). DTOs de entrada validados por TaskInput e saída TaskAccess.Task, sem expor entidades JPA.
+
+Reforçado createDefaultsIdentityAndPersistenceInNewSession, sem duplicar o fluxo existente. Acrescentado whitespaceTitleReturnsProblemAndPreservesDatabase. Ambos com comentários Arrange/Act/Assert; helpers de autenticação existentes reutilizados. Nenhuma alteração de produção, contrato, migrations ou dependências.
+
+| Cenário | Dados e ação | Resultado observado na primeira execução |
+|---|---|---|
+| IT-01 criação/consulta (T05/T06) | Ana autenticada; titulo="Preparar apresentação", descricao="Plano", projetoId do projeto ativo de Ana, prazo="2020-01-01"; estado/prioridade omitidos | POST 201 application/json e Location=/api/tarefas/{id}; DTO exato com id UUID, título/descrição/prazo, projetoId, criadorId de Ana, TODO/MEDIUM. Contagem +1. Novo login gera sessão independente; GET pelo Location devolve 200 e os mesmos oito campos. SELECT por ID confirma todos os dados na linha persistida. |
+| IT-02 validação negativa (parte T04) | Mesma autenticação/CSRF válido; titulo="   " e projetoId autorizado | POST 422 application/problem+json, sem Location; type=about:blank, status=422, codigo=VALIDACAO, title não vazio e detail identifica titulo. Snapshots completos das seis tabelas iguais aos anteriores, sem depender da ordem das linhas. |
+
+### Ambiente, isolamento e reposição
+
+JUnit/Spring Boot Test/MockMvc e Testcontainers PostgreSQL 17.9-alpine. DynamicPropertySource substitui URL/utilizador/password do datasource pelos do container; não usa DB_URL ou dados do Compose principal. Configuração Flyway existente aplica V1/V2 à BD nova; Hibernate validate. Dados fictícios de DemoSeeder criados em transação. Antes de cada método: TRUNCATE das seis tabelas com CASCADE exclusivamente nesse PostgreSQL descartável e reposição do seed. O teste não tem transação envolvente que mascare o commit do pedido; nova consulta API e JdbcTemplate leem o estado confirmado. Testcontainers/Ryuk gere a remoção dos containers no fim.
+
+MockMvc atravessa filtros de segurança, controllers, lógica transacional e BD reais dentro do processo; não verifica um servidor HTTP externo nem browser. Login segue /api/sessao/csrf → POST /api/sessao → novo token CSRF; criador não é enviado pelo cliente. Testes prévios de acesso de terceiros, pessoais/arquivo e transferências mantidos na classe e executados em conjunto.
+
+Comando na raiz PowerShell, repetido em dois processos Maven:
+
+```powershell
+./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskCrudTest test
+```
+
+Execução 1: BUILD SUCCESS; **17 testes, 0 falhas, 0 erros, 0 ignorados**; classe 27,53 s, Maven 40,224 s. PostgreSQL descartável exposto temporariamente em localhost:51612/test. Nenhum teste foi corrigido após esta execução.
+
+Resultados da repetição registados abaixo após conclusão. Não se afirma nova execução da suite backend completa, testes unitários ou E2E neste exercício. T04 não fica integralmente aprovado apenas por testar uma variante inválida de POST: as restantes variantes/edição pertencem à cobertura existente ou verificações futuras. Não foram identificadas inconsistências entre os dois cenários e o contrato; isso não equivale a validação automática integral de todos os schemas OpenAPI.
+
+
+Execução 2: **BUILD SUCCESS; 17 testes, 0 falhas, 0 erros, 0 ignorados**; classe 24,17 s, Maven 29,950 s. Novo processo e novo container PostgreSQL; repetição sem alterações ao teste. Reposição antes de cada método e repetição em BD nova demonstraram independência das execuções anteriores. Relatórios da última execução em backend/target/surefire-reports/pt.matriz.TaskCrudTest.txt e TEST-pt.matriz.TaskCrudTest.xml, gerados e ignorados pelo Git. Avisos de carregamento dinâmico do agente Mockito/Byte Buddy e CDS do JDK, sem falhas; não foram alteradas dependências para os suprimir. Nenhuma falha de configuração, integração ou persistência nestas duas execuções. git diff --check sem erros; sem commit/push.

@@ -41,3 +41,14 @@ O utilizador pediu organizar os testes existentes em Arrange, Act e Assert, com 
 Aplicado nos 10 ficheiros de testes Java e 7 Playwright; convenção persistida em AGENTS.md. Comparação com a cópia anterior confirmou instruções/ordem/asserções preservadas, excluindo apenas comentários adicionados e linhas vazias. Não houve alteração de produção.
 
 Execuções reais: Maven verify → 86 aprovados/0 falhas/0 erros/0 ignorados; Playwright → 25 aprovados/4 especiais ignorados. Primeira tentativa de E2E bloqueada pela rede do sandbox, interrompida e repetida com permissão; execução final passou. Resultados, comandos e avisos em verification.md. Sem commit/push.
+
+
+## Exercício 3 — Integração da API e persistência (19/11/2026)
+
+**Ferramenta:** ChatGPT/Codex. **Pedido:** implementar e executar criação/consulta real de tarefa e cenário negativo, com autenticação/contrato, BD isolada, limpeza e repetição, preservando os testes/documentos e sem mudar produção para obter sucesso.
+
+**Plano apresentado/decisão:** reforçar o fluxo existente em TaskCrudTest em vez de o duplicar; acrescentar negativo focado com erro contratual e snapshots da BD. Reutilizar Spring Boot Test, MockMvc, JUnit, AssertJ, Testcontainers/Flyway/seed e login/CSRF reais. Comentários AAA explícitos. Sem framework, regra, endpoint ou limite novo.
+
+**Implementação:** createDefaultsIdentityAndPersistenceInNewSession verifica oito campos, Location, nova sessão e SQL; whitespaceTitleReturnsProblemAndPreservesDatabase verifica 422 application/problem+json, VALIDACAO, campo titulo e seis tabelas intactas. Fluxo positivo usa título com acentos, descrição, projeto autorizado e prazo passado permitido; defaults TODO/MEDIUM.
+
+**Resultados reais:** comando ./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskCrudTest test executado duas vezes, cada uma com novo PostgreSQL descartável. Ambas BUILD SUCCESS, 17 aprovados, zero falhas/erros/ignorados; tempos Maven 40,224 s e 29,950 s. Sem correção de testes ou produção necessária. Limites: MockMvc não valida servidor HTTP externo; não executados E2E nem suite backend integral neste exercício. Detalhes e evidências em verification.md. Sem commit/push.

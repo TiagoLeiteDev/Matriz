@@ -60,18 +60,85 @@ class TaskCrudTest {
     int count(String table) { return jdbc.queryForObject("SELECT count(*) FROM "+table,Integer.class); }
 
     @Test void createDefaultsIdentityAndPersistenceInNewSession() throws Exception {
-        // Arrange — preparar o cenário.
-        var ana=login("ana@example.test");
-        // Act & Assert
-        var result=create(ana,"{\"titulo\":\"X\",\"projetoId\":\""+PROJETO_ANA+"\"}",201); UUID id=id(result);
-        // Assert
-        assertThat(result.getResponse().getHeader("Location")).isEqualTo("/api/tarefas/"+id);
-        var again=login("ana@example.test");
-        // Act & Assert
-        mvc.perform(get("/api/tarefas/"+id).session(again.session())).andExpect(status().isOk())
-            .andExpect(jsonPath("$.criadorId").value(ANA.toString())).andExpect(jsonPath("$.estado").value("TODO"))
-            .andExpect(jsonPath("$.prioridade").value("MEDIUM")).andExpect(jsonPath("$.titulo").value("X"));
+        // Arrange — sessão real, CSRF e projeto ativo das fixtures isoladas.
+        var ana = login("ana@example.test");
+        int before = count("tarefa");
+        var request = mapper.createObjectNode()
+            .put("titulo", "Preparar apresentação").put("descricao", "Plano")
+            .put("projetoId", PROJETO_ANA.toString()).put("prazo", "2020-01-01");
+
+        // Act — criar pela API, com estado e prioridade omitidos.
+        var result = mvc.perform(post("/api/tarefas").session(ana.session())
+            .header("X-CSRF-Token", ana.token()).contentType("application/json")
+            .content(mapper.writeValueAsString(request))).andReturn();
+
+        // Assert — contrato de criação e identidade inferida no backend.
+        assertThat(result.getResponse().getStatus()).isEqualTo(201);
+        assertThat(result.getResponse().getContentType()).startsWith("application/json");
+        UUID taskId = id(result);
+        String location = result.getResponse().getHeader("Location");
+        assertThat(location).isEqualTo("/api/tarefas/" + taskId);
+        var expected = mapper.createObjectNode().put("id", taskId.toString())
+            .put("titulo", "Preparar apresentação").put("descricao", "Plano")
+            .put("estado", "TODO").put("prioridade", "MEDIUM").put("prazo", "2020-01-01")
+            .put("projetoId", PROJETO_ANA.toString()).put("criadorId", ANA.toString());
+        assertThat(mapper.readTree(result.getResponse().getContentAsString())).isEqualTo(expected);
+        assertThat(count("tarefa")).isEqualTo(before + 1);
+
+        // Arrange — sessão independente para a consulta posterior.
+        var again = login("ana@example.test");
+        assertThat(again.session()).isNotSameAs(ana.session());
+
+        // Act — consultar a localização devolvida pela API.
+        var fetched = mvc.perform(get(location).session(again.session())).andReturn();
+
+        // Assert — resposta completa e linha efetivamente persistida por outra consulta SQL.
+        assertThat(fetched.getResponse().getStatus()).isEqualTo(200);
+        assertThat(fetched.getResponse().getContentType()).startsWith("application/json");
+        assertThat(mapper.readTree(fetched.getResponse().getContentAsString())).isEqualTo(expected);
+        var stored = jdbc.queryForMap("SELECT * FROM tarefa WHERE id = ?", taskId);
+        assertThat(stored.get("id")).isEqualTo(taskId);
+        assertThat(stored.get("titulo")).isEqualTo("Preparar apresentação");
+        assertThat(stored.get("descricao")).isEqualTo("Plano");
+        assertThat(stored.get("estado")).isEqualTo("TODO");
+        assertThat(stored.get("prioridade")).isEqualTo("MEDIUM");
+        assertThat(stored.get("prazo").toString()).isEqualTo("2020-01-01");
+        assertThat(stored.get("projeto_id")).isEqualTo(PROJETO_ANA);
+        assertThat(stored.get("criador_id")).isEqualTo(ANA);
     }
+
+    @Test void whitespaceTitleReturnsProblemAndPreservesDatabase() throws Exception {
+        // Arrange — snapshots das seis tabelas da BD descartável antes do pedido inválido.
+        var ana = login("ana@example.test");
+        var tables = List.of("utilizador", "projeto", "tarefa", "comentario",
+            "colaboracao_projeto", "atribuicao_tarefa");
+        var before = new LinkedHashMap<String, List<Map<String, Object>>>();
+        for (String table : tables) before.put(table, jdbc.queryForList("SELECT * FROM " + table));
+        var request = mapper.createObjectNode().put("titulo", "   ")
+            .put("projetoId", PROJETO_ANA.toString());
+
+        // Act — pedido autenticado com CSRF válido para atingir a validação do título.
+        var result = mvc.perform(post("/api/tarefas").session(ana.session())
+            .header("X-CSRF-Token", ana.token()).contentType("application/json")
+            .content(mapper.writeValueAsString(request))).andReturn();
+
+        // Assert — erro contratual identificando o campo, sem criação ou alterações parciais.
+        assertThat(result.getResponse().getStatus()).isEqualTo(422);
+        assertThat(result.getResponse().getContentType()).startsWith("application/problem+json");
+        assertThat(result.getResponse().getHeader("Location")).isNull();
+        var problem = mapper.readTree(result.getResponse().getContentAsString());
+        assertThat(problem.path("type").asText()).isEqualTo("about:blank");
+        assertThat(problem.path("status").asInt()).isEqualTo(422);
+        assertThat(problem.path("codigo").asText()).isEqualTo("VALIDACAO");
+        assertThat(problem.path("title").asText()).isNotBlank();
+        assertThat(problem.path("detail").asText()).startsWith("titulo:");
+        for (String table : tables) {
+            assertThat(jdbc.queryForList("SELECT * FROM " + table))
+                .as("Tabela %s permanece inalterada", table)
+                .containsExactlyInAnyOrderElementsOf(before.get(table));
+        }
+    }
+
     @Test void personalTaskHasOptionalNullPriorityAndIsPrivate() throws Exception {
         // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
         var ana=login("ana@example.test");var bruno=login("bruno@example.test");
