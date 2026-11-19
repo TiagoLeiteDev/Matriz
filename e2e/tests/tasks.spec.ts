@@ -17,8 +17,14 @@ test.afterEach(async ({ request }) => {
   if (!ids.length && !projects.length) return
   await login(request)
   // Only IDs created in this test. Never reset the seed or the persistent volume.
-  for (const id of ids) expect([204, 404]).toContain((await request.delete(`/api/tarefas/${id}`, { headers: await csrf(request) })).status())
-  for (const id of projects) expect([204, 404]).toContain((await request.delete(`/api/projetos/${id}`, { headers: await csrf(request) })).status())
+  for (const id of ids) {
+    expect([204, 404]).toContain((await request.delete(`/api/tarefas/${id}`, { headers: await csrf(request) })).status())
+    expect((await request.get(`/api/tarefas/${id}`)).status()).toBe(404)
+  }
+  for (const id of projects) {
+    expect([204, 404]).toContain((await request.delete(`/api/projetos/${id}`, { headers: await csrf(request) })).status())
+    expect((await request.get(`/api/projetos/${id}`)).status()).toBe(404)
+  }
 })
 async function enter(page: Page, email = 'ana@example.test', navigate = true) {
   if (navigate) await page.goto('/#tarefas')
@@ -109,26 +115,70 @@ test('tarefas pessoais: CRUD, filtros sem acentos, null, reload e confirmação'
   expect(deletes).toBe(1)
 })
 
-test('criação e estado atualizam progresso do projeto sem recarregar', async ({ page, request }) => {
-  // Arrange — preparar o cenário.
+test('E2E criação em projeto: login, lista persistente e progresso sem recarregar', async ({ page, request }) => {
+  // Arrange — preparar dados; fixtures partilhadas nos hooks quando aplicável.
   await login(request)
   const name = `Progresso tarefas ${Date.now()}`
+
+  // Act — executar a operação em teste.
   const response = await request.post('/api/projetos', { headers: await csrf(request), data: { nome: name } })
-  // Assert
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   expect(response.status()).toBe(201); const project = await response.json(); projects.push(project.id)
+
+  // Arrange — preparar o próximo cenário/dados.
   await enter(page)
+  await expect(page.getByRole('button', { name: 'Terminar sessão', exact: true })).toBeVisible()
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Projetos', exact: true }).click()
   await page.getByRole('link', { name, exact: true }).click()
+  await expect(page.getByRole('heading', { name, exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Nova tarefa', exact: true }).click()
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByLabel('Projeto da tarefa')).toHaveValue(project.id)
+
+  // Arrange — preparar o próximo cenário/dados.
   const title = `Concluir ${Date.now()}`
   await page.getByLabel('Título da tarefa').fill(title)
-  await save(page, true)
+
+  // Act — criar pela interface; save aguarda o POST real e verifica 201.
+  const created = await save(page, true)
+
+  // Assert — tarefa única na lista, sem recarregar, associada ao projeto aberto.
+  expect(created.titulo).toBe(title)
+  expect(created.projetoId).toBe(project.id)
+  expect(created.estado).toBe('TODO')
+  expect(created.prioridade).toBe('MEDIUM')
+  const card = page.getByRole('button', { name: title, exact: true })
+  await expect(card).toHaveCount(1)
+  await expect(card).toBeVisible()
+  await expect(card).toContainText('Por fazer')
+  await expect(card).toContainText('Média')
+
+  // Act — recarregar a lista do projeto, sem recriar a tarefa.
+  await page.reload()
+
+  // Assert — UI e nova consulta à API confirmam o registo persistido.
+  await expect(card).toHaveCount(1)
+  await expect(card).toBeVisible()
+  const stored = await page.request.get(`/api/tarefas/${created.id}`)
+  expect(stored.status()).toBe(200)
+  expect(await stored.json()).toEqual(created)
+
+  // Act — executar a operação em teste.
   await page.getByRole('button', { name: title, exact: true }).click()
   await page.getByRole('button', { name: 'Editar tarefa' }).click()
   await page.getByLabel('Estado da tarefa').selectOption('DONE')
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await save(page, false)
+
+  // Assert — verificar o resultado.
   await expect.poll(async () => (await (await page.request.get(`/api/projetos/${project.id}`)).json()).progresso.percentagem).toBe(100)
+
+  // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(page.getByText(/100%/)).toBeVisible()
 })
 

@@ -556,3 +556,59 @@ Resultados da repetição registados abaixo após conclusão. Não se afirma nov
 
 
 Execução 2: **BUILD SUCCESS; 17 testes, 0 falhas, 0 erros, 0 ignorados**; classe 24,17 s, Maven 29,950 s. Novo processo e novo container PostgreSQL; repetição sem alterações ao teste. Reposição antes de cada método e repetição em BD nova demonstraram independência das execuções anteriores. Relatórios da última execução em backend/target/surefire-reports/pt.matriz.TaskCrudTest.txt e TEST-pt.matriz.TaskCrudTest.xml, gerados e ignorados pelo Git. Avisos de carregamento dinâmico do agente Mockito/Byte Buddy e CDS do JDK, sem falhas; não foram alteradas dependências para os suprimir. Nenhuma falha de configuração, integração ou persistência nestas duas execuções. git diff --check sem erros; sem commit/push.
+
+
+## Ficha 04 — Exercício 4: percurso E2E pela interface
+
+**Data:** 19/11/2026. **Ficheiro:** e2e/tests/tasks.spec.ts. **Cenário:** E2E criação em projeto: login, lista persistente e progresso sem recarregar. **Rastreabilidade:** T14, F02/F04/F07/F12, CA-US-03-02/05, CA-US-11-01, US-09/15. Base 212a4f6 com alterações locais dos exercícios anteriores preservadas.
+
+### Implementação e decisões
+
+Reforçado o cenário existente de criação/progresso, sem criar um percurso duplicado. Pré-condições: aplicação real, seed fictício, conta Ana e projeto ativo novo por execução. Preparação do projeto por API autenticada/CSRF, isolada do percurso em teste; autenticação do utilizador no browser ocorre pelo formulário, sem injetar a sessão da preparação.
+
+Percurso observado: abrir aplicação → preencher Email/Palavra-passe → Entrar → confirmar Terminar sessão → Projetos → abrir link do projeto pelo nome → confirmar cabeçalho → Nova tarefa → confirmar projeto pré-selecionado → preencher título único → Guardar tarefa → confirmar tarefa única e visível na lista, Por fazer e Média → reload → confirmar tarefa ainda única/visível → GET pelo ID devolve os mesmos dados. Mantida a parte existente de editar estado para DONE e confirmar progresso 100%.
+
+Nome do projeto e título incluem Date.now(), sem depender de dados criados por outras execuções. Seletores reais por role/name/label: Projetos, link do projeto, Nova tarefa, Título da tarefa, Guardar tarefa e botão da tarefa pelo título. Asserções UI não são substituídas pela resposta da API. save aguarda o POST real antes da submissão e exige 201; a resposta confirma titulo/projetoId/TODO/MEDIUM, a consulta posterior devolve 200 e DTO idêntico. Não há mocks nem esperas temporizadas fixas; espera por resposta, expect auto-retry e expect.poll existente para progresso. Comentários AAA mantidos.
+
+Limpeza em afterEach usa só IDs registados pelo teste: DELETE de tarefa/projeto e GET subsequente 404. Acrescentada confirmação 404 aos hooks existentes deste ficheiro; a cascata mantém-se. A fixture é registada antes das asserções seguintes, para limpeza em caso de falha. Não apaga seed nem dados da aplicação principal.
+
+### Ambiente e comandos efetivamente executados
+
+Playwright 1.65.1/Chrome, um worker, zero retries. React compilado servido pelo Spring e PostgreSQL reais. Criado projeto Compose **matriz-ficha04-e2e**, app em **127.0.0.1:18083**, BD em **55434**, rede e volume próprios. Dados fictícios carregados com seed explícito; V1/V2 aplicadas à BD nova. Nenhuma alteração a produção, contrato, dependências ou configuração versionada.
+
+PowerShell na raiz (Load-LocalEnv carrega apenas configuração local, sem a imprimir):
+
+```powershell
+. ./scripts/Load-LocalEnv.ps1
+$env:APP_PORT = '18083'
+$env:DB_PORT = '55434'
+$env:APP_ALLOWED_ORIGINS = 'http://127.0.0.1:18083'
+docker compose -p matriz-ficha04-e2e config --quiet
+docker compose -p matriz-ficha04-e2e up -d db --wait
+docker compose -p matriz-ficha04-e2e build app seed
+docker compose -p matriz-ficha04-e2e --profile tools run --rm seed
+docker compose -p matriz-ficha04-e2e up -d app --wait
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+$env:MATRIZ_BASE_URL = 'http://127.0.0.1:18083'
+npm.cmd --prefix e2e test -- tests/tasks.spec.ts --grep 'E2E criação em projeto' --repeat-each=2
+```
+
+**Resultado real: 2 passed (7,5 s), zero falhas/ignorados.** Primeira execução 3,0 s; repetição 2,1 s, com contexto de browser e fixtures novos. A limpeza de cada execução devolveu 404 para os IDs removidos. Consulta SQL final à BD isolada confirmou o baseline: 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições. Aplicação/BD tinham arrancado com health healthy.
+
+Conferência e encerramento efetuados com as mesmas variáveis de ambiente:
+
+```powershell
+docker compose -p matriz-ficha04-e2e exec -T db psql -U $env:POSTGRES_USER -d $env:POSTGRES_DB -c 'SELECT (SELECT count(*) FROM utilizador) AS utilizadores, (SELECT count(*) FROM projeto) AS projetos, (SELECT count(*) FROM tarefa) AS tarefas, (SELECT count(*) FROM comentario) AS comentarios, (SELECT count(*) FROM atribuicao_tarefa) AS atribuicoes;'
+docker compose -p matriz-ficha04-e2e down
+```
+
+Containers e rede da instância temporária removidos; volume matriz-ficha04-e2e_matriz-data conservado (sem -v). Não executar seed repetidamente para repor dados alterados. Em futuras repetições usar sempre o mesmo -p e verificar portas livres. As variáveis acima são apenas do processo PowerShell; não foram escritas no .env nem alteraram o Compose principal.
+
+### Evidências e limites
+
+Saída real Playwright e relatório local e2e/playwright-report/index.html, ignorado pelo Git. Como não houve falha, não foi necessária inspeção de screenshots/traces/logs de diagnóstico; screenshot only-on-failure, trace/video off mantidos. Aviso Node NO_COLOR/FORCE_COLOR sem impacto; nenhum defeito de aplicação ou teste observado. Não se afirma cobertura de outros browsers, reinício do backend, todos os cenários T14–T16 ou suite E2E integral nesta execução. Não houve novas execuções backend. git diff --check sem erros; sem commit/push.
+
+
+## Registo Git — Ficha 04, exercícios 1–4 e organização AAA
+
+O utilizador autorizou a criação de issues e commits em 19/11/2026. Registo retroativo explícito, sem reescrever o histórico: #11 plano, #12 unitários, #13 organização AAA, #14 integração, #15 E2E. Commits separados com Refs; os checkpoints anteriores "sem commit/push" descrevem o momento de cada exercício. Este pedido não inclui push; confirmação dos SHAs locais nas respetivas issues, abertas até publicação. A separação foi preparada no index sem substituir as fontes finais da pasta de trabalho; operações/asserções finais e evidências das execuções anteriores conservadas. Não houve nova execução de testes apenas para este registo Git. Exercício 5 ainda por realizar.

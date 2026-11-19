@@ -108,3 +108,8 @@ O pedido seguinte do utilizador autorizou implementar/executar os unitários do 
 ## Atualização — Exercício 3 (19/11/2026)
 
 T05/T06 reforçados em TaskCrudTest.createDefaultsIdentityAndPersistenceInNewSession: criação 201/Location/DTO completo, consulta 200 com nova sessão e verificação SQL independente. Acrescentada variante POST de T04 em whitespaceTitleReturnsProblemAndPreservesDatabase: título só com espaços, 422/Problema e snapshots das seis tabelas conservados. T04 tem outras variantes que não são aprovadas automaticamente por este novo cenário. Classe completa executada duas vezes em PostgreSQL Testcontainers novo por processo: 17 aprovados/0 falhas/0 erros/0 ignorados em cada execução. Inclui testes existentes de autorização, sem novas execuções E2E. Comandos, isolamento e evidência em [verification.md](verification.md), Ficha 04 — Exercício 3.
+
+
+## Atualização — Exercício 4 (19/11/2026)
+
+T14 consolidado no cenário `E2E criação em projeto: login, lista persistente e progresso sem recarregar` de e2e/tests/tasks.spec.ts: autenticação UI, abertura de projeto preparado por API, criação UI, tarefa única/visível com rótulos corretos, reload e consulta API com DTO idêntico. Mantida regressão de progresso. Executado com --repeat-each=2 contra Compose/BD/portas/volume próprios: 2 passaram, zero falhas/ignorados. afterEach confirma remoção dos IDs com GET 404 e SQL final conserva baseline. T15/T16 não foram executados de novo neste exercício. Comandos, evidências e limites em verification.md.
