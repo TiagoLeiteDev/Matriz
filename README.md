@@ -136,3 +136,24 @@ Sessão no servidor, 60 minutos de inatividade, sem lembrar-me; reinício/logout
 - [Plano](docs/implementation-plan.md), [verificações](docs/verification.md), [revisão de entrega](docs/delivery-review.md) e [registo de IA](docs/ai-logs/ficha-03.md).
 
 Histórico individual em docs/history/mvp-individual-v1 e logs das fichas 01/02, sem o tratar como especificação ativa. A entrega prevista é 19/11/2026 às 17h, Lisboa; apresentação/validação humana e CI têm estado explícito no relatório final. Não há publicação automática ou commits implícitos.
+
+
+## Ficha 04 — testes focados e revisão
+
+Plano em [docs/test-plan.md](docs/test-plan.md), execuções em [docs/verification.md](docs/verification.md) e revisão em [docs/quality-security-review.md](docs/quality-security-review.md).
+
+```powershell
+# Unitários sem serviços externos.
+./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskInputTest test
+# Integração: Docker disponível; PostgreSQL Testcontainers descartável.
+./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskCrudTest test
+# E2E/API: preparar instância isolada e ambiente conforme verification.md.
+. ./scripts/Load-LocalEnv.ps1
+$env:PLAYWRIGHT_CHANNEL = 'chrome'
+$env:MATRIZ_BASE_URL = 'http://127.0.0.1:18083'
+npm.cmd --prefix e2e test -- tests/tasks.spec.ts --grep 'E2E criação em projeto' --repeat-each=2
+npm.cmd --prefix e2e test -- tests/security-review.spec.ts --repeat-each=2
+npm.cmd --prefix frontend run lint
+```
+
+A porta 18083 refere-se à instância de ensaio; iniciar os serviços antes dos testes. O relatório documenta Q01/R01 e decisões pendentes; não confundir verificações dirigidas com auditoria integral.

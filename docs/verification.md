@@ -612,3 +612,14 @@ Saída real Playwright e relatório local e2e/playwright-report/index.html, igno
 ## Registo Git — Ficha 04, exercícios 1–4 e organização AAA
 
 O utilizador autorizou a criação de issues e commits em 19/11/2026. Registo retroativo explícito, sem reescrever o histórico: #11 plano, #12 unitários, #13 organização AAA, #14 integração, #15 E2E. Commits separados com Refs; os checkpoints anteriores "sem commit/push" descrevem o momento de cada exercício. Este pedido não inclui push; confirmação dos SHAs locais nas respetivas issues, abertas até publicação. A separação foi preparada no index sem substituir as fontes finais da pasta de trabalho; operações/asserções finais e evidências das execuções anteriores conservadas. Não houve nova execução de testes apenas para este registo Git. Exercício 5 ainda por realizar.
+
+
+## Ficha 04 — Exercício 5: Code Review e Security Review
+
+19/11/2026; branch main, base 3b03d15. Revisão do intervalo 212a4f6..HEAD e componentes de acesso relacionados. Relatório completo em [quality-security-review.md](quality-security-review.md).
+
+Execuções reais na instância isolada matriz-ficha04-e2e (app18083/BD55434): mvp-verification.spec.ts --grep 'IDs alheios' --repeat-each=2 → 2 passaram em 4,2 s; novo security-review.spec.ts --repeat-each=2 → 2 passaram em 4,7 s. Dois cenários repetidos, não quatro distintos. Confirmados 403 nas duas direções Ana/Bruno, corpo Problema, ausência de recursos nas listagens e snapshots de projeto/tarefa/dependentes intactos após GET/PATCH/DELETE alheios. Cenário existente confirma concessão e revogação de colaboração. Todos com sessões/CSRF reais e dados fictícios próprios.
+
+npm.cmd --prefix frontend run lint → exit 0, sem erros/avisos ESLint. Zero ficheiros sinalizados pela procura dos padrões de chaves privadas/tokens GitHub/AWS no conjunto versionado; pesquisa limitada, sem afirmar ausência universal de segredos. Q01 confirmado por código e simulação Node de loop interrompido, sem falha induzida na BD; proposta pendente. R01 potencial Unicode por validar; M01 manutenção. Zero vulnerabilidades confirmadas nos cenários executados; não é garantia integral.
+
+SQL final conserva 2 utilizadores/2 projetos/3 tarefas/1 comentário/2 atribuições. Containers/rede isolados removidos por down sem -v, volume conservado. Sem nova execução backend/unitários/suite E2E completa/timeout/reinícios neste exercício. Novo teste e docs locais, produção/contrato/dependências inalterados; sem commit/push. README e plano atualizados; propostas aguardam revisão humana.

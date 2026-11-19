@@ -113,3 +113,8 @@ T05/T06 reforçados em TaskCrudTest.createDefaultsIdentityAndPersistenceInNewSes
 ## Atualização — Exercício 4 (19/11/2026)
 
 T14 consolidado no cenário `E2E criação em projeto: login, lista persistente e progresso sem recarregar` de e2e/tests/tasks.spec.ts: autenticação UI, abertura de projeto preparado por API, criação UI, tarefa única/visível com rótulos corretos, reload e consulta API com DTO idêntico. Mantida regressão de progresso. Executado com --repeat-each=2 contra Compose/BD/portas/volume próprios: 2 passaram, zero falhas/ignorados. afterEach confirma remoção dos IDs com GET 404 e SQL final conserva baseline. T15/T16 não foram executados de novo neste exercício. Comandos, evidências e limites em verification.md.
+
+
+## Atualização — Exercício 5 (19/11/2026)
+
+Revisão em [quality-security-review.md](quality-security-review.md). Novo security-review.spec.ts complementa T08/F13/CA-US-16-01 com GET/PATCH/DELETE em ambas as direções, erros 403 e snapshots autorizados sem alterações; dois passes com fixtures novas. Cenário existente de IDs alheios/revogação (inclui pessoais de T09 e dependentes) repetido duas vezes com sucesso. Não se aprova automaticamente toda a matriz T08–T11; sem nova execução unitária/integração neste exercício. ESLint frontend sem findings. Q01: limpeza sequencial pode parar antes dos restantes IDs se ocorrer falha; correção proposta ainda não aprovada. R01: Unicode continua pendente, sem novas regras impostas. Limites e evidências no relatório.

@@ -66,3 +66,12 @@ Execuções reais: Maven verify → 86 aprovados/0 falhas/0 erros/0 ignorados; P
 ## Registo Git — Ficha 04, exercícios 1–4 e organização AAA
 
 O utilizador autorizou a criação de issues e commits em 19/11/2026. Registo retroativo explícito, sem reescrever o histórico: #11 plano, #12 unitários, #13 organização AAA, #14 integração, #15 E2E. Commits separados com Refs; os checkpoints anteriores "sem commit/push" descrevem o momento de cada exercício. Este pedido não inclui push; confirmação dos SHAs locais nas respetivas issues, abertas até publicação. A separação foi preparada no index sem substituir as fontes finais da pasta de trabalho; operações/asserções finais e evidências das execuções anteriores conservadas. Não houve nova execução de testes apenas para este registo Git. Exercício 5 ainda por realizar.
+
+
+## Exercício 5 — Code Review e Security Review (19/11/2026)
+
+**Ferramenta:** ChatGPT/Codex. Pedido anexado: rever alterações recentes e controlo de acesso com duas contas fictícias, executar ferramenta estática disponível, distinguir factos/riscos/melhorias, propor correções antes de alterar produção e documentar resultados reais.
+
+Plano apresentado: diff dos cinco commits da Ficha 04 e revisão dirigida dos componentes de autenticação/autorização, ESLint, cenários de IDs alheios em Compose isolado. Decisão da IA: reutilizar cenário de revogação e acrescentar teste complementar de snapshots/erros nas duas direções; não inventar vulnerabilidade a partir de 403/404, SQL com nomes internos de tabelas ou cookie local HTTP. Nenhuma ferramenta instalada ou produção alterada.
+
+Resultado: dois cenários Playwright repetidos duas vezes, todos passaram; ESLint exit0; procura limitada por padrões de segredos sem ficheiros sinalizados. Q01 fragilidade de cleanup confirmada por código/simulação, R01 ambiguidade Unicode potencial, M01 manutenção. Correções não aplicadas; revisão humana do relatório ainda pendente. Baseline isolado conservado, containers/rede removidos sem apagar volume. Detalhes/comandos/limites em quality-security-review.md e verification.md; novo security-review.spec.ts com AAA. Sem commit/push.
