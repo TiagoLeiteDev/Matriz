@@ -77,12 +77,13 @@ jobs:
           PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/e2e-normal.json
         run: npm --prefix e2e test -- --reporter=json
       - name: Reinícios isolados
+        working-directory: e2e
         env:
           PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/e2e-restarts.json
           MATRIZ_RESTART_TEST: '1'
           MATRIZ_TASK_RESTART_TEST: '1'
           MATRIZ_COLLAB_RESTART_TEST: '1'
-        run: npm --prefix e2e test -- --grep '@restart|@task-restart|@collaboration-restart' --reporter=json
+        run: node node_modules/@playwright/test/cli.js test --grep '@restart|@task-restart|@collaboration-restart' --reporter=json
       - name: Resumo sem dados sensíveis
         if: always()
         run: python3 scripts/ci-summary.py

@@ -155,7 +155,18 @@ test('verificação: criação na interface é consultável com os mesmos dados 
 
   // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
   await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
-  await page.reload(); await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+  // Arrange — observar a consulta real de comentários na nova página.
+  const commentsAfterReload = page.waitForResponse(response => response.request().method() === 'GET'
+    && new URL(response.url()).pathname === `/api/tarefas/${task.id}/comentarios`)
+
+  // Act — recarregar e aguardar a resposta da API, sem espera temporizada.
+  await page.reload()
+  const restoredComments = await commentsAfterReload
+
+  // Assert — exigir consulta autorizada, dados persistidos e apresentação na UI.
+  expect(restoredComments.status()).toBe(200)
+  expect((await restoredComments.json()).some((row: { conteudo: string }) => row.conteudo === 'Persistência verificada')).toBe(true)
+  await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
 
   // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Lista de tarefas', exact: true }).click()

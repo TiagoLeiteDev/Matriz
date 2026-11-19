@@ -153,6 +153,12 @@ test('colaborador consulta mas não recebe controlos de gestão ou projetos alhe
 
   // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Terminar sessão' }).click()
+
+  // Assert — o logout tem de terminar antes de navegar para não abortar o pedido.
+  await expect(page.getByRole('heading', { name: 'Iniciar sessão', exact: true })).toBeVisible()
+  expect((await page.request.get('/api/sessao')).status()).toBe(401)
+
+  // Act — navegar apenas depois de a sessão anterior ter sido invalidada.
   await page.goto('/')
 
   // Arrange — preparar o próximo cenário/dados.
