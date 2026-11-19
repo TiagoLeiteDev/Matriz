@@ -100,8 +100,8 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
         <p role="alert">{error}</p><button onClick={() => { setLoading(true); setError(''); setRevision(value => value + 1) }}>Tentar novamente</button>
       </> : id && selected ? <article aria-labelledby="project-title">
         <h2 id="project-title">{selected.nome}</h2><p className="description">{selected.descricao || 'Sem descrição.'}</p>
-        <dl><dt>Proprietário</dt><dd>{selected.proprietario.nome}</dd><dt>Situação</dt><dd>{selected.arquivado ? 'Arquivado' : 'Ativo'}</dd>
-          <dt>Progresso</dt><dd>{selected.progresso.totalTarefas === 0 ? '0% — Sem tarefas' : `${selected.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}% (${selected.progresso.tarefasConcluidas}/${selected.progresso.totalTarefas})`}</dd></dl>
+        <dl className="record-meta"><div><dt>Proprietário</dt><dd>{selected.proprietario.nome}</dd></div><div><dt>Situação</dt><dd><span className="badge">{selected.arquivado ? 'Arquivado' : 'Ativo'}</span></dd></div>
+          <div><dt>Progresso</dt><dd>{selected.progresso.totalTarefas === 0 ? '0% — Sem tarefas' : `${selected.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}% (${selected.progresso.tarefasConcluidas}/${selected.progresso.totalTarefas})`}</dd><progress aria-label="Progresso do projeto" max={100} value={selected.progresso.percentagem} /></div></dl>
         {owner ? <div className="actions"><button disabled={busy} onClick={() => { setSuccess(''); setForm('edit') }}>Editar projeto</button>
           <button disabled={busy} onClick={changeArchive}>{selected.arquivado ? 'Restaurar projeto' : 'Arquivar projeto'}</button>
           <button disabled={busy} onClick={() => { setError(''); setSuccess(''); setConfirmDelete(true) }}>Eliminar projeto</button></div>
@@ -110,7 +110,7 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
         <TasksWorkspace key={`${selected.id}-${accessRevision}`} userId={user.id} projectId={selected.id} readOnly={selected.arquivado}
           onChanged={tasksChanged} onSessionExpired={onSessionExpired} />
       </article> : <>
-        <h2>Projetos</h2><button onClick={() => { setSuccess(''); setForm('create') }}>Criar projeto</button>
+        <div className="section-heading"><div><p className="eyebrow">ORGANIZAR E COLABORAR</p><h2>Projetos</h2></div><button className="primary" onClick={() => { setSuccess(''); setForm('create') }}>Criar projeto</button></div>
         <form className="project-search" onSubmit={search}><label htmlFor="project-search">Pesquisar por nome</label>
           <input id="project-search" type="search" value={query} onChange={event => setQuery(event.target.value)} />
           <button type="submit">Pesquisar</button>
@@ -120,6 +120,7 @@ export default function ProjectsWorkspace({ user, onSessionExpired }: { user: Us
         {projects.length === 0 ? <p>Nenhum projeto encontrado.</p> : <ul className="project-list">{projects.map(project => <li key={project.id}>
           <a href={`#projetos/${project.id}`} onClick={event => { event.preventDefault(); navigate(project.id) }}>{project.nome}</a>
           <span>{project.proprietario.id === user.id ? 'Proprietário' : 'Colaborador'} · {project.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}%</span>
+          <progress aria-label={`Progresso de ${project.nome}`} max={100} value={project.progresso.percentagem} />
         </li>)}</ul>}
       </>}
     </>}

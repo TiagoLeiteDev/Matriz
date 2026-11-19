@@ -4,8 +4,8 @@ export type TaskView = 'list' | 'kanban' | 'calendar'
 export default function TaskViews({ tasks, view, onView, month, onMonth, onOpen }: {
   tasks: Task[]; view: TaskView; onView: (view: TaskView) => void; month: string; onMonth: (month: string) => void; onOpen: (id: string) => void
 }) {
-  function card(task: Task) { return <button className="task-card" aria-label={task.titulo} key={task.id} onClick={() => onOpen(task.id)}>
-    <strong>{task.titulo}</strong><span>{states[task.estado]} · {task.prioridade ? priorities[task.prioridade] : 'Sem prioridade'} · {task.prazo ?? 'Sem prazo'}</span>
+  function card(task: Task) { return <button className={`task-card state-${task.estado}`} aria-label={task.titulo} key={task.id} onClick={() => onOpen(task.id)}>
+    <strong>{task.titulo}</strong><span><span className={`badge state-${task.estado}`}>{states[task.estado]}</span> · {task.prioridade ? priorities[task.prioridade] : 'Sem prioridade'} · {task.prazo ?? 'Sem prazo'}</span>
   </button> }
   const [year, number] = month.split('-').map(Number)
   function dateAt(y: number, m: number, d = 1) { const date = new Date(0); date.setFullYear(y, m, d); date.setHours(0, 0, 0, 0); return date }

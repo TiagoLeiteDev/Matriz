@@ -5,6 +5,7 @@ import LoginForm from './features/auth/LoginForm'
 import ProjectsWorkspace from './features/projects/ProjectsWorkspace'
 import TasksWorkspace from './features/tasks/TasksWorkspace'
 import Dashboard from './features/projects/Dashboard'
+import AppShell from './components/AppShell'
 
 export default function App() {
   const [user, setUser] = useState<UserProfile | null>(null)
@@ -51,17 +52,15 @@ export default function App() {
     catch (error: unknown) { failure(error) }
     finally { setBusy(false) }
   }
-  return <main>
-    <h1>Matriz</h1>
-    {loading ? <p role="status">A verificar sessão…</p> : user ? <section aria-labelledby="profile-title">
-      <h2 id="profile-title">Olá, {user.nome}</h2><p>{user.email}</p>
-      <p>A sessão termina após 60 minutos de inatividade.</p>
-      {message && <p role="status">{message}</p>}
-      <div className="actions"><button onClick={refresh} disabled={busy}>Atualizar perfil</button>
-        <button onClick={exit} disabled={busy}>Terminar sessão</button></div>
-      <nav className="actions" aria-label="Navegação principal"><button onClick={() => { window.location.hash = 'painel' }}>Painel</button><button onClick={() => { window.location.hash = 'projetos' }}>Projetos</button>
-        <button onClick={() => { window.location.hash = 'tarefas' }}>Tarefas</button></nav>
-      {route.startsWith('#tarefas') ? <TasksWorkspace userId={user.id} onSessionExpired={sessionExpired} /> : route.startsWith('#projetos') ? <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} /> : <Dashboard onSessionExpired={sessionExpired} />}
-    </section> : <LoginForm message={message} onLogin={profile => { setUser(profile); setMessage('') }} />}
+  if (loading) return <main className="session-loading"><span className="brand-mark" aria-hidden="true">m</span><h1>Matriz</h1><p role="status">A verificar sessão…</p></main>
+  if (user) return <AppShell user={user} route={route} busy={busy} message={message} onRefresh={refresh} onLogout={exit}>
+    {route.startsWith('#tarefas') ? <TasksWorkspace userId={user.id} onSessionExpired={sessionExpired} /> : route.startsWith('#projetos') ? <ProjectsWorkspace user={user} onSessionExpired={sessionExpired} /> : <Dashboard onSessionExpired={sessionExpired} />}
+  </AppShell>
+  return <main className="login-layout">
+    <div className="login-story"><div className="brand"><span className="brand-mark" aria-hidden="true">m</span><h1>Matriz</h1></div>
+      <div><p className="eyebrow">MENOS DISPERSÃO. MAIS DIREÇÃO.</p><h2>Um lugar para<br />dar forma<br />às tuas ideias<span>.</span></h2><p>Organiza projetos, acompanha tarefas e constrói o próximo passo com a tua equipa.</p></div>
+      <p className="login-signature">Organiza. Prioriza. Concretiza.</p>
+    </div>
+    <div className="login-panel"><p className="eyebrow">O TEU ESPAÇO DE TRABALHO</p><LoginForm message={message} onLogin={profile => { setUser(profile); setMessage('') }} /></div>
   </main>
 }

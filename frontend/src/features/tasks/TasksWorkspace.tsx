@@ -101,24 +101,24 @@ export default function TasksWorkspace({ userId, projectId, readOnly = false, on
       defaultProject={projectId} userId={userId} onSaved={saved} onCancel={() => setForm(null)} onSessionExpired={onSessionExpired} /> : <>
       {loading ? <p role="status">A carregar tarefas…</p> : error && !confirm ? <><p role="alert">{error}</p><button onClick={() => { setLoading(true); setError(''); setRevision(n => n + 1) }}>Tentar novamente</button></> : id && selected ? <article>
         <h3>{selected.titulo}</h3><p className="description">{selected.descricao || 'Sem descrição.'}</p>
-        <dl><dt>Estado</dt><dd>{states[selected.estado]}</dd><dt>Prioridade</dt><dd>{selected.prioridade ? priorities[selected.prioridade] : 'Sem prioridade'}</dd>
-          <dt>Prazo</dt><dd>{selected.prazo || 'Sem prazo'}</dd><dt>Projeto</dt><dd>{selected.projetoId ? projects.find(p => p.id === selected.projetoId)?.nome ?? 'Projeto arquivado' : 'Tarefa pessoal'}</dd></dl>
+        <dl className="record-meta"><div><dt>Estado</dt><dd><span className={`badge state-${selected.estado}`}>{states[selected.estado]}</span></dd></div><div><dt>Prioridade</dt><dd>{selected.prioridade ? priorities[selected.prioridade] : 'Sem prioridade'}</dd></div>
+          <div><dt>Prazo</dt><dd>{selected.prazo || 'Sem prazo'}</dd></div><div><dt>Projeto</dt><dd>{selected.projetoId ? projects.find(p => p.id === selected.projetoId)?.nome ?? 'Projeto arquivado' : 'Tarefa pessoal'}</dd></div></dl>
         {archived ? <p>Projeto arquivado: apenas consulta.</p> : <div className="actions"><button onClick={() => { setSuccess(''); setForm('edit') }}>Editar tarefa</button>
           <button onClick={() => { setError(''); setSuccess(''); setConfirm(true) }}>Eliminar tarefa</button></div>}
         <TaskAssignees key={selected.id} taskId={selected.id} readOnly={archived} onSessionExpired={onSessionExpired} />
         <TaskComments key={selected.id} taskId={selected.id} readOnly={archived} onSessionExpired={onSessionExpired} />
       </article> : <>
-        <h3>Tarefas</h3><button onClick={() => { setSuccess(''); setForm('create') }}>Nova tarefa</button>
+        <div className="section-heading"><div><p className="eyebrow">FOCO NO PRÓXIMO PASSO</p><h3>Tarefas</h3></div><button className="primary" onClick={() => { setSuccess(''); setForm('create') }}>Nova tarefa</button></div>
         <form className="task-filters" onSubmit={filter}>
-          <label htmlFor="task-search">Pesquisar título</label><input id="task-search" type="search" value={draft.q} onChange={e => setDraft({ ...draft, q: e.target.value })} />
-          {!projectId && <><label htmlFor="task-project-filter">Filtrar por projeto</label><select id="task-project-filter" value={draft.project} onChange={e => setDraft({ ...draft, project: e.target.value })}>
-            <option value="">Todos os acessíveis</option><option value="__none">Sem projeto (pessoais)</option>{projects.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</select></>}
-          <label htmlFor="task-state-filter">Filtrar por estado</label><select id="task-state-filter" value={draft.state} onChange={e => setDraft({ ...draft, state: e.target.value })}>
-            <option value="">Todos os estados</option>{Object.entries(states).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-          <label htmlFor="task-priority-filter">Filtrar por prioridade</label><select id="task-priority-filter" value={draft.priority} onChange={e => setDraft({ ...draft, priority: e.target.value })}>
-            <option value="">Todas as prioridades</option><option value="__none">Sem prioridade</option>{Object.entries(priorities).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
-          <label htmlFor="task-from">Prazo desde</label><input id="task-from" type="date" value={draft.from} onChange={e => setDraft({ ...draft, from: e.target.value })} />
-          <label htmlFor="task-to">Prazo até</label><input id="task-to" type="date" value={draft.to} onChange={e => setDraft({ ...draft, to: e.target.value })} />
+          <div className="filter-field"><label htmlFor="task-search">Pesquisar título</label><input id="task-search" type="search" value={draft.q} onChange={e => setDraft({ ...draft, q: e.target.value })} /></div>
+          {!projectId && <div className="filter-field"><label htmlFor="task-project-filter">Filtrar por projeto</label><select id="task-project-filter" value={draft.project} onChange={e => setDraft({ ...draft, project: e.target.value })}>
+            <option value="">Todos os acessíveis</option><option value="__none">Sem projeto (pessoais)</option>{projects.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</select></div>}
+          <div className="filter-field"><label htmlFor="task-state-filter">Filtrar por estado</label><select id="task-state-filter" value={draft.state} onChange={e => setDraft({ ...draft, state: e.target.value })}>
+            <option value="">Todos os estados</option>{Object.entries(states).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+          <div className="filter-field"><label htmlFor="task-priority-filter">Filtrar por prioridade</label><select id="task-priority-filter" value={draft.priority} onChange={e => setDraft({ ...draft, priority: e.target.value })}>
+            <option value="">Todas as prioridades</option><option value="__none">Sem prioridade</option>{Object.entries(priorities).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+          <div className="filter-field"><label htmlFor="task-from">Prazo desde</label><input id="task-from" type="date" value={draft.from} onChange={e => setDraft({ ...draft, from: e.target.value })} /></div>
+          <div className="filter-field"><label htmlFor="task-to">Prazo até</label><input id="task-to" type="date" value={draft.to} onChange={e => setDraft({ ...draft, to: e.target.value })} /></div>
           <div className="actions"><button type="submit">Aplicar filtros</button><button type="button" onClick={() => { setDraft(empty); setFilters({ ...empty }); setLoading(true); setError(''); setRevision(n => n + 1) }}>Limpar filtros</button></div>
         </form>
         <p data-testid="task-count">Nesta lista: {tasks.length} tarefas.</p>

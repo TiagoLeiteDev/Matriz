@@ -18,15 +18,16 @@ export default function Dashboard({ onSessionExpired }: { onSessionExpired: () =
     }).finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
   }, [revision, onSessionExpired])
-  return <section aria-label="Painel inicial"><h2>Painel inicial</h2>
-    <button onClick={() => { setLoading(true); setError(''); setRevision(n => n + 1) }}>Atualizar painel</button>
+  return <section className="dashboard" aria-label="Painel inicial"><div className="section-heading"><div><p className="eyebrow">VISÃO GERAL</p><h2>Painel inicial</h2></div>
+    <button onClick={() => { setLoading(true); setError(''); setRevision(n => n + 1) }}>Atualizar painel</button></div>
     {loading ? <p role="status">A carregar painel…</p> : error ? <p role="alert">{error}</p> : data && <>
       <p>Tarefas pessoais e de projetos ativos a que tens acesso. Exclui projetos arquivados; não depende dos filtros da lista.</p>
       <dl className="summary">{Object.entries(states).map(([state, label]) => <div key={state}><dt>{label}</dt><dd data-testid={`count-${state}`}>{data.contagens[state as keyof typeof states]}</dd></div>)}</dl>
       <p data-testid="dashboard-total">Total: {Object.values(data.contagens).reduce((a, b) => a + b, 0)} tarefas.</p>
-      <a href="#tarefas">Consultar tarefas</a><h3>Projetos ativos acessíveis</h3>
+      <a className="text-link" href="#tarefas">Consultar tarefas <span aria-hidden="true">↗</span></a><h3>Projetos ativos acessíveis</h3>
       {data.projetos.length === 0 ? <p>Sem projetos ativos.</p> : <ul className="project-list">{data.projetos.map(project => <li key={project.id}>
-        <a href={`#projetos/${project.id}`}>{project.nome}</a><span>{project.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}%</span>
+        <a href={`#projetos/${project.id}`}>{project.nome}</a><span className="progress-value">{project.progresso.percentagem.toLocaleString('pt-PT', { maximumFractionDigits: 1 })}%</span>
+        <progress aria-label={`Progresso de ${project.nome}`} max={100} value={project.progresso.percentagem} />
       </li>)}</ul>}
     </>}
   </section>

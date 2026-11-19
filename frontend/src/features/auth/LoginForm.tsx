@@ -21,6 +21,7 @@ export default function LoginForm({ onLogin, message }: { onLogin: (user: UserPr
   }
   return <section aria-labelledby="login-title">
     <h2 id="login-title">Iniciar sessão</h2>
+    <p className="muted">Bem-vindo de volta. Vamos continuar?</p>
     {message && <p role="status">{message}</p>}
     <form onSubmit={submit}>
       <label htmlFor="email">Email</label>
