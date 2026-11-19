@@ -1,5 +1,11 @@
 # Matriz — Revisão final e evidências de entrega
 
+## Verificação adicional — modernização do frontend, 19/11/2026
+
+**Integração autorizada — issue [#21](https://github.com/TiagoLeiteDev/Matriz/issues/21):** código/testes em `32b019d`. Build Docker aprovado; instância isolada 18088/55438 e volume próprio, seed explícito apenas na base nova. Suite normal contra a imagem: **32 aprovados, 4 especiais ignorados, 49,7 s**. Imagem validada aplicada só ao container principal 8080, sem seed/recriação da BD; 2 testes SPA desktop/móvel aprovados em 5,1 s. Health principal e apresentação healthy; contagens SQL iguais às baselines (detalhe em frontend-modernization.md). A tag e a instância 18087 conservam a candidata anterior. SHAs publicados e resultado real da CI registados na issue #21. O parágrafo seguinte descreve a primeira fase local, anterior a esta autorização.
+
+Árvore local após a candidata: AppShell/layout e estilos, sem alterações backend/API/BD. Lint e build frontend aprovados; novos testes SPA desktop/360 px aprovados. Suite completa contra Vite 5173 → backend 8080: **32 aprovados, 4 especiais ignorados, 47,1 s**. Confirmados navegação no mesmo documento, histórico/reload, login/logout e fluxos existentes. Capturas de login/painel/tarefas desktop/móvel inspecionadas. Execução inicial interrompida por timeout de ligação ao Vite dentro da sandbox; após reinício fora da sandbox, suite concluída com sucesso. Não repetidos backend/reinícios/expiração/CI; sem commit/push. Tag e instância 18087 preservadas. [Alterações e limites](frontend-modernization.md), [registo IA](ai-logs/frontend-modernization.md).
+
 **Data:** 18/11/2026. **Exercício:** ficha 03, exercício 9. **Base publicada:** c9bcdcc. **Issue:** [#10](https://github.com/TiagoLeiteDev/Matriz/issues/10). Revisão local concluída; registo e publicação autorizados em 19/11/2026, com confirmação na issue #10. Relatório e critérios em [delivery-review.md](delivery-review.md). A matriz dos nove cenários do Exercício 8 está preservada no histórico abaixo.
 
 ## Resultados executados nesta revisão

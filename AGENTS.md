@@ -34,6 +34,8 @@ Java 21/Spring Boot/Maven/Spring Security, PostgreSQL/JPA/Flyway; React/TypeScri
 
 ## Persistência, navegação e concorrência
 
+Frontend: estrutura autenticada comum em components/AppShell.tsx; App coordena sessão e rotas por fragmento, componentes de negócio mantêm cliente /api. Preservar URLs de detalhe, histórico, secção ativa aria-current e navegação sem recarregar o documento. Testes frontend-shell.spec.ts verificam desktop/360 px; descrição em docs/frontend-modernization.md. Evolução após a candidata: não mover a tag v0.1.0-rc.1 nem confundir main atual com o conteúdo dessa tag.
+
 Flyway gere esquema, Hibernate apenas validate. Não editar V1/V2 aplicadas, executar clean/reset de volume ou ligar seed ao arranque normal. Seed só por --matriz.demo.seed-only=true explícito, sem repor dados editados/eliminados.
 
 Escritas têm transação e locks: projetos em ordem estável antes da tarefa, revalidando acesso/associação após lock. AssignmentCommands/CommentCommands usam TaskCommands.lockForManage dentro da transação. Remoção de colaboração usa lock do projeto e limpa atribuições atomicamente. Não retirar estes mecanismos como simplificação.

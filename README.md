@@ -2,6 +2,8 @@
 
 **Versão candidata: 0.1.0-rc.1.** [Changelog](CHANGELOG.md) · [Notas de versão](docs/release-notes.md).
 
+**Evolução após a candidata:** interface SPA modernizada com menu lateral, conta no cabeçalho, cartões e layout móvel. A navegação Painel/Projetos/Tarefas mantém a sessão sem recarregar o documento. [Descrição e verificações](docs/frontend-modernization.md) · [Issue #21](https://github.com/TiagoLeiteDev/Matriz/issues/21). A tag `v0.1.0-rc.1` preserva a candidata anterior; esta evolução está em «Não publicado» no Changelog, sem nova tag de versão.
+
 Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso AI-Powered Software Engineering.
 
 ## Funcionalidades e estado

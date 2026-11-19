@@ -4,6 +4,14 @@
 
 ## Ecrã principal — Tarefas e colaboração
 
+### Implementação visual atual — modernização de 19/11/2026
+
+Após o pedido de refatoração visual, a SPA utiliza menu lateral Painel/Projetos/Tarefas (navegação superior no móvel), conta no cabeçalho e conteúdo central. Painel com contagens, projetos/progresso e tarefas com filtros e cartões. Rastreabilidade funcional e regras de acesso abaixo mantidas; os wireframes anteriores são evidência conceptual, não capturas da nova disposição.
+
+[Login atual](frontend-moderno-login.png) · [Painel atual](frontend-moderno-painel.png) · [Projetos atuais](frontend-moderno-projetos.png) · [Tarefas atuais](frontend-moderno-tarefas.png) · [Móvel a 360 px](frontend-moderno-movel.png). [Descrição e resultados](../frontend-modernization.md).
+
+O utilizador apreciou positivamente o resultado («parece me muito melhor») e autorizou documentação, testes e integração. Esta apreciação não equivale a auditoria integral de acessibilidade nem a aceitação funcional humana exaustiva.
+
 Objetivo: consultar trabalho autorizado, editar tarefas, atribuir responsáveis e comentar. A tarefa selecionada pertence ao projeto Curso, de Ana (proprietária), partilhado com Bruno. A última linha é tarefa pessoal de Ana, não visível a Bruno. Os dados são fictícios.
 
 ![Tarefas colaborativas](wireframe-tarefas.png)

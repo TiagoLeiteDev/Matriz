@@ -1,5 +1,21 @@
 # Changelog
 
+## Não publicado
+
+### Interface
+
+- Estrutura comum AppShell após o login, menu lateral Painel/Projetos/Tarefas e cabeçalho com conta/logout.
+- Login, cartões de contagens/progresso, filtros e detalhes modernizados, com adaptação a ecrãs pequenos.
+- Navegação SPA por fragmentos preservada, incluindo histórico, reload e detalhe de projeto/tarefa.
+
+### Verificação
+
+- Dois testes AAA de navegação no mesmo documento, sessão/histórico e layout desktop/móvel.
+- Regressão local: 32 testes Playwright aprovados, quatro especiais ignorados; lint/build aprovados.
+- Documentação e capturas em docs/frontend-modernization.md; distribuição Docker e CI acompanhadas na issue #21.
+
+Regras funcionais, API, backend e migrations preservados. A tag v0.1.0-rc.1 continua a identificar a candidata anterior.
+
 ## 0.1.0-rc.1 — 2026-11-19
 
 Primeira versão candidata do MVP colaborativo. Código funcional e decisões das fichas 01–04 preservados; preparação de execução/entrega da Ficha 05.

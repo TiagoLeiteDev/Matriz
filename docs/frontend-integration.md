@@ -1,5 +1,7 @@
 # Matriz — Frontend e integração (Ficha 03, Exercício 7)
 
+**Atualização de apresentação — 19/11/2026:** frontend modernizado com estrutura comum após login, menu lateral, conta no cabeçalho e layout adaptável. API/funcionalidades preservadas; 32 testes Playwright aprovados tanto no Vite como na imagem Docker, quatro especiais ignorados. Imagem atualizada na porta 8080; tag candidata preservada. Ver [modernização](frontend-modernization.md) para capturas, execução e limites; publicação/CI na [issue #21](https://github.com/TiagoLeiteDev/Matriz/issues/21).
+
 **Data:** 18/11/2026. Fonte: 10 - Ficha Prática 03.pdf, página 5. Implementação por incrementos concluída e verificada localmente; issue [#8](https://github.com/TiagoLeiteDev/Matriz/issues/8), registo Git autorizado; confirmação de publicação na issue #8.
 
 ## Análise e decisões

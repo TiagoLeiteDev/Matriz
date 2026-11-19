@@ -1,5 +1,11 @@
 # Estado atual — versão candidata 0.1.0-rc.1
 
+## Evolução da interface após a candidata — 19/11/2026
+
+A SPA React passa a usar `frontend/src/components/AppShell.tsx` como estrutura comum autenticada: navegação Painel/Projetos/Tarefas, contexto da página e conta no cabeçalho, conteúdo central e rodapé. `App.tsx` continua a coordenar sessão e seleção do componente por fragmento; os componentes funcionais existentes conservam as chamadas ao cliente `/api`. A navegação não substitui o documento, preserva o histórico e permite reabrir detalhes por URL.
+
+Menu lateral no desktop e navegação superior no móvel; CSS comum define cartões, filtros, metadados e estados. Sem nova dependência ou alteração de módulos, monólito modular, unidade de entrega React/Spring, contrato ou persistência. Dois testes AAA adicionais verificam a estrutura desktop/móvel e navegação SPA; [evidências](frontend-modernization.md). Evolução autorizada na [issue #21](https://github.com/TiagoLeiteDev/Matriz/issues/21); a tag v0.1.0-rc.1 preserva o estado anterior.
+
 **Ficha 05, 19/11/2026.** Mantém-se a decisão ARQ-01/TEC-01; as secções anteriores preservadas abaixo descrevem a evolução. Workflow CI implementado em .github/workflows/ci.yml, validado em GitHub Actions, com evidências por SHA em verification.md.
 
 ```mermaid
