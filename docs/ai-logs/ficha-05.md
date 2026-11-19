@@ -44,3 +44,8 @@ Run main 44525278059: backend/lint/build/imagens/arranque passaram, passo E2E fa
 ## Diagnóstico E2E em CI e sincronização limitada
 
 Run 44526657622: 95 backend passaram; E2E 28 passaram/2 falharam/4 ignorados. Resumo corrigido identificou mvp-verification.spec.ts:158 (comentário após reload) e projects.spec.ts:159 (segundo login após logout). Inspeção mostrou navegação imediata após click logout, sem esperar a invalidacão; corrigido teste para esperar heading login e GET perfil401 antes de navegar. No reload, esperar resposta real de comentários200 e verificar conteúdo persistido antes da asserção UI. Mantidas todas as asserções, sem sleeps, retries, aumento de timeout ou alteração de produção. Falha reload pode ser sincronização/ambiente; não se declara causa funcional confirmada. CLI de reinícios passou a Node direta para evitar interpretação de pipe pelo npm.cmd no Windows; Linux usa a mesma invocação.
+
+
+## Causa confirmada do falso positivo no comentário
+
+Run 44528619364: 29 E2E passaram/1 falhou/4 ignorados; logout corrigido. Comentário GET200 mas conteúdo ausente após reload. Probe temporário no clone (apenas diagnóstico, sem commit) executou o seletor antes de submeter e devolveu COMMENT_SELECTOR_PROBE ['TEXTAREA']: getByText encontrava o rascunho, não um comentário persistido. Teste corrigido para exigir POST201, ID/conteúdo e listitem real; reload valida o mesmo ID na resposta e na UI. Acrescentada asserção de que o rascunho não aparece na lista antes do envio. Não houve alteração de produção nem diagnóstico de perda de dados. O probe será removido do clone.
