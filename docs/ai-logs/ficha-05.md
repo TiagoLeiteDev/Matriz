@@ -39,3 +39,8 @@ Manifests Maven/frontend/E2E e lockfiles alinhados sem mudar versões de depend�
 ## Troubleshooting da primeira CI
 
 Run main 44525278059: backend/lint/build/imagens/arranque passaram, passo E2E falhou. Resumo report_unavailable: mistura de reporter list/json na mesma saída não produziu JSON isolado para o parser. Corrigido workflow para PLAYWRIGHT_JSON_OUTPUT_FILE, conforme documentação oficial, sem redirecionamento misto; resumo tolera texto posterior e inclui apenas título/localização estáticos dos testes falhados (não payloads/erros/cookies). A causa funcional da falha E2E ainda não é conhecida nesta etapa; será investigada com a nova evidência. Não corrigir código da aplicação por hipótese.
+
+
+## Diagnóstico E2E em CI e sincronização limitada
+
+Run 44526657622: 95 backend passaram; E2E 28 passaram/2 falharam/4 ignorados. Resumo corrigido identificou mvp-verification.spec.ts:158 (comentário após reload) e projects.spec.ts:159 (segundo login após logout). Inspeção mostrou navegação imediata após click logout, sem esperar a invalidacão; corrigido teste para esperar heading login e GET perfil401 antes de navegar. No reload, esperar resposta real de comentários200 e verificar conteúdo persistido antes da asserção UI. Mantidas todas as asserções, sem sleeps, retries, aumento de timeout ou alteração de produção. Falha reload pode ser sincronização/ambiente; não se declara causa funcional confirmada. CLI de reinícios passou a Node direta para evitar interpretação de pipe pelo npm.cmd no Windows; Linux usa a mesma invocação.
