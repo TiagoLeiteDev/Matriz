@@ -149,12 +149,22 @@ test('verificação: criação na interface é consultável com os mesmos dados 
   // Arrange — preparar o próximo cenário/dados.
   const comments = page.getByRole('region', { name: 'Comentários da tarefa', exact: true })
   await comments.getByLabel('Conteúdo do comentário').fill('Persistência verificada')
+  // Assert — o rascunho no textarea ainda não é um comentário guardado.
+  await expect(comments.getByRole('listitem').getByText('Persistência verificada', { exact: true })).toHaveCount(0)
+
+  // Arrange — observar a gravação real antes de permitir um reload.
+  const commentSaved = page.waitForResponse(response => response.request().method() === 'POST'
+    && new URL(response.url()).pathname === `/api/tarefas/${task.id}/comentarios`)
 
   // Act — executar a operação em teste.
   await comments.getByRole('button', { name: 'Adicionar comentário', exact: true }).click()
+  const commentResponse = await commentSaved
+  expect(commentResponse.status()).toBe(201)
+  const persistedComment = await commentResponse.json()
+  expect(persistedComment.conteudo).toBe('Persistência verificada')
 
   // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
-  await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+  await expect(comments.getByRole('listitem').getByText('Persistência verificada', { exact: true })).toBeVisible()
   // Arrange — observar a consulta real de comentários na nova página.
   const commentsAfterReload = page.waitForResponse(response => response.request().method() === 'GET'
     && new URL(response.url()).pathname === `/api/tarefas/${task.id}/comentarios`)
@@ -165,8 +175,8 @@ test('verificação: criação na interface é consultável com os mesmos dados 
 
   // Assert — exigir consulta autorizada, dados persistidos e apresentação na UI.
   expect(restoredComments.status()).toBe(200)
-  expect((await restoredComments.json()).some((row: { conteudo: string }) => row.conteudo === 'Persistência verificada')).toBe(true)
-  await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+  expect((await restoredComments.json()).some((row: { id: string; conteudo: string }) => row.id === persistedComment.id && row.conteudo === 'Persistência verificada')).toBe(true)
+  await expect(comments.getByRole('listitem').getByText('Persistência verificada', { exact: true })).toBeVisible()
 
   // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Lista de tarefas', exact: true }).click()
@@ -178,7 +188,7 @@ test('verificação: criação na interface é consultável com os mesmos dados 
   await page.goBack()
 
   // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
-  await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+  await expect(comments.getByRole('listitem').getByText('Persistência verificada', { exact: true })).toBeVisible()
 
   // Act — executar a operação em teste.
   await page.getByRole('button', { name: 'Editar projeto', exact: true }).click()
@@ -193,7 +203,7 @@ test('verificação: criação na interface é consultável com os mesmos dados 
   await page.getByRole('button', { name: task.titulo, exact: true }).click()
 
   // Act & Assert — executar e verificar no mesmo pedido/helper ou asserção.
-  await expect(comments.getByText('Persistência verificada', { exact: true })).toBeVisible()
+  await expect(comments.getByRole('listitem').getByText('Persistência verificada', { exact: true })).toBeVisible()
 
   // Arrange — preparar o próximo cenário/dados.
   const fresh = await playwright.request.newContext({ baseURL })
