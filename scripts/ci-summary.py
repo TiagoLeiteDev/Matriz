@@ -20,9 +20,18 @@ for name in ("normal", "restarts"):
     # npm's command banner precedes the JSON reporter; never export that text.
     start = text.find("{\n")
     try:
-        data = json.loads(text[start:])
+        data, _ = json.JSONDecoder().raw_decode(text[start:])
         stats = data["stats"]
         summary["playwright"][name] = {key: stats.get(key, 0) for key in ("expected", "unexpected", "flaky", "skipped", "duration")}
+        failures = []
+        def inspect(suites):
+            for suite in suites:
+                for spec in suite.get("specs", []):
+                    if any(test.get("status") in ("unexpected", "flaky") for test in spec.get("tests", [])):
+                        failures.append({"file": spec.get("file"), "line": spec.get("line"), "title": spec.get("title")})
+                inspect(suite.get("suites", []))
+        inspect(data.get("suites", []))
+        summary["playwright"][name]["failures"] = failures
     except (ValueError, KeyError):
         summary["playwright"][name] = {"executed": False, "report_unavailable": True}
 Path("artifacts").mkdir(exist_ok=True)

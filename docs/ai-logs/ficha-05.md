@@ -34,3 +34,8 @@ Pipeline criada e publicada em fe5ad97; execução main https://github.com/Tiago
 ## Exercício 5 — Candidata 0.1.0-rc.1 preparada
 
 Manifests Maven/frontend/E2E e lockfiles alinhados sem mudar versões de dependências. Maven finalName=matriz e Dockerfile copia matriz.jar, eliminando dependência do nome da versão no caminho. README/AGENTS/arquitetura, CHANGELOG.md, notas da candidata e manifesto de 159 ficheiros atualizados. Maven package -DskipTests passou, manifest do JAR confirmou Implementation-Version 0.1.0-rc.1; não apresentado como nova execução de testes. A tag só será criada após validação final/CI. A linha vazia externa no Dockerfile mantém-se fora do index; alterações funcionais do Dockerfile limitadas ao caminho do JAR.
+
+
+## Troubleshooting da primeira CI
+
+Run main 44525278059: backend/lint/build/imagens/arranque passaram, passo E2E falhou. Resumo report_unavailable: mistura de reporter list/json na mesma saída não produziu JSON isolado para o parser. Corrigido workflow para PLAYWRIGHT_JSON_OUTPUT_FILE, conforme documentação oficial, sem redirecionamento misto; resumo tolera texto posterior e inclui apenas título/localização estáticos dos testes falhados (não payloads/erros/cookies). A causa funcional da falha E2E ainda não é conhecida nesta etapa; será investigada com a nova evidência. Não corrigir código da aplicação por hipótese.
