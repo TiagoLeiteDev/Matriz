@@ -9,3 +9,7 @@ tmp
 docs
 .idea
 *.log
+
+artifacts
+e2e-normal.json
+e2e-restarts.json
