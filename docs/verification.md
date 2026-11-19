@@ -648,3 +648,49 @@ Probe com fixtures próprias: projeto arquivado, tarefa com responsável/coment�
 Variáveis no mesmo processo: COMPOSE_PROJECT_NAME=matriz-ficha05-local, APP_PORT=18086, DB_PORT=55436, APP_ALLOWED_ORIGINS e MATRIZ_BASE_URL=http://127.0.0.1:18086, PLAYWRIGHT_CHANNEL=chrome; DEMO_PASSWORD carregada sem impressão. App principal/volume não alterados. Evidências geradas locais fora do Git. Scripts de probe temporários não fazem parte da aplicação entregue.
 
 Pipeline criada e publicada em fe5ad97; execução main https://github.com/TiagoLeiteDev/Matriz/actions/runs/44525278059 ainda em curso ao registar esta etapa. Falha deliberada 0446cb0 em branch ci/ficha05-failure-demo: run https://github.com/TiagoLeiteDev/Matriz/actions/runs/44525427870 concluiu failure no passo backend; construir imagens ficou skipped. O teste AAAFailureDemonstrationTest foi removido em 1485bbc; recuperação publicada e aguarda resultado. Falha não entrou em main, sem reescrever histórico.
+
+
+## Ficha 05 — Validação final da candidata 0.1.0-rc.1 (19/11/2026)
+
+**Fonte/versão:** main d6abb5c9f2634e5bda68b0b3bf25ac9860f354ab; manifests 0.1.0-rc.1, JAR estável matriz.jar e contrato funcional OpenAPI 0.7.0. O fecho documental/tag será confirmado na issue #20 com o respetivo SHA, sem reescrever histórico.
+
+### CI real e falha/recuperação
+
+- Main [run 44529912559](https://github.com/TiagoLeiteDev/Matriz/actions/runs/44529912559) **success**, job 135580175683: lint/build frontend, **95 backend (0 falhas/erros/ignorados)**, build das imagens, Compose/seed/health, **30 normais (4 especiais ignorados)** e **3 reinícios separados** aprovados. Resumo seguro publicado; cleanup aprovado. Não contabilizar quatro ignorados como aprovados; expiração não corre neste workflow.
+- Falha controlada [run 44525427870](https://github.com/TiagoLeiteDev/Matriz/actions/runs/44525427870), SHA0446cb0, branch ci/ficha05-failure-demo: 96 testes/1 falha deliberada, backend failure, imagens skipped. Teste removido no commit1485bbc. Ensaios intermédios da recuperação detetaram problemas de E2E/relatório, descritos abaixo. [Run 44530492017](https://github.com/TiagoLeiteDev/Matriz/actions/runs/44530492017), SHAfa50155, concluiu **success**; teste deliberadamente falhado ausente do HEAD. A branch de demonstração tem a base anterior da app, sem mudança da lógica de negócio; não foi integrada em main.
+- Primeiras tentativas main44525278059 e44526657622 falharam na etapa E2E. Relatório misturado com stdout não era legível; corrigido para ficheiro JSON próprio. Novos dados identificaram logout seguido de navegação antes do fim e getByText a encontrar o rascunho no textarea. Probe confirmou TEXTAREA antes do envio. Testes corrigidos para esperar login/perfil401, POST201 e listitem/ID real; sem sleeps/retries/aumento de timeout nem correção de produção por hipótese. Run44528619364 tinha29 passes/1falha antes do seletor final; o resultado verde acima corresponde à correção efetiva.
+
+### Clone limpo e execução independente
+
+`git clone --no-hardlinks https://github.com/TiagoLeiteDev/Matriz.git tmp/ficha05-clean`, configuração nova copiada de .env.example e sem overlay de fontes locais. Clone atualizado por fetch/checkout detached para d6abb5c; git status limpo. Projeto Compose **matriz-ficha05-clean**, app18087/BD55437/rede/volume próprios. COMPOSE_PROJECT_NAME definido no processo e herdado pelos reinícios. App principal/volume não alterados.
+
+Comandos executados no clone: config --quiet; build app seed; up -d db --wait; --profile tools run --rm seed; up -d app --wait; npm --prefix e2e ci. Browser Chromium159.0.8154.6/v1255 instalado pelo Playwright1.65.1; sem canal Chrome no ensaio final.
+
+```powershell
+. ./scripts/Load-LocalEnv.ps1
+$env:COMPOSE_PROJECT_NAME = 'matriz-ficha05-clean'
+$env:APP_PORT = '18087'
+$env:DB_PORT = '55437'
+$env:APP_ALLOWED_ORIGINS = 'http://127.0.0.1:18087'
+$env:MATRIZ_BASE_URL = 'http://127.0.0.1:18087'
+$env:CI = 'true'
+Remove-Item Env:PLAYWRIGHT_CHANNEL -ErrorAction SilentlyContinue
+$env:PLAYWRIGHT_JSON_OUTPUT_FILE = Join-Path (Get-Location) 'e2e-normal.json'
+npm.cmd --prefix e2e test -- --reporter=json
+```
+
+Resultado final **30 passaram/4 ignorados em35,0s**. Três reinícios separados passaram em54,8s, com flags MATRIZ_RESTART_TEST/MATRIZ_TASK_RESTART_TEST/MATRIZ_COLLAB_RESTART_TEST=1. Invocação Node direta a partir de e2e: `node node_modules/@playwright/test/cli.js test --grep '@restart|@task-restart|@collaboration-restart' --reporter=json`. Primeira tentativa pelo npm.cmd no Windows interpretou o pipe como shell e falhou antes dos testes; corrigida invocação, não a aplicação.
+
+Os dois cenários de sincronização foram repetidos três vezes cada (6 passaram/13,6s) antes da correção final do seletor; a suite normal completa foi novamente executada depois desta correção, com30 passes. Probe temporário do seletor removido do clone; não integra a versão entregue.
+
+Expiração real separada: override temporário JSON no diretório ignorado tmp, app SERVER_SERVLET_SESSION_TIMEOUT=1m, flag MATRIZ_SHORT_SESSION_TEST=1, apenas auth.spec.ts --grep @expiry. **1 passou após65s sem pedidos**, execução1,1min; finalmente restaurado Compose sem override e health saudável, política normal60min reposta. Não confundir timeout de teste com política de produção.
+
+Persistência final: probe com projeto arquivado/tarefa/atribuição/comentário autor/instante e tarefa eliminada; down sem -v/up recriou containers. Novo login confirmou IDs/campos/arquivo/dependentes e tarefa eliminada404; fixtures removidas. SQL final: **2 utilizadores, 2 projetos, 3 tarefas, 1 comentário, 2 atribuições**. V1/V2 success, sem migration nova. Container uid100/gid101 (matriz), app.jar mostra0.1.0-rc.1; logs de arranque inspecionados sem erro crítico encontrado no âmbito pesquisado.
+
+### Documentação, segurança e limites
+
+README/AGENTS/arquitetura/plano, changelog/notas e manifesto159ficheiros atualizados. Versões dos manifests/lockfiles coerentes, links locais conferidos e git diff --check sem erros. Pesquisa limitada no conjunto versionado por padrões de chaves privadas/tokens GitHub/AWS: nenhum ficheiro sinalizado; não é certificação universal nem scanner de dependências. .env/gerados/dependências/relatórios/clones fora do Git/imagem.
+
+Workflow usa actions oficiais fixadas por SHA, contents:read, checkout sem credenciais persistidas, projeto/valores fictícios de CI, testes antes das imagens e resumo sem payloads/cookies/ambiente. Resumo inclui contagens e identificação estática de falhas, não relatórios brutos. Push de branches/PR/manual verifica CI; tags de identificação não duplicam a mesma execução.
+
+Não executados: apresentação/aceitação manual do formador, publicação pública/HTTPS/registry, outros browsers/sistemas fora dos ensaios, testes de carga/acessibilidade ou pentest integral. GitHub runner Linux e clone Windows são execuções reais em ambientes distintos; não equivalem a validação universal. Notas da candidata referenciam a confirmação final da tag/publicação na issue #20.

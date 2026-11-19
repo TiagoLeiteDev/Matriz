@@ -1,13 +1,13 @@
 # Ficha 05 — Plano ativo de preparação da entrega
 
-**19/11/2026 · base a9681f7 · plano aprovado pelo utilizador.** As tabelas anteriores da Ficha 03 abaixo são históricas; a Ficha 04 foi publicada até a9681f7. Ainda não há resultado CI nesta etapa.
+**19/11/2026 · base a9681f7 · plano aprovado pelo utilizador.** As tabelas anteriores da Ficha 03 abaixo são históricas; a Ficha 04 foi publicada até a9681f7. CI aprovada em main e na recuperação; evidências e limitações em verification.md.
 
 | Etapa | Issue | Critério / dependências | Estado |
 |---|---|---|---|
 | Plano e Docker/Compose | #17 | Configuração existente, build, health, seed explícito e persistência isolada | Concluído localmente: 95 backend/30 E2E, persistência e logs verificados |
-| GitHub Actions | #18 | Testes/builds antes das imagens, E2E e falha controlada seguida de recuperação | Implementada em fe5ad97; falha controlada confirmada, recuperação em validação |
-| Versão candidata | #19 | 0.1.0-rc.1, documentação, changelog/notas e inventário | Em preparação: manifests 0.1.0-rc.1, nome estável do JAR e documentação |
-| Validação final | #20 | Cópia limpa/versão identificada, app, dados, logs, CI e limitações | Por executar |
+| GitHub Actions | #18 | Testes/builds antes das imagens, E2E e falha controlada seguida de recuperação | Concluído: falha 44525427870 e recuperação 44530492017; main 44529912559 aprovado |
+| Versão candidata | #19 | 0.1.0-rc.1, documentação, changelog/notas e inventário | Concluído: manifests 0.1.0-rc.1, JAR matriz.jar, changelog/notas/inventário |
+| Validação final | #20 | Cópia limpa/versão identificada, app, dados, logs, CI e limitações | Concluído tecnicamente: clone limpo, testes, persistência, logs e CI; publicação/tag confirmadas na issue #20 |
 
 Reutilizar Dockerfile/Compose e apenas PostgreSQL como serviço externo. Manter volumes principais, migrations aplicadas e regras de acesso. Para ensaios usar projeto/portas/volume próprios e COMPOSE_PROJECT_NAME consistente nos comandos/subprocessos. Sem novas funcionalidades nem alojamento público. Relatórios em verification.md, registo da IA em ai-logs/ficha-05.md. Aprovação do plano autoriza a implementação e versionamento por etapas; resultados são registados apenas após execução.
 

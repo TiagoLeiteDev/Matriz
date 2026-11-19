@@ -1,3 +1,9 @@
+# Atualização de estado — Ficha 05, 19/11/2026
+
+CI e entrega técnica preparadas/validadas na candidata 0.1.0-rc.1: Docker/Compose, clone limpo Windows, runner Linux no GitHub, testes, changelog/notas e versão Git. Menções históricas a CI/ensaio pendentes abaixo são superadas por verification.md e pela issue #20. Regras funcionais/segurança preservadas; apresentação/aceitação manual do formador continuam por confirmar, sem alegar suporte universal a outros ambientes.
+
+---
+
 ﻿# Matriz — Restrições e decisões do MVP colaborativo
 
 **Versão:** 2.0, 18/11/2026. A base individual foi substituída por COL-01. Consultar scope-reconciliation.md para o histórico.

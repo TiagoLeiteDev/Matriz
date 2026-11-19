@@ -1,6 +1,6 @@
 # Estado atual — versão candidata 0.1.0-rc.1
 
-**Ficha 05, 19/11/2026.** Mantém-se a decisão ARQ-01/TEC-01; as secções anteriores preservadas abaixo descrevem a evolução. Workflow CI implementado em .github/workflows/ci.yml, ainda sujeito à evidência de execução em verification.md nesta etapa.
+**Ficha 05, 19/11/2026.** Mantém-se a decisão ARQ-01/TEC-01; as secções anteriores preservadas abaixo descrevem a evolução. Workflow CI implementado em .github/workflows/ci.yml, validado em GitHub Actions, com evidências por SHA em verification.md.
 
 ```mermaid
 flowchart LR

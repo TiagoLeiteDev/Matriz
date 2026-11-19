@@ -1,3 +1,5 @@
+> **Relatório histórico da Ficha 03.** O estado de CI/entrega técnica aqui datado de 18/11 foi posteriormente atualizado na Ficha 05. Consultar [verification.md](verification.md), [notas da candidata](release-notes.md) e [issue #20](https://github.com/TiagoLeiteDev/Matriz/issues/20). Preservam-se os resultados e limitações do ensaio original.
+
 # Matriz — Revisão final e preparação da entrega
 
 **Data:** 18/11/2026. **Exercício:** ficha 03, exercício 9. **Base publicada:** c9bcdcc. **Issue:** [#10](https://github.com/TiagoLeiteDev/Matriz/issues/10). Registo e publicação autorizados pelo utilizador em 19/11/2026; confirmação dos commits e do push na issue #10.

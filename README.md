@@ -158,7 +158,7 @@ npm.cmd --prefix e2e test -- tests/security-review.spec.ts --repeat-each=2
 npm.cmd --prefix frontend run lint
 ```
 
-A porta 18083 refere-se à instância de ensaio; iniciar os serviços antes dos testes. O relatório documenta Q01/R01 e decisões pendentes; não confundir verificações dirigidas com auditoria integral.
+A porta 18083 refere-se à instância de ensaio; iniciar os serviços antes dos testes. O relatório documenta Q01/R01, decisões humanas e correções aprovadas; não confundir verificações dirigidas com auditoria integral.
 
 
 Regressões do exercício 5: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts` não necessita de aplicação/BD. Para UI Unicode e autorização, com a instância isolada pronta e ambiente configurado: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts tests/tasks.spec.ts tests/security-review.spec.ts`. O teste de reinício continua opt-in e fica ignorado no comando normal.
@@ -166,10 +166,17 @@ Regressões do exercício 5: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts
 
 ## Integração contínua e versão candidata
 
-.github/workflows/ci.yml corre em push, pull_request e execução manual, com Java21/Node24.16.0 e actions fixadas por SHA. Instala pelos lockfiles, executa lint/build e Maven verify antes de construir as imagens; prepara Compose/seed fictício, executa Playwright normal e três reinícios separados. permissions contents:read; sem credenciais de checkout persistidas ou secrets de produção. Expiração real mantém execução separada (não reduzir os 60 minutos da aplicação normal).
+.github/workflows/ci.yml corre em push de branches, pull_request e execução manual, com Java21/Node24.16.0 e actions fixadas por SHA. Instala pelos lockfiles, executa lint/build e Maven verify antes de construir as imagens; prepara Compose/seed fictício, executa Playwright normal e três reinícios separados. permissions contents:read; sem credenciais de checkout persistidas ou secrets de produção. Expiração real mantém execução separada (não reduzir os 60 minutos da aplicação normal).
 
 COMPOSE_PROJECT_NAME identifica o ambiente em todos os comandos, incluindo subprocessos de reinício. Em CI usa o ID da execução; localmente escolher nome próprio, APP_PORT/DB_PORT e APP_ALLOWED_ORIGINS compatíveis. A variável deve estar presente no terminal que lança Playwright. Não misturar com a instância principal.
 
-scripts/ci-summary.py gera artifacts/ci-summary.json apenas com contagens de testes; a pipeline publica esse resumo durante sete dias. Não publica .env, relatórios brutos, cookies, payloads, screenshots ou traces. O build Docker salta testes internamente porque os mesmos são obrigatórios na etapa anterior da CI.
+scripts/ci-summary.py gera artifacts/ci-summary.json com contagens de testes e identificação estática de falhas; a pipeline publica esse resumo durante sete dias. Não publica .env, relatórios brutos, cookies, payloads, screenshots ou traces. O build Docker salta testes internamente porque os mesmos são obrigatórios na etapa anterior da CI.
 
 A versão candidata está nos manifests; o JAR usa nome estável backend/target/matriz.jar. A identificação Git final e evidências ficam em docs/release-notes.md/verification.md. A preparação não publica a aplicação ou imagens num registry.
+
+
+### Versão identificada da Ficha 05
+
+Após clonar, `git checkout v0.1.0-rc.1` seleciona a candidata identificada. Ver [notas da versão](docs/release-notes.md), [verificações](docs/verification.md) e [registo de IA da Ficha 05](docs/ai-logs/ficha-05.md). CI aprovada e prova de falha/recuperação com links para as execuções; confirmação do commit/tag final na [issue #20](https://github.com/TiagoLeiteDev/Matriz/issues/20).
+
+Para executar reinícios no Windows sem interpretação do pipe pelo npm.cmd, com ambiente isolado já configurado e as flags respetivas ativadas: entrar em e2e e usar `node node_modules/@playwright/test/cli.js test --grep '@restart|@task-restart|@collaboration-restart'`. Nunca usar flags de reinício sem COMPOSE_PROJECT_NAME da instância de teste.

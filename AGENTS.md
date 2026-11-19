@@ -80,6 +80,9 @@ Sempre que aplicável, organizar testes novos e alterados em Arrange, Act e Asse
 
 ## Ficha 05 — CI e versão candidata
 
-Versão 0.1.0-rc.1; JAR estável backend/target/matriz.jar. Workflow push/PR/manual: testes/lint/build antes das imagens, Compose/seed de demonstração e Playwright. Actions fixadas por SHA; permissions contents:read; publicar apenas resumo sem payloads. Scripts/ci-summary.py não exporta ambiente ou corpos dos relatórios. Artefactos gerados ignorados pelo Git.
+Versão 0.1.0-rc.1; JAR estável backend/target/matriz.jar. Workflow push/PR/manual: testes/lint/build antes das imagens, Compose/seed de demonstração e Playwright. Actions fixadas por SHA; permissions contents:read; publicar resumo de contagens e identificação estática de falhas, sem payloads. Scripts/ci-summary.py não exporta ambiente ou corpos dos relatórios. Artefactos gerados ignorados pelo Git.
 
 Em ensaios/reinícios, definir COMPOSE_PROJECT_NAME no processo que lança Docker e Playwright, além de APP_PORT/DB_PORT/APP_ALLOWED_ORIGINS/MATRIZ_BASE_URL. Os subprocessos dos testes herdam o nome e não devem reiniciar a app principal. Manter --wait/health e dados/volume entre recriações. Testes especiais não executados devem ser assinalados, não contados como aprovados.
+
+
+CI da Ficha 05 verificada: 95 backend, 30 normais/4 especiais ignorados e 3 reinícios em etapa separada; resultados por SHA em verification.md e issue #20. Expiração real validada separadamente em instância temporária de um minuto e reposta a política de 60 min. Não transformar estes resultados em garantia universal ou nova execução. Push de branches/PR/manual executa CI; tags de identificação não duplicam o mesmo pipeline. Últimas correções foram nos testes: aguardar logout concluído antes de navegar e exigir POST201/listitem do comentário, sem confundir rascunho no textarea com persistência.
