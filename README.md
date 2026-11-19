@@ -1,5 +1,7 @@
 # Matriz
 
+**Versão candidata: 0.1.0-rc.1.** [Changelog](CHANGELOG.md) · [Notas de versão](docs/release-notes.md).
+
 Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso AI-Powered Software Engineering.
 
 ## Funcionalidades e estado
@@ -13,7 +15,7 @@ Aplicação colaborativa de gestão de projetos e tarefas, desenvolvida no curso
 - Vários responsáveis elegíveis e comentários com autor/data do backend; conteúdo novo de 1–2000 pontos de código Unicode, não apenas espaços.
 - Painel com projetos ativos acessíveis e contagens que incluem tarefas pessoais e excluem arquivados, independentemente dos filtros da lista.
 
-Os nove cenários funcionais foram verificados no Exercício 8. A revisão de entrega do Exercício 9 está descrita em [delivery-review.md](docs/delivery-review.md), com resultados e pendências efetivos. **GitHub Actions está planeado, mas não existe workflow nem resultado de CI neste repositório.** Não confundir testes locais com CI ou ensaio noutro computador.
+Os nove cenários funcionais foram verificados no Exercício 8. A revisão de entrega do Exercício 9 está descrita em [delivery-review.md](docs/delivery-review.md), com resultados e pendências efetivos. O workflow [Matriz CI](https://github.com/TiagoLeiteDev/Matriz/actions/workflows/ci.yml) verifica testes, builds e execução Compose; resultados reais e prova de falha/recuperação são registados em [verification.md](docs/verification.md). Não confundir testes locais com CI ou ensaio noutro computador.
 
 Sem organizações/equipas globais, registo público, recuperação de palavra-passe, notificações, recorrência ou edição/eliminação autónoma de comentários. Publicação na Internet não preparada/aprovada.
 
@@ -68,7 +70,7 @@ docker compose stop app
 docker compose up -d db --wait
 . ./scripts/Load-LocalEnv.ps1
 ./backend/mvnw.cmd -f backend/pom.xml verify
-java -jar backend/target/matriz-0.1.0-SNAPSHOT.jar
+java -jar backend/target/matriz.jar
 ```
 
 Noutro terminal:
@@ -79,7 +81,7 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
-Vite normalmente em 127.0.0.1:5173, com proxy /api e /actuator/health para 8080; consultar o endereço efetivo no terminal. O JAR produzido diretamente pelo Maven não integra o React; a imagem Docker integra-o. Para seed no host, com backend parado e ambiente carregado: `java -jar backend/target/matriz-0.1.0-SNAPSHOT.jar --matriz.demo.seed-only=true`.
+Vite normalmente em 127.0.0.1:5173, com proxy /api e /actuator/health para 8080; consultar o endereço efetivo no terminal. O JAR produzido diretamente pelo Maven não integra o React; a imagem Docker integra-o. Para seed no host, com backend parado e ambiente carregado: `java -jar backend/target/matriz.jar --matriz.demo.seed-only=true`.
 
 Em Linux/macOS usar `sh backend/mvnw -f backend/pom.xml verify` e npm/npx sem `.cmd`, carregando as variáveis no shell. Os ensaios registados foram feitos em Windows/Docker Linux; não afirmar validação de outros sistemas.
 
@@ -160,3 +162,14 @@ A porta 18083 refere-se à instância de ensaio; iniciar os serviços antes dos 
 
 
 Regressões do exercício 5: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts` não necessita de aplicação/BD. Para UI Unicode e autorização, com a instância isolada pronta e ambiente configurado: `npm.cmd --prefix e2e test -- tests/cleanup.spec.ts tests/tasks.spec.ts tests/security-review.spec.ts`. O teste de reinício continua opt-in e fica ignorado no comando normal.
+
+
+## Integração contínua e versão candidata
+
+.github/workflows/ci.yml corre em push, pull_request e execução manual, com Java21/Node24.16.0 e actions fixadas por SHA. Instala pelos lockfiles, executa lint/build e Maven verify antes de construir as imagens; prepara Compose/seed fictício, executa Playwright normal e três reinícios separados. permissions contents:read; sem credenciais de checkout persistidas ou secrets de produção. Expiração real mantém execução separada (não reduzir os 60 minutos da aplicação normal).
+
+COMPOSE_PROJECT_NAME identifica o ambiente em todos os comandos, incluindo subprocessos de reinício. Em CI usa o ID da execução; localmente escolher nome próprio, APP_PORT/DB_PORT e APP_ALLOWED_ORIGINS compatíveis. A variável deve estar presente no terminal que lança Playwright. Não misturar com a instância principal.
+
+scripts/ci-summary.py gera artifacts/ci-summary.json apenas com contagens de testes; a pipeline publica esse resumo durante sete dias. Não publica .env, relatórios brutos, cookies, payloads, screenshots ou traces. O build Docker salta testes internamente porque os mesmos são obrigatórios na etapa anterior da CI.
+
+A versão candidata está nos manifests; o JAR usa nome estável backend/target/matriz.jar. A identificação Git final e evidências ficam em docs/release-notes.md/verification.md. A preparação não publica a aplicação ou imagens num registry.

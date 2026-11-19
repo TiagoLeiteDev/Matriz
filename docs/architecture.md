@@ -1,3 +1,24 @@
+# Estado atual — versão candidata 0.1.0-rc.1
+
+**Ficha 05, 19/11/2026.** Mantém-se a decisão ARQ-01/TEC-01; as secções anteriores preservadas abaixo descrevem a evolução. Workflow CI implementado em .github/workflows/ci.yml, ainda sujeito à evidência de execução em verification.md nesta etapa.
+
+```mermaid
+flowchart LR
+    B[Browser] -->|HTTP mesma origem| A[Spring Boot: React compilado e API]
+    A --> I[Identidade e autorização]
+    A --> P[Projetos e colaboração]
+    A --> T[Tarefas, comentários e atribuições]
+    P --> D[(PostgreSQL)]
+    T --> D
+    I --> D
+```
+
+Uma imagem de aplicação e um serviço PostgreSQL; seed é processo temporário da mesma imagem, não serviço obrigatório permanente. JPA representa entidades/valida esquema; casos de uso e consultas usam JdbcTemplate/transações. Flyway V1/V2 gere esquema, volume mantém dados. CI valida antes de construir imagens, usa Compose próprio e verifica UI/API/segurança. Sem mudança de topologia, novas entidades ou serviços. JAR final com nome estável matriz.jar; manifests indicam 0.1.0-rc.1. HTTPS/produção pública e registry não incluídos.
+
+---
+
+## Histórico de arquitetura
+
 ﻿# Matriz — Arquitetura inicial do MVP
 
 **Data:** 18/11/2026. **Decisão ARQ-01:** monólito modular, atualizado para COL-01.

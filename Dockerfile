@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp package -DskipTests
 FROM eclipse-temurin:21-jre-alpine@sha256:ac05c3c42b7c2f1a52c9bd52f01041fa1958231b15ebeae7420429cbc5baf474
 RUN addgroup -S matriz && adduser -S -G matriz matriz
 WORKDIR /app
-COPY --from=backend --chown=matriz:matriz /build/backend/target/matriz-0.1.0-SNAPSHOT.jar app.jar
+COPY --from=backend --chown=matriz:matriz /build/backend/target/matriz.jar app.jar
 USER matriz
 EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=5s --start-period=40s --retries=10 CMD wget -q -O /dev/null http://127.0.0.1:8080/actuator/health || exit 1

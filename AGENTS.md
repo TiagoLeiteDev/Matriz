@@ -8,7 +8,7 @@ Consultar README.md, docs/requirements.md, user-stories.md, constraints.md, arch
 
 ## Stack e estrutura
 
-Java 21/Spring Boot/Maven/Spring Security, PostgreSQL/JPA/Flyway; React/TypeScript/Vite/CSS; JUnit/MockMvc/Testcontainers e Playwright/ESLint; Docker/Compose. GitHub Actions foi planeado mas workflow/CI não estão implementados: não afirmar o contrário. Módulos identity/projects/tasks/shared/bootstrap; manter monólito modular e unidade de entrega React compilado no Spring.
+Java 21/Spring Boot/Maven/Spring Security, PostgreSQL/JPA/Flyway; React/TypeScript/Vite/CSS; JUnit/MockMvc/Testcontainers e Playwright/ESLint; Docker/Compose. Workflow em .github/workflows/ci.yml; resultados reais e limitações em verification.md. Não confundir configuração da CI com execução aprovada. Módulos identity/projects/tasks/shared/bootstrap; manter monólito modular e unidade de entrega React compilado no Spring.
 
 ## Processo e autorizações
 
@@ -76,3 +76,10 @@ Apresentar alterações, pressupostos, verificações/resultados, riscos/limites
 ## Organização dos testes — AAA
 
 Sempre que aplicável, organizar testes novos e alterados em Arrange, Act e Assert, com comentários explícitos `// Arrange`, `// Act` e `// Assert`. Separar preparação, execução e verificação em blocos legíveis. Em testes de exceções, cadeias MockMvc ou helpers que verificam a resposta, usar `// Act & Assert` quando os passos forem indissociáveis. Em percursos de integração/E2E com vários passos, identificar cada ciclo e a preparação adicional; manter limpeza em finally/afterEach e fixtures nos hooks. Não reordenar operações nem alterar asserções apenas para forçar três blocos.
+
+
+## Ficha 05 — CI e versão candidata
+
+Versão 0.1.0-rc.1; JAR estável backend/target/matriz.jar. Workflow push/PR/manual: testes/lint/build antes das imagens, Compose/seed de demonstração e Playwright. Actions fixadas por SHA; permissions contents:read; publicar apenas resumo sem payloads. Scripts/ci-summary.py não exporta ambiente ou corpos dos relatórios. Artefactos gerados ignorados pelo Git.
+
+Em ensaios/reinícios, definir COMPOSE_PROJECT_NAME no processo que lança Docker e Playwright, além de APP_PORT/DB_PORT/APP_ALLOWED_ORIGINS/MATRIZ_BASE_URL. Os subprocessos dos testes herdam o nome e não devem reiniciar a app principal. Manter --wait/health e dados/volume entre recriações. Testes especiais não executados devem ser assinalados, não contados como aprovados.

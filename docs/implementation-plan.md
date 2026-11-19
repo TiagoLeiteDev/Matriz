@@ -4,9 +4,9 @@
 
 | Etapa | Issue | Critério / dependências | Estado |
 |---|---|---|---|
-| Plano e Docker/Compose | #17 | Configuração existente, build, health, seed explícito e persistência isolada | Em curso |
-| GitHub Actions | #18 | Testes/builds antes das imagens, E2E e falha controlada seguida de recuperação | Por executar |
-| Versão candidata | #19 | 0.1.0-rc.1, documentação, changelog/notas e inventário | Por executar |
+| Plano e Docker/Compose | #17 | Configuração existente, build, health, seed explícito e persistência isolada | Concluído localmente: 95 backend/30 E2E, persistência e logs verificados |
+| GitHub Actions | #18 | Testes/builds antes das imagens, E2E e falha controlada seguida de recuperação | Implementada em fe5ad97; falha controlada confirmada, recuperação em validação |
+| Versão candidata | #19 | 0.1.0-rc.1, documentação, changelog/notas e inventário | Em preparação: manifests 0.1.0-rc.1, nome estável do JAR e documentação |
 | Validação final | #20 | Cópia limpa/versão identificada, app, dados, logs, CI e limitações | Por executar |
 
 Reutilizar Dockerfile/Compose e apenas PostgreSQL como serviço externo. Manter volumes principais, migrations aplicadas e regras de acesso. Para ensaios usar projeto/portas/volume próprios e COMPOSE_PROJECT_NAME consistente nos comandos/subprocessos. Sem novas funcionalidades nem alojamento público. Relatórios em verification.md, registo da IA em ai-logs/ficha-05.md. Aprovação do plano autoriza a implementação e versionamento por etapas; resultados são registados apenas após execução.

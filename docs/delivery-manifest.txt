@@ -1,10 +1,12 @@
-# Matriz — inventário de entrega (árvore local, revisão 18/11/2026)
+# Matriz — inventário de entrega 0.1.0-rc.1 (19/11/2026)
 # Sem .git, ambiente real, dependências instaladas, builds, relatórios ou temporários.
 .dockerignore
 .env.example
 .gitattributes
+.github/workflows/ci.yml
 .gitignore
 AGENTS.md
+CHANGELOG.md
 Dockerfile
 README.md
 backend/.mvn/wrapper/maven-wrapper.properties
@@ -61,11 +63,14 @@ backend/src/test/java/pt/matriz/ProjectCollaborationTest.java
 backend/src/test/java/pt/matriz/ProjectCrudTest.java
 backend/src/test/java/pt/matriz/SecurityTest.java
 backend/src/test/java/pt/matriz/TaskCrudTest.java
+backend/src/test/java/pt/matriz/TaskInputTest.java
 backend/src/test/java/pt/matriz/TaskMigrationTest.java
 compose.yaml
 docs/ai-logs/ficha-01.md
 docs/ai-logs/ficha-02.md
 docs/ai-logs/ficha-03.md
+docs/ai-logs/ficha-04.md
+docs/ai-logs/ficha-05.md
 docs/architecture-review.md
 docs/architecture.md
 docs/constraints.md
@@ -95,12 +100,15 @@ docs/history/mvp-individual-v1/docs/user-stories.md
 docs/history/mvp-individual-v1/openapi.yaml
 docs/implementation-plan.md
 docs/projects.md
+docs/quality-security-review.md
+docs/release-notes.md
 docs/requirements.md
 docs/scope-reconciliation.md
 docs/security.md
 docs/setup.md
 docs/task-collaboration.md
 docs/tasks.md
+docs/test-plan.md
 docs/ui/bug-08-task-reload-before.png
 docs/ui/bug-09-progress-locale-before.png
 docs/ui/frontend-calendar-mobile.png
@@ -110,16 +118,19 @@ docs/ui/wireframe-tarefas.md
 docs/ui/wireframe-tarefas.png
 docs/user-stories.md
 docs/verification.md
+e2e/helpers/cleanup.ts
 e2e/package-lock.json
 e2e/package.json
 e2e/playwright.config.ts
 e2e/scripts/restart-session.cjs
 e2e/tests/auth.spec.ts
+e2e/tests/cleanup.spec.ts
 e2e/tests/collaboration.spec.ts
 e2e/tests/delivery-review.spec.ts
 e2e/tests/frontend-integration.spec.ts
 e2e/tests/mvp-verification.spec.ts
 e2e/tests/projects.spec.ts
+e2e/tests/security-review.spec.ts
 e2e/tests/tasks.spec.ts
 frontend/eslint.config.js
 frontend/index.html
@@ -147,3 +158,4 @@ frontend/tsconfig.json
 frontend/vite.config.ts
 openapi.yaml
 scripts/Load-LocalEnv.ps1
+scripts/ci-summary.py

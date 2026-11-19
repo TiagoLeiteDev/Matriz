@@ -637,3 +637,14 @@ Compose isolado matriz-ficha04-e2e reconstruído; Playwright tests/cleanup.spec.
 ## Fecho Git da Ficha 04 — 19/11/2026
 
 O utilizador autorizou os commits finais e o push para concluir a Ficha 04. Issues #11–15 acompanham plano/unitários/AAA/integração/E2E; #16 acompanha revisão e correções aprovadas do exercício 5, em dois commits. Os checkpoints anteriores sem commit/push são históricos. Os SHAs e a confirmação efetiva do remoto ficam nas issues após o push. Não foram repetidas suites apenas para o registo Git; conservam-se os resultados reais descritos acima. Exercícios obrigatórios concluídos; CI opcional na Ficha 04 fica para a Ficha 05. Uma alteração externa de uma linha vazia em Dockerfile foi preservada fora dos commits desta ficha.
+
+
+## Ficha 05 — Docker/Compose e verificação local da base (19/11/2026)
+
+Base a9681f7/1933486, configuração existente e pipeline fe5ad97. Java21/Maven verify: **95 passaram, 0 falhas/erros/ignorados**, 2 min 56 s. Frontend lint/build passaram. Compose matriz-ficha05-local com app18086/BD55436/rede/volume próprios: config --quiet, build app seed, migrations V1/V2, seed explícito e health passaram. Suite normal Playwright: **30 passaram, 4 especiais ignorados**, 1,1 min; não aprovar os ignorados automaticamente.
+
+Probe com fixtures próprias: projeto arquivado, tarefa com responsável/comentário/autor/instante e tarefa eliminada. docker compose down sem -v e up -d db app --wait recriaram containers conservando o volume. Novo login confirmou os mesmos IDs/campos, arquivo, comentário, atribuição e 404 da tarefa eliminada. Probe limpou apenas os IDs criados. SQL baseline final: 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário, 2 atribuições. Últimos 80 logs de arranque sem ERROR/Exception na pesquisa realizada; V2 já aplicada, nenhuma migration nova. Não equivale a auditoria de todos os logs.
+
+Variáveis no mesmo processo: COMPOSE_PROJECT_NAME=matriz-ficha05-local, APP_PORT=18086, DB_PORT=55436, APP_ALLOWED_ORIGINS e MATRIZ_BASE_URL=http://127.0.0.1:18086, PLAYWRIGHT_CHANNEL=chrome; DEMO_PASSWORD carregada sem impressão. App principal/volume não alterados. Evidências geradas locais fora do Git. Scripts de probe temporários não fazem parte da aplicação entregue.
+
+Pipeline criada e publicada em fe5ad97; execução main https://github.com/TiagoLeiteDev/Matriz/actions/runs/44525278059 ainda em curso ao registar esta etapa. Falha deliberada 0446cb0 em branch ci/ficha05-failure-demo: run https://github.com/TiagoLeiteDev/Matriz/actions/runs/44525427870 concluiu failure no passo backend; construir imagens ficou skipped. O teste AAAFailureDemonstrationTest foi removido em 1485bbc; recuperação publicada e aguarda resultado. Falha não entrou em main, sem reescrever histórico.
