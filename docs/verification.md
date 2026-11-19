@@ -470,3 +470,30 @@ No fecho da implementação, o Exercício 7 estava local. O utilizador autorizou
 ## Conferência operacional final do Exercício 9
 
 Imagem principal reconstruída e app atualizada com as fontes verificadas; health healthy em 8080. Seed não repetido, nenhuma migration nova; conferência por leitura conservou 2 utilizadores, 2 projetos, 3 tarefas, 1 comentário e 2 atribuições, apenas V1/V2. Containers/rede da cópia isolada removidos por down sem -v; volume separado conservado para inspeção, pasta de ensaio ignorada. Não houve nova execução dos 25 testes na app principal: a suite foi executada na cópia com fontes equivalentes, conforme descrito. No fecho da revisão local ainda não existia commit/push; o utilizador autorizou posteriormente o registo em 19/11/2026. Confirmação de publicação na issue #10.
+
+
+## Ficha 04 — Exercício 2: testes unitários do título
+
+**Data:** 19/11/2026. **Base Git:** 212a4f6 com plano/testes locais ainda sem commit. **Regra:** título textual obrigatório, não vazio nem só espaços; não há mínimo de três caracteres nem máximo aprovado. Fontes: requirements.md (Tarefas), CA-US-03-03, CA-US-04-04 e semântica PATCH de openapi.yaml. Unidade: TaskInput.create/patch, sem alterações de produção.
+
+Ficheiro: `backend/src/test/java/pt/matriz/TaskInputTest.java`. JUnit Jupiter/Test parametrizado, AssertJ e ObjectMapper já disponíveis no projeto. Instanciação direta, sem Spring, MockMvc, PostgreSQL, Docker, rede ou serviços na execução dos testes. Casos independentes, Arrange/Act/Assert; exceções verificadas por tipo e prefixo do campo, sem fixar a mensagem completa.
+
+| Caso | Plano / critério | Entrada | Esperado e observado | Execuções |
+|---|---|---|---|---|
+| UT-01 válido | T02, US-03 | titulo="Preparar apresentação" | Título aceite e preservado | 1 aprovada |
+| UT-02 fronteira | T02, regra título não vazio | titulo="X" | Um carácter não branco aceite e preservado | 1 aprovada |
+| UT-03 inválidos na criação | T01, CA-US-03-03 | Ausente, null, 12, vazio, três espaços | RequestValidationException identificando titulo, em cada variante | 5 aprovadas |
+| UT-04 inválidos na edição | T03, CA-US-04-04 | null, vazio, três espaços | RequestValidationException identificando titulo, em cada variante | 3 aprovadas |
+| UT-05 omissão na edição | T03, contrato PATCH | Apenas estado=DONE | hasTitle=false, titulo=null, hasState=true e estado=DONE | 1 aprovada |
+
+Comando executado na raiz, PowerShell:
+
+```powershell
+./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskInputTest test
+```
+
+**Resultado real:** BUILD SUCCESS; Tests run: 11, Failures: 0, Errors: 0, Skipped: 0. Maven 3.9.16, Temurin JDK 21.0.9, Surefire 3.5.6/JUnit Platform; tempo total Maven 16,674 s, classe 0,884 s. Evidência local regenerável: backend/target/surefire-reports/pt.matriz.TaskInputTest.txt e TEST-pt.matriz.TaskInputTest.xml (gerados, fora do Git).
+
+Não houve falhas de configuração, correções aos testes após execução ou defeito identificado na regra selecionada. Não foi necessário alterar produção, dependências ou serviços. O teste de omissão verifica a representação do PATCH, não persistência de campos: isso pertence à integração. O caso válido é fronteira inferior de conteúdo não vazio; não inventa máximo de comprimento. Não se testou equivalência de whitespace Unicode entre UI/backend.
+
+Âmbito: apenas a classe selecionada foi executada. Não foram executados testes de integração/E2E nem a suite backend completa neste exercício. T01/T03 foram cobertos; T02 foi coberto quanto ao título válido/fronteira, sem novas asserções dos defaults/opcionais, já representadas nos testes de integração existentes. O resultado não aprova automaticamente toda a matriz ou o MVP.

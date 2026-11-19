@@ -19,3 +19,16 @@ A IA propôs reutilizar a cobertura e preencher a lacuna de testes unitários pu
 ### Verificação e limites
 
 Apenas inspeção documental/estática e verificação de diff/formato. Nenhum teste foi implementado ou executado; nenhum resultado histórico foi apresentado como execução atual. Não houve alteração de produção, testes, dependências ou ambiente. Plano aguarda revisão do utilizador antes dos exercícios de implementação. Sem commit/push neste incremento.
+
+
+## Exercício 2 — Testes unitários
+
+**Data:** 19/11/2026. **Ferramenta:** ChatGPT/Codex.
+
+**Pedido:** implementar e executar testes unitários de uma regra existente, com caso válido, inválido e fronteira; consultar plano/requisitos/arquitetura/convenções; não alterar produção; registar resultados reais em verification.md preservando o histórico.
+
+**Plano apresentado e realizado:** testar diretamente TaskInput.create/patch com JUnit/AssertJ/ObjectMapper, sem Spring/BD. Criada TaskInputTest com cinco métodos, dois parametrizados: 11 casos ao todo. Títulos válidos e de um carácter, cinco variantes inválidas na criação, três na edição, e omissão na edição. Sem novos limites nem dependências.
+
+**Decisão da IA:** manter asserções centradas no título e no campo da exceção; não exigir mensagem integral, códigos HTTP ou persistência num teste unitário. Omissão de PATCH não é equivalente a null explícito. A fronteira escolhida é um carácter não branco, pois não existe máximo aprovado. Defaults de T02 continuam fora destas novas asserções. Nenhum resultado foi corrigido artificialmente nem regra alterada para obter sucesso.
+
+**Execução real:** ./backend/mvnw.cmd -f backend/pom.xml -Dtest=TaskInputTest test → BUILD SUCCESS, 11 aprovados, 0 falhas, 0 erros, 0 ignorados. Não houve correção após execução; sem defeito identificado na regra selecionada. Relatórios locais Surefire, comando e limitações em [verification.md](../verification.md). Integração/E2E não executados neste exercício. Sem commit/push.

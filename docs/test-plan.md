@@ -98,3 +98,8 @@ Decisões desta proposta, ainda sujeitas à revisão do utilizador; não são ap
 - Nenhum máximo aprovado significa não inventar um teste obrigatório de rejeição por comprimento. Testes representativos de texto longo não equivalem a prometer capacidade ilimitada.
 - Plano aguarda revisão humana, sobretudo seleção do mínimo a acrescentar sem duplicação. Não há dúvida crítica que impeça propor os cenários ASCII, criação/consulta e autorização acima.
 - Todos os cenários desta matriz têm estado de execução **não executado neste exercício**. Ficheiros de testes/produção, ambiente, dependências e configuração permanecem inalterados.
+
+
+## Atualização de execução — Exercício 2 (19/11/2026)
+
+O pedido seguinte do utilizador autorizou implementar/executar os unitários do título. TaskInputTest cobre T01, T03 e a parte de título válido/fronteira de T02: 11 execuções aprovadas, zero falhas/erros/ignorados. Defaults/opcionais de T02 não fazem parte destas novas asserções. Os estados "não executado" acima referem-se ao momento de elaboração do exercício 1; os restantes cenários não tiveram nova execução. Comando, dados, resultados e limites em [verification.md](verification.md), secção Ficha 04 — Exercício 2. Nenhuma regra de negócio foi alterada.
