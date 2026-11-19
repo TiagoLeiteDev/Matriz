@@ -1,3 +1,20 @@
+# Ficha 05 — Plano ativo de preparação da entrega
+
+**19/11/2026 · base a9681f7 · plano aprovado pelo utilizador.** As tabelas anteriores da Ficha 03 abaixo são históricas; a Ficha 04 foi publicada até a9681f7. Ainda não há resultado CI nesta etapa.
+
+| Etapa | Issue | Critério / dependências | Estado |
+|---|---|---|---|
+| Plano e Docker/Compose | #17 | Configuração existente, build, health, seed explícito e persistência isolada | Em curso |
+| GitHub Actions | #18 | Testes/builds antes das imagens, E2E e falha controlada seguida de recuperação | Por executar |
+| Versão candidata | #19 | 0.1.0-rc.1, documentação, changelog/notas e inventário | Por executar |
+| Validação final | #20 | Cópia limpa/versão identificada, app, dados, logs, CI e limitações | Por executar |
+
+Reutilizar Dockerfile/Compose e apenas PostgreSQL como serviço externo. Manter volumes principais, migrations aplicadas e regras de acesso. Para ensaios usar projeto/portas/volume próprios e COMPOSE_PROJECT_NAME consistente nos comandos/subprocessos. Sem novas funcionalidades nem alojamento público. Relatórios em verification.md, registo da IA em ai-logs/ficha-05.md. Aprovação do plano autoriza a implementação e versionamento por etapas; resultados são registados apenas após execução.
+
+---
+
+## Histórico preservado — Ficha 03
+
 # Matriz — Plano de implementação e estado de entrega
 
 **Data:** 18/11/2026. **Estado atual:** MVP funcional implementado e verificado; revisão do Exercício 9 em curso. A tabela abaixo é a referência ativa. O plano inicial e a evolução por exercício estão preservados no histórico recolhido, sem os tratar como pendências atuais.
